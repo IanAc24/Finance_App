@@ -29,8 +29,11 @@ import {
 import { acquireTabLock } from '../db/tabLock'
 import { customColorAt, findCategoryByName } from '../lib/categories'
 import { quincenaKey, todayString } from '../lib/dates'
+import { currencies } from '../lib/money'
 import { EMPTY_PROFILE, isOnboarded } from '../lib/onboarding'
+import { removePref } from '../lib/prefs'
 import { DEFAULT_SCHEDULE } from '../lib/quincenaSchedule'
+import { rolloverSkipKey } from '../lib/savings'
 import { sampleTransactions } from '../lib/sample'
 import StatusScreen from '../components/StatusScreen'
 import { useSettings } from './useSettings'
@@ -250,6 +253,8 @@ export default function TransactionsProvider({ children }) {
 
   const clearAllData = async () => {
     await clearAll()
+    // forget the skipped leftover offers kept on this device
+    currencies.forEach(({ code }) => removePref(rolloverSkipKey(code)))
     setTransactions([])
     setCategories(builtInCategories)
     setBudgets([])

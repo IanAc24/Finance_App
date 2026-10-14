@@ -6,6 +6,9 @@ import { DEFAULT_SCHEDULE } from './quincenaSchedule'
 // so it is one fixed language rather than a translation
 export const ROLLOVER_NOTE = 'Sobrante de la quincena'
 
+// Device pref key that remembers a skipped leftover offer, one per currency
+export const rolloverSkipKey = (code) => `rolloverSkipped.${code}`
+
 // What is in savings in one currency: everything moved in minus everything
 // taken out
 export function savingsBalance(moves, code) {

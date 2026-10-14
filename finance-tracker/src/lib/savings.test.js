@@ -2,9 +2,17 @@ import { describe, expect, it } from 'vitest'
 import {
   leftInRange,
   previousQuincenaRange,
+  rolloverSkipKey,
   savingsBalance,
   savingsInRange,
 } from './savings'
+
+describe('rolloverSkipKey', () => {
+  it('keeps the key saved on devices', () => {
+    expect(rolloverSkipKey('CRC')).toBe('rolloverSkipped.CRC')
+    expect(rolloverSkipKey('USD')).toBe('rolloverSkipped.USD')
+  })
+})
 
 function ymd(date) {
   return [date.getFullYear(), date.getMonth() + 1, date.getDate()]

@@ -681,6 +681,26 @@ describe('clearAll', () => {
       quincenaSchedule: DEFAULT_SCHEDULE,
     })
   })
+
+  it('also puts the pay days back to 15/30', async () => {
+    await storage.saveQuincenaSchedule([
+      { from: '2000-01-01', mode: 'fixed', day1: 1, day2: 16 },
+      { from: '2026-10-16', mode: 'paydays', day1: 10, day2: 25 },
+    ])
+    expect((await storage.loadAll()).quincenaSchedule).toHaveLength(2)
+
+    await storage.clearAll()
+
+    expect(await storage.loadAll()).toEqual({
+      profile: EMPTY_PROFILE,
+      transactions: [],
+      categories: builtIn,
+      budgets: [],
+      recurring: [],
+      savings: [],
+      quincenaSchedule: DEFAULT_SCHEDULE,
+    })
+  })
 })
 
 describe('restoreAll', () => {

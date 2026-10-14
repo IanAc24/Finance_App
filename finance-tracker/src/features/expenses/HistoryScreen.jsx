@@ -230,7 +230,8 @@ export default function HistoryScreen() {
                     <div>
                       <p className="label">{t('spent')}</p>
                       <p className="stat spending">
-                        −{formatMoney(s.spent, s.code)}
+                        {s.spent > 0 ? '−' : ''}
+                        {formatMoney(s.spent, s.code)}
                       </p>
                     </div>
                   </div>

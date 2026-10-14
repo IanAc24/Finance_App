@@ -1,15 +1,15 @@
 # I AM POOR FOR NOW
 
 ## What is this app?
-A personal finance tracker built with React. I AM POOR FOR NOW (shown as "POBRE, POR AHORA" in the Spanish interface) helps you follow your income and expenses through each quincena (pay period: days 1 to 15 and day 16 to the end of the month), in colones and dollars, in Spanish or English.
+A personal finance tracker built with React. I AM POOR FOR NOW (shown as "POBRE, POR AHORA" in the Spanish interface) helps you follow your income and expenses through each quincena (pay period: by default days 1 to 15 and day 16 to the end of the month, or your own one or two pay days), in colones and dollars, in Spanish or English.
 
 > **Status:** in development. All screens work and your data is stored in a SQLite database in the browser (it lives in IndexedDB), so it survives a refresh. For now the app is used in the browser; the Android build has not been started. The app starts empty; sample data is optional.
 
 ## Features
 
 **Home**
-- Per currency: what is left this quincena, income and spent, and the percent of income spent
-- "Safe to spend per day": what is left, minus recurring expenses still due, divided by the days remaining (it shows what was set aside for those bills)
+- The quincena dates with "day X of Y" and a bar of its days
+- Per currency, the headline is "You can spend today" (with the days left and what was set aside for recurring bills still due), plus what is left this quincena, income and spent, and the percent of income spent. Spent shows no minus sign when it is zero. With no income yet, it shows what is left instead; messages appear when pending bills exceed the money or the quincena is overspent
 - Category bars with budgets (amber from 80%, red when exceeded) and an "Uncategorized" row; on the cards after the first, the list is collapsed to a few rows with "Show all"
 - "Due this quincena" list for recurring items: Confirm or Skip; handled items stay listed with a check mark
 - Last quincena's leftover can be moved to savings with one tap ("Move to savings") or skipped
@@ -17,7 +17,7 @@ A personal finance tracker built with React. I AM POOR FOR NOW (shown as "POBRE,
 - A backup reminder when the last backup is more than 14 days old; with no backup yet, the 14 days count from the oldest transaction
 
 **Adding and editing**
-- Add expenses and income with a numeric keypad, in colones or dollars, and choose how it was paid (payment method)
+- Add expenses and income with a numeric keypad, in colones or dollars, and choose how it was paid (Cash, Card or SINPE; the last one used is remembered). In colones the keypad has a "000" key, and on a computer you can type the amount with the keyboard. Save stays visible at the bottom of the screen
 - Remembers the last currency and category used, and suggests notes from past entries
 - Custom expense categories: type a new name while adding
 - Tap any transaction to edit or delete it, or use "Repeat today" to copy it as a new entry
@@ -26,7 +26,7 @@ A personal finance tracker built with React. I AM POOR FOR NOW (shown as "POBRE,
 - When adding income, part of it can be sent straight to savings
 
 **Recurring, savings and budgets**
-- Recurring items (rent, salary, subscriptions): every quincena, monthly days 1 to 15, or monthly day 16 to month end. Nothing is ever added by itself
+- Recurring items (rent, salary, subscriptions): every quincena, monthly in the first quincena (days 1 to 15 by default), or monthly in the second (day 16 to month end by default). Nothing is ever added by itself
 - Savings: balance per currency, "Move to savings" and "Take from savings" with a list of movements; money sent to savings is not spending, but it is no longer counted as left
 - Budgets: a spending limit per category and currency for each quincena
 - Categories: rename, recolor, or delete custom categories and move their transactions
@@ -34,13 +34,13 @@ A personal finance tracker built with React. I AM POOR FOR NOW (shown as "POBRE,
 **Statistics and history**
 - Statistics: spending bars by week, month or year (last 7 days, 6 months, 3 years), spending by category, past quincenas and recent transactions, per currency
 - History: one month at a time with balance, income and spent per currency, transactions grouped by day
-- Search by note or category; filters (type, category and payment method) are behind a "Filters" toggle and search every month; the quincena is totaled per payment method
+- Search by note or category; filters (type, category and payment method) are behind a "Filters" toggle and search every month; the current quincena is totaled per payment method
 - CSV export of what History shows (the month, or the search results)
 
 **Settings and safety**
 - Quincena schedule: the default is days 1 and 16; you can set your own pay days (one or two a month). A change takes effect after the quincena in progress, so past quincenas keep the way they were cut
-- Language (Spanish / English, English by default) and theme (dark / light)
-- Export everything as CSV, download a backup and restore from one, load sample data and clear all data
+- Language (Spanish / English, Spanish (Costa Rica) by default) and theme (dark / light)
+- Export everything as CSV, download a backup and restore from one, load sample data and clear all data (which also resets the pay days to 15/30 and forgets skipped leftover offers)
 - Only one tab can use the data at a time
 - Top bar with the logo and name at the left, the tabs in the middle and Settings at the right; two-column pages on computers, a single column on phones
 

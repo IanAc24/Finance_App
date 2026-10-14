@@ -15,3 +15,11 @@ export function writePref(key, value) {
     // blocked: the preference just is not remembered
   }
 }
+
+export function removePref(key) {
+  try {
+    localStorage.removeItem(key)
+  } catch {
+    // blocked: there is nothing to remove
+  }
+}

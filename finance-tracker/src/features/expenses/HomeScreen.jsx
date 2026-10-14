@@ -21,6 +21,7 @@ import { isDue, isHandled } from '../../lib/recurring'
 import {
   ROLLOVER_NOTE,
   previousQuincenaRange,
+  rolloverSkipKey,
   savingsBalance,
 } from '../../lib/savings'
 import { getCategoryTotals } from '../../lib/stats'
@@ -30,8 +31,6 @@ import CategoryBars from '../../components/CategoryBars'
 import EmptyState from '../../components/EmptyState'
 import RecurringRow from '../../components/RecurringRow'
 import TransactionItem from '../../components/TransactionItem'
-
-const skipKey = (code) => `rolloverSkipped.${code}`
 
 export default function HomeScreen() {
   const { locale, t } = useSettings()
@@ -59,7 +58,7 @@ export default function HomeScreen() {
   const [paidError, setPaidError] = useState(null)
   // the quincena each currency's rollover offer was skipped for
   const [skipped, setSkipped] = useState(() =>
-    Object.fromEntries(currencies.map((c) => [c.code, readPref(skipKey(c.code))])),
+    Object.fromEntries(currencies.map((c) => [c.code, readPref(rolloverSkipKey(c.code))])),
   )
   const current = transactions.filter((tx) => {
     const date = parseDate(tx.date)
@@ -119,7 +118,7 @@ export default function HomeScreen() {
 
   const skipLeftover = (code) =>
     run(async () => {
-      writePref(skipKey(code), previousKey)
+      writePref(rolloverSkipKey(code), previousKey)
       setSkipped((prev) => ({ ...prev, [code]: previousKey }))
     })
 
