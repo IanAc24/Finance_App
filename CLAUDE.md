@@ -33,7 +33,9 @@ npm run build
 ## Cómo está armado
 - React 19 + Vite 8 + react-router. Pantallas en `src/features/`, piezas en `src/components/`, lógica pura en `src/lib/` (cada archivo con su `*.test.js`).
 - **Todo lo que se guarda pasa por `src/db/storage.js`** (SQLite en el navegador con `@capacitor-community/sqlite` y `jeep-sqlite`; en web persiste en IndexedDB). Solo `src/context/TransactionsProvider.jsx` lo importa. Esa es la costura para cambiar de base de datos: se respeta su interfaz.
-- Migraciones en `src/db/migrations.js`: **nunca edites una que ya salió**, agrega una nueva (la versión actual es 8).
+- Migraciones en `src/db/migrations.js`: **nunca edites una que ya salió**, agrega una nueva (la versión actual es 8). Cada migración se prueba partiendo de una base en la versión anterior con datos reales.
+- Los nombres internos `quincena`, `quincena-db` y `app:'quincena'` (en los respaldos) **no se renombran**: los respaldos viejos deben seguir restaurando.
+- Estilos como los hace Ian: todos en `src/index.css`, con comentarios en español.
 - Dinero: en la base va en **centavos enteros**; en la app son montos decimales (`storage.js` convierte). Tope `MAX_AMOUNT` = 1.000.000.000. Fechas: texto `YYYY-MM-DD`.
 - Textos: todo va por `t('clave')` con `es` y `en` en `src/lib/translations.js`. Una prueba exige las mismas claves en ambos idiomas, que no haya claves sin usar ni texto fijo en pantallas.
 - Límites: nota 60, nombre de categoría 24, nombre de perfil 30.
@@ -41,8 +43,11 @@ npm run build
 - Capacitor está en las dependencias, pero **todavía no existe `android/` ni `capacitor.config`**. Android no se ha probado.
 
 ## Reglas de trabajo
-- Código, comentarios y mensajes de commit en inglés (como el resto del repo); documentos en español.
-- Commits pequeños, uno por tema, en imperativo ("Add...", "Fix..."). Cada cambio de lógica lleva su prueba.
+- Código JS, sus comentarios y los mensajes de commit en inglés (como el resto del repo); documentos y comentarios del CSS en español.
+- Commits pequeños, uno por tema, en imperativo ("Add...", "Fix..."). Cada commit dice qué había, qué cambió y por qué mejora. Cada cambio de lógica lleva su prueba.
+- **Sin líneas de crédito a Claude** (`Co-Authored-By`, `Claude-Session` ni similares) en commits ni en descripciones de PR.
+- Antes de implementar, avisa en una línea de cualquier riesgo real: pérdida de datos, migración que se rompe, error de dinero.
+- Ian fija el número de versión (0.N) y mantiene el README; no los cambies.
 - Sin secretos en el repo (`.env.local` no se sube). Credenciales de cualquier servicio, por variables de entorno.
 - No agregues dependencias sin que la ficha lo diga.
 - Si algo no está claro, pregunta en vez de suponer. Si algo falla, dilo.
