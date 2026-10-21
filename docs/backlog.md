@@ -15,7 +15,7 @@
 ## Con ficha lista
 | Ficha | Tarea | Falta |
 |---|---|---|
-| 001 | Firebase: prueba de humo en un Android real | Furyan: crear el proyecto de Firebase (`appId` ya decidido: `cr.iampoorfornow`), confirmar las cuentas de Google |
+| 001 | Firebase: prueba de humo en un Android real | Proyecto Firebase listo (20/10). Falta: registrar la app Android `cr.iampoorfornow` con su SHA-1 de depuración, descargar `google-services.json` (fuera del repo), confirmar las cuentas de Google de Ian y Furyan, y tener Android Studio y un celular con depuración USB |
 
 ## Necesitan investigación o decisión antes de construir
 | # | Tema | Qué falta |

@@ -1,7 +1,7 @@
 # Ficha 001 · Firebase: prueba de humo en un Android real
 
 Fecha: 19/10/2026 · Redactada por: sesión de Claude · Aprobada por: pendiente (Furyan) · Rama sugerida: `feat/firebase-prueba-de-humo` (desde `PAT`)
-**Estado: borrador. Falta un dato de Furyan (marcado abajo).**
+**Estado: Listo para arrancar cuando estén los pendientes.**
 
 ## Objetivo
 Comprobar, antes de reescribir la capa de datos, que Firebase cumple lo que se necesita en un teléfono Android real: entrar con Google, guardar sin internet, sincronizar al volver y ver lo mismo en la web, cada persona solo con lo suyo.
@@ -10,11 +10,18 @@ Comprobar, antes de reescribir la capa de datos, que Firebase cumple lo que se n
 - Firebase (Auth + Firestore). Los mismos datos en web y celular; cada persona solo ve lo suyo; sin formulario de usuario y contraseña: Google de un toque (Furyan, 19/10). Ver `docs/plan-base-de-datos-firebase.md`.
 
 ## Lo que hace Furyan antes (Claude Code no puede)
-1. Crear un proyecto en la consola de Firebase (plan Spark, sin tarjeta), activar **Authentication → Google** y **Firestore** (modo producción).
-2. Registrar la app Android con el `appId` y su SHA-1 de depuración, y descargar `google-services.json`.
-3. Publicar las reglas de la sección "Reglas de prueba".
-4. **`appId` decidido: `cr.iampoorfornow`** (Furyan, 19/10). Cambiarlo después obliga a registrar la app de nuevo en Firebase; tras publicar en Play no se puede cambiar.
-5. **Confirmar que Ian y Furyan entran con su cuenta de Google**: *pendiente*; con eso se prueban las reglas con dos personas.
+**HECHO (20/10):**
+- Proyecto Firebase `iampoorfornow` creado en plan Spark (sin tarjeta).
+- **Authentication → Google** habilitado.
+- **Firestore** (default) en modo producción: nam5, edición Standard, modo nativo.
+- Reglas de la sección "Reglas de prueba" publicadas.
+- App web registrada (configuración guardada fuera del repo).
+- **`appId` decidido: `cr.iampoorfornow`** (Furyan, 19/10). Cambiarlo después obliga a registrar la app de nuevo en Firebase; tras publicar en Play no se puede cambiar.
+
+**PENDIENTE:**
+1. Registrar la app Android `cr.iampoorfornow` con su SHA-1 de depuración.
+2. Descargar `google-services.json` (va en `android/app/`, **no se sube al repo**).
+3. **Confirmar que Ian y Furyan entran con su cuenta de Google**; con eso se prueban las reglas con dos personas.
 
 ## Alcance
 - Inicializar Capacitor en Android: `capacitor.config` con nombre "I AM POOR FOR NOW" y el `appId` decidido, `npx cap add android`.

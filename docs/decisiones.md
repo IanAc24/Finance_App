@@ -16,6 +16,7 @@
 | 19/10 | **Sin pantalla de usuario y contraseña.** Identidad: **Google de un toque** ("Continuar con Google"); la sesión queda guardada en el aparato | Furyan (opción propuesta por Claude) |
 | 19/10 | El `appId` de Android es **`cr.iampoorfornow`** (sin nombre de persona) | Furyan (opción propuesta por Claude) |
 | 19/10 | Sesiones de Claude = investigación, propuestas, preguntas y fichas. Claude Code = construir con calidad a partir de las fichas | Furyan |
+| 20/10 | Proyecto Firebase `iampoorfornow` creado: plan Spark; Authentication con Google habilitado; Firestore (default) en nam5, edición Standard, modo nativo, modo producción, con las reglas de la ficha 001 publicadas (por usuario, sobre `users/{uid}`); app web registrada. Configuración guardada fuera del repo. Sin probar aún con usuarios reales ni en dispositivo | Furyan |
 
 ## En cambio
 | Fecha | Tema | Estado |
@@ -25,11 +26,11 @@
 | 18/10 | "No hace falta login" | **Cambiado el 19/10:** no hay formulario de login, pero sí una cuenta de Google, porque hace falta saber quién es cada persona |
 
 ## Abiertas
-- Ficha 001: falta confirmar que Ian y Furyan entran con su cuenta de Google.
+- Ficha 001: confirmar que Ian y Furyan entran con su cuenta de Google.
 - ¿Qué pasa con los datos que ya hay guardados en cada aparato al activar la cuenta? (propuesto: subirlos una sola vez, desde un aparato y con confirmación; evita duplicados)
 - Privacidad: Ley 8968 y PRODHAB antes de abrir la app a más personas.
 - ¿Quién usa iOS? Hoy solo hay `@capacitor/android`.
 - ¿"Quincena" se queda como nombre del periodo en la interfaz?
-- Nombre en Play Store (el `appId` ya está decidido).
+- Nombre en Play Store.
 - ¿Se agrega un campo en Ajustes para cambiar la meta de ahorro? Hoy solo se cambia repitiendo la configuración inicial.
 - ¿Botón "Apartar ahora" que mueva el dinero a Ahorros? (propuesto, sin decidir)
