@@ -1,6 +1,6 @@
 # Registro de decisiones
 
-Última actualización: 19/10/2026 (23:00). Una línea por decisión. Lo que está en **Abierto** no se construye hasta que una persona decida.
+Última actualización: 20/10/2026. Una línea por decisión. Lo que está en **Abierto** no se construye hasta que una persona decida.
 
 ## Vigentes
 | Fecha | Decisión | Quién |
@@ -10,7 +10,7 @@
 | 18/10 | Reparto: **Ian** lleva lo visual y el diseño web; **Furyan** lleva la base de datos | ambos |
 | 18/10 | Por ahora solo Ian y Furyan prueban la app | Furyan |
 | 19/10 | La rama de Ian (`ZOH`) no se edita. Se trabaja en `PAT` con `ZOH` mezclada | Furyan |
-| 19/10 | "Puedes gastar hoy" aparta primero la meta de ahorro por quincena (monto fijo del perfil). Implementado en la rama `feat/colchon-ahorro` (commit `1a31e44`); falta aplicarlo en `PAT` | Furyan (propuesta de Claude) |
+| 19/10 | "Puedes gastar hoy" aparta primero la meta de ahorro por quincena (monto fijo del perfil). Implementado en la rama `feat/colchon-ahorro` (commit `1a31e44`); aplicado en `PAT` el 20/10 | Furyan (propuesta de Claude) |
 | 19/10 | **Firebase se queda** como base de datos (Auth + Firestore); Supabase queda descartado | Furyan |
 | 19/10 | **Los mismos datos en la web y en el celular, y cada persona solo ve los suyos** (Ian no ve los de Furyan ni al revés); pensado para producción | Furyan |
 | 19/10 | **Sin pantalla de usuario y contraseña.** Identidad: **Google de un toque** ("Continuar con Google"); la sesión queda guardada en el aparato | Furyan (opción propuesta por Claude) |
