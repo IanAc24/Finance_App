@@ -21,7 +21,7 @@
 ## En cambio
 | Fecha | Tema | Estado |
 |---|---|---|
-| 19/10 | Base de datos: de Supabase a **Firebase** por el modo sin internet y los mismos datos en varios aparatos | Decidido. Siguiente paso: **ficha 001**, prueba de humo en un Android real (`docs/traspasos/001-firebase-prueba-de-humo.md`). Mientras tanto la base sigue siendo SQLite local |
+| 19/10 | Base de datos: de Supabase a **Firebase** por el modo sin internet y los mismos datos en varios aparatos | Decidido. El proyecto Firebase `iampoorfornow` ya existe (20/10). Siguiente paso: **ficha 001**, prueba de humo en un Android real (`docs/traspasos/001-firebase-prueba-de-humo.md`); espera la app Android con su SHA-1, `google-services.json`, las cuentas de Google, Android Studio y un celular con depuración USB. Mientras tanto la base sigue siendo SQLite local |
 | 18/10 | Supabase solo con internet, sin login | **Superado.** El esquema y sus 52 pruebas existen solo en una rama local de una sesión de Claude (`db/supabase-esquema`); no está en este repo. Sirve de referencia de reglas |
 | 18/10 | "No hace falta login" | **Cambiado el 19/10:** no hay formulario de login, pero sí una cuenta de Google, porque hace falta saber quién es cada persona |
 

@@ -1,6 +1,6 @@
 # Ficha 001 · Firebase: prueba de humo en un Android real
 
-Fecha: 19/10/2026 · Redactada por: sesión de Claude · Aprobada por: pendiente (Furyan) · Rama sugerida: `feat/firebase-prueba-de-humo` (desde `PAT`)
+Fecha: 19/10/2026 · Redactada por: sesión de Claude · Aprobada por: Furyan (20/10/2026) · Rama sugerida: `feat/firebase-prueba-de-humo` (desde `PAT`)
 **Estado: Listo para arrancar cuando estén los pendientes.**
 
 ## Objetivo

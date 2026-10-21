@@ -20,7 +20,7 @@
 ## Necesitan investigación o decisión antes de construir
 | # | Tema | Qué falta |
 |---|---|---|
-| A | **Firebase** | Decidido. Hay que hacer la **ficha 001** (prueba de humo en un Android real); después reglas con pruebas, capa de datos con interruptor, botón de Google. Ver `docs/plan-base-de-datos-firebase.md` |
+| A | **Firebase** | Decidido. El proyecto Firebase `iampoorfornow` ya existe (20/10). La **ficha 001** (prueba de humo en un Android real) espera la app Android con su SHA-1, `google-services.json`, las cuentas de Google, Android Studio y un celular con depuración USB; después reglas con pruebas, capa de datos con interruptor, botón de Google. Ver `docs/plan-base-de-datos-firebase.md` |
 | B | Inicializar Android (`capacitor.config`, `appId`, `npx cap add android`, emulador) | Decidir el nombre en Play Store (`appId` decidido: `cr.iampoorfornow`) |
 | C | Descarga del respaldo y del CSV en Android (hoy un enlace `blob:` con `download`, sin verificar en el WebView) | Probar en dispositivo; probablemente plugin de archivos y Share |
 | D | Botón Atrás de Android (Agregar con monto a medias) | Probar en dispositivo |
