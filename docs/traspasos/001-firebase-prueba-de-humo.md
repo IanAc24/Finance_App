@@ -1,7 +1,7 @@
 # Ficha 001 · Firebase: prueba de humo en un Android real
 
 Fecha: 19/10/2026 · Redactada por: sesión de Claude · Aprobada por: pendiente (Furyan) · Rama sugerida: `feat/firebase-prueba-de-humo` (desde `PAT`)
-**Estado: borrador. Faltan dos datos de Furyan (marcados abajo).**
+**Estado: borrador. Falta un dato de Furyan (marcado abajo).**
 
 ## Objetivo
 Comprobar, antes de reescribir la capa de datos, que Firebase cumple lo que se necesita en un teléfono Android real: entrar con Google, guardar sin internet, sincronizar al volver y ver lo mismo en la web, cada persona solo con lo suyo.
@@ -13,7 +13,7 @@ Comprobar, antes de reescribir la capa de datos, que Firebase cumple lo que se n
 1. Crear un proyecto en la consola de Firebase (plan Spark, sin tarjeta), activar **Authentication → Google** y **Firestore** (modo producción).
 2. Registrar la app Android con el `appId` y su SHA-1 de depuración, y descargar `google-services.json`.
 3. Publicar las reglas de la sección "Reglas de prueba".
-4. **Decidir el `appId`** (por ejemplo `cr.algo.iampoorfornow`): *pendiente de Furyan*; no se inventa.
+4. **`appId` decidido: `cr.iampoorfornow`** (Furyan, 19/10). Cambiarlo después obliga a registrar la app de nuevo en Firebase; tras publicar en Play no se puede cambiar.
 5. **Confirmar que Ian y Furyan entran con su cuenta de Google**: *pendiente*; con eso se prueban las reglas con dos personas.
 
 ## Alcance

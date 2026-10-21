@@ -14,6 +14,7 @@
 | 19/10 | **Firebase se queda** como base de datos (Auth + Firestore); Supabase queda descartado | Furyan |
 | 19/10 | **Los mismos datos en la web y en el celular, y cada persona solo ve los suyos** (Ian no ve los de Furyan ni al revés); pensado para producción | Furyan |
 | 19/10 | **Sin pantalla de usuario y contraseña.** Identidad: **Google de un toque** ("Continuar con Google"); la sesión queda guardada en el aparato | Furyan (opción propuesta por Claude) |
+| 19/10 | El `appId` de Android es **`cr.iampoorfornow`** (sin nombre de persona) | Furyan (opción propuesta por Claude) |
 | 19/10 | Sesiones de Claude = investigación, propuestas, preguntas y fichas. Claude Code = construir con calidad a partir de las fichas | Furyan |
 
 ## En cambio
@@ -24,11 +25,11 @@
 | 18/10 | "No hace falta login" | **Cambiado el 19/10:** no hay formulario de login, pero sí una cuenta de Google, porque hace falta saber quién es cada persona |
 
 ## Abiertas
-- Ficha 001: falta decidir el `appId` y confirmar que Ian y Furyan entran con su cuenta de Google.
+- Ficha 001: falta confirmar que Ian y Furyan entran con su cuenta de Google.
 - ¿Qué pasa con los datos que ya hay guardados en cada aparato al activar la cuenta? (propuesto: subirlos una sola vez, desde un aparato y con confirmación; evita duplicados)
 - Privacidad: Ley 8968 y PRODHAB antes de abrir la app a más personas.
 - ¿Quién usa iOS? Hoy solo hay `@capacitor/android`.
 - ¿"Quincena" se queda como nombre del periodo en la interfaz?
-- `appId` y nombre en Play Store.
+- Nombre en Play Store (el `appId` ya está decidido).
 - ¿Se agrega un campo en Ajustes para cambiar la meta de ahorro? Hoy solo se cambia repitiendo la configuración inicial.
 - ¿Botón "Apartar ahora" que mueva el dinero a Ahorros? (propuesto, sin decidir)
