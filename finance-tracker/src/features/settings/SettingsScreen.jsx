@@ -13,7 +13,8 @@ import QuincenaSetting from '../../components/QuincenaSetting'
 import { downloadCsv, downloadFile, transactionRows } from '../../lib/csv'
 import { byNewest, isValidDate, parseDate, todayString } from '../../lib/dates'
 import { formatDate } from '../../lib/format'
-import { MAX_NAME_LENGTH, cleanName } from '../../lib/onboarding'
+import { MAX_PROFILE_NAME_LENGTH } from '../../lib/limits'
+import { cleanName } from '../../lib/onboarding'
 import { readPref, writePref } from '../../lib/prefs'
 
 // The date of the last backup made on this device, or null
@@ -244,7 +245,7 @@ export default function SettingsScreen() {
               <input
                 type="text"
                 autoComplete="given-name"
-                maxLength={MAX_NAME_LENGTH}
+                maxLength={MAX_PROFILE_NAME_LENGTH}
                 value={nameText}
                 onChange={(e) => setNameText(e.target.value)}
               />

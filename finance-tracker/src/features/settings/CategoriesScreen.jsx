@@ -6,6 +6,7 @@ import {
   categoryLabel,
   findCategoryByName,
 } from '../../lib/categories'
+import { MAX_CATEGORY_NAME_LENGTH } from '../../lib/limits'
 import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
@@ -72,7 +73,7 @@ function CategoryEditor({ category, onDone }) {
         <input
           type="text"
           value={name}
-          maxLength={24}
+          maxLength={MAX_CATEGORY_NAME_LENGTH}
           onChange={(e) => setName(e.target.value)}
         />
       </label>

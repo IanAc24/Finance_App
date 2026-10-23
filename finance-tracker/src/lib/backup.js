@@ -4,6 +4,7 @@ import { currencies, isValidAmount } from './money'
 import { normalizePaymentMethod } from './payment'
 import { DEFAULT_SCHEDULE, normalizeSchedule } from './quincenaSchedule'
 import { schedules } from './recurring'
+import { MAX_CATEGORY_NAME_LENGTH, MAX_NOTE_LENGTH } from './limits'
 import { cleanCurrency, cleanName } from './onboarding'
 
 const currencyCodes = currencies.map((c) => c.code)
@@ -51,8 +52,6 @@ export function buildBackup(
 // the file, each text, the ids (SQLite integers; above 2^31 - 1 the next ids
 // could repeat) and the number of records.
 export const MAX_BACKUP_BYTES = 20 * 1024 * 1024
-export const MAX_NOTE_LENGTH = 60
-export const MAX_CATEGORY_NAME_LENGTH = 24
 export const MAX_ID = 2_147_483_647
 export const MAX_RECORDS = 200_000
 
@@ -68,12 +67,6 @@ function cleanNote(value) {
 
 function isObject(value) {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-// A finite amount of at least one cent and at most the app's cap; it is
-// rounded to cents like everything the app saves
-function isPositiveAmount(value) {
-  return isValidAmount(value)
 }
 
 function toCents(value) {
@@ -105,7 +98,7 @@ function cleanCategory(c, builtInIds) {
 function cleanEntry(item, knownIds) {
   if (!isObject(item)) return null
   if (!isValidId(item.id)) return null
-  if (!isPositiveAmount(item.amount)) return null
+  if (!isValidAmount(item.amount)) return null
   if (!currencyCodes.includes(item.currency)) return null
   if (!types.includes(item.type)) return null
   return {
@@ -148,7 +141,7 @@ function cleanBudget(b, knownIds) {
   if (!isObject(b)) return null
   if (!knownIds.has(b.categoryId)) return null
   if (!currencyCodes.includes(b.currency)) return null
-  if (!isPositiveAmount(b.amount)) return null
+  if (!isValidAmount(b.amount)) return null
   return {
     categoryId: b.categoryId,
     currency: b.currency,
@@ -159,7 +152,7 @@ function cleanBudget(b, knownIds) {
 function cleanSavingsMove(move) {
   if (!isObject(move)) return null
   if (!isValidId(move.id)) return null
-  if (!isPositiveAmount(move.amount)) return null
+  if (!isValidAmount(move.amount)) return null
   if (!currencyCodes.includes(move.currency)) return null
   if (move.direction !== 'in' && move.direction !== 'out') return null
   if (typeof move.date !== 'string' || !isValidDate(move.date)) return null
@@ -180,8 +173,8 @@ function cleanProfile(p) {
   const cleaned = {
     name: cleanName(p.name),
     currency: cleanCurrency(p.currency),
-    income: isPositiveAmount(p.income) ? toCents(p.income) : null,
-    savingsGoal: isPositiveAmount(p.savingsGoal) ? toCents(p.savingsGoal) : null,
+    income: isValidAmount(p.income) ? toCents(p.income) : null,
+    savingsGoal: isValidAmount(p.savingsGoal) ? toCents(p.savingsGoal) : null,
   }
   // an empty profile would erase the name and income the person already has
   const empty =
@@ -345,13 +338,6 @@ export function inspectBackup(text, builtInCategories) {
   } catch {
     return { ok: false, reason: 'format' }
   }
-}
-
-// Same check, for callers that only want the data: null when the text is not
-// a usable backup
-export function parseBackup(text, builtInCategories) {
-  const result = inspectBackup(text, builtInCategories)
-  return result.ok ? result.data : null
 }
 
 // True when there is no valid backup date, or the last backup is older

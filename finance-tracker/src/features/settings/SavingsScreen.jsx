@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { byNewest, getQuincenaRange, parseDate, todayString } from '../../lib/dates'
 import { formatDate } from '../../lib/format'
+import { MAX_NOTE_LENGTH } from '../../lib/limits'
 import { currencies, formatMoney, parseAmount } from '../../lib/money'
 import { availableForSavings, quincenaFigures } from '../../lib/quincena'
 import { savingsBalance, savingsInRange } from '../../lib/savings'
@@ -160,7 +161,7 @@ export default function SavingsScreen() {
             <input
               type="text"
               value={note}
-              maxLength={60}
+              maxLength={MAX_NOTE_LENGTH}
               onChange={(e) => setNote(e.target.value)}
             />
           </label>

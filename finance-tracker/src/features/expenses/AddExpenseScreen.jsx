@@ -10,6 +10,7 @@ import { categoryLabel } from '../../lib/categories'
 import { daysBetween, isValidDate, parseDate, todayString } from '../../lib/dates'
 import { formatDate } from '../../lib/format'
 import { applyKey, formatTyping } from '../../lib/keypad'
+import { MAX_CATEGORY_NAME_LENGTH, MAX_NOTE_LENGTH } from '../../lib/limits'
 import { MAX_AMOUNT, currencies, parseAmount } from '../../lib/money'
 import { isClosingDay, nextQuincenaStart } from '../../lib/quincena'
 import { normalizePaymentMethod } from '../../lib/payment'
@@ -337,7 +338,7 @@ export default function AddExpenseScreen() {
                   <input
                     type="text"
                     value={customName}
-                    maxLength={24}
+                    maxLength={MAX_CATEGORY_NAME_LENGTH}
                     onChange={(e) => setCustomName(e.target.value)}
                   />
                 </label>
@@ -353,7 +354,7 @@ export default function AddExpenseScreen() {
               <input
                 type="text"
                 value={note}
-                maxLength={60}
+                maxLength={MAX_NOTE_LENGTH}
                 onChange={(e) => setNote(e.target.value)}
               />
             </label>

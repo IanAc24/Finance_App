@@ -7,7 +7,6 @@ import {
   inspectBackup,
   isBackupDue,
   isBackupReminderDue,
-  parseBackup,
   summarizeCounts,
 } from './backup'
 import { DEFAULT_SCHEDULE } from './quincenaSchedule'
@@ -49,6 +48,11 @@ const validMove = state.savings[0]
 // A backup file with the given lists replaced
 const file = (changes = {}) =>
   JSON.stringify({ ...buildBackup(state, now), ...changes })
+// The restored data of a backup text, or null when it is not a usable backup
+const parseBackup = (text, builtInCategories) => {
+  const result = inspectBackup(text, builtInCategories)
+  return result.ok ? result.data : null
+}
 const parse = (changes) => parseBackup(file(changes), builtIn)
 
 describe('buildBackup', () => {
@@ -70,7 +74,7 @@ describe('buildBackup', () => {
   })
 })
 
-describe('parseBackup', () => {
+describe('inspectBackup data', () => {
   it('round-trips a realistic state unchanged', () => {
     const result = parseBackup(file(), builtIn)
     expect(result).toEqual({

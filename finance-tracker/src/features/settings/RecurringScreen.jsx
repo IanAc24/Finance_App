@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { categoryLabel } from '../../lib/categories'
+import { MAX_NOTE_LENGTH } from '../../lib/limits'
 import { parseAmount } from '../../lib/money'
 import { scheduleKey, schedules } from '../../lib/recurring'
 import { useDialog } from '../../context/useDialog'
@@ -135,7 +136,7 @@ function RecurringEditor({ item, onDone }) {
         <input
           type="text"
           value={note}
-          maxLength={60}
+          maxLength={MAX_NOTE_LENGTH}
           onChange={(e) => setNote(e.target.value)}
         />
       </label>

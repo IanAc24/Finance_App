@@ -1,3 +1,8 @@
+import {
+  MAX_CATEGORY_NAME_LENGTH,
+  MAX_NOTE_LENGTH,
+  MAX_PROFILE_NAME_LENGTH,
+} from './limits'
 import { currencies, parseAmount, sum } from './money'
 import {
   DEFAULT_SCHEDULE,
@@ -8,18 +13,15 @@ import {
 
 // Pure rules of the first-use screen: no database, no clock, no React.
 
-export const MAX_NAME_LENGTH = 30
-export const MAX_EXPENSE_NOTE_LENGTH = 60
 // the built-in "Bills" category (see db/mockData.js)
 export const BILLS_CATEGORY_ID = 3
 // the "New category..." choice of the category selector
 export const NEW_CATEGORY = 'new'
-export const MAX_CATEGORY_NAME_LENGTH = 24
 
 // The name as it is saved: no stray spaces, cut to what the field allows
 export function cleanName(text) {
   return typeof text === 'string'
-    ? text.replace(/\s+/g, ' ').trim().slice(0, MAX_NAME_LENGTH).trim()
+    ? text.replace(/\s+/g, ' ').trim().slice(0, MAX_PROFILE_NAME_LENGTH).trim()
     : ''
 }
 
@@ -111,7 +113,7 @@ export function buildFixedExpense({
   newCategoryName = '',
 }) {
   const note =
-    typeof name === 'string' ? name.trim().slice(0, MAX_EXPENSE_NOTE_LENGTH) : ''
+    typeof name === 'string' ? name.trim().slice(0, MAX_NOTE_LENGTH) : ''
   if (note === '') return { ok: false, reason: 'name' }
   const amount = parseAmount(amountText)
   if (amount === null || amount <= 0) return { ok: false, reason: 'amount' }

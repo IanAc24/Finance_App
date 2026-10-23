@@ -596,6 +596,11 @@ main {
   color: var(--muted);
   font-size: 14px;
   cursor: pointer;
+  /* al menos 44 px de alto para poder tocarla */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Opción seleccionada */
@@ -652,6 +657,7 @@ main {
   font-size: 12px;
   color: var(--muted);
   margin-top: 2px;
+  overflow-wrap: anywhere; /* los nombres largos no se salen de la fila */
 }
 
 /* El monto nunca se parte en dos líneas (el signo se quedaba solo) */
@@ -865,6 +871,9 @@ main > .field,
   padding: 12px 14px;
   font-size: 16px;
   font-family: inherit;
+  min-width: 0;
+  width: 100%;
+  text-overflow: ellipsis;
 }
 
 /* Pantalla de historial */
@@ -965,11 +974,6 @@ main > .field,
   color: var(--danger);
 }
 
-/* Inicio: "disponible por día" debajo de ingresos y gastado */
-.safe-day {
-  margin-top: 16px;
-}
-
 /* Texto de "te pasaste del presupuesto" */
 .stat.over {
   color: var(--danger);
@@ -1063,6 +1067,7 @@ main > .field,
   display: flex;
   gap: 8px;
   margin-top: 10px;
+  flex-wrap: wrap;
 }
 
 /* Marca "Listo" de un pendiente ya confirmado u omitido */
@@ -1545,14 +1550,6 @@ dialog.modal::backdrop {
   border-color: var(--control-border);
 }
 
-/* Las pills miden al menos 44 px de alto para poder tocarlas */
-.pill {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
 /* Campo de fecha: cabe en 320 px y no colapsa en iOS cuando está vacío */
 .field input[type='date'] {
   min-width: 0;
@@ -1568,21 +1565,11 @@ dialog.modal::backdrop {
   min-height: 1.2em;
 }
 
-.field select {
-  min-width: 0;
-  width: 100%;
-  text-overflow: ellipsis;
-}
-
 /* Tarjeta de inicio "Tu pago llega en días distintos" */
 .manual-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.due-actions {
-  flex-wrap: wrap;
 }
 
 .due-actions .pill {
@@ -1591,8 +1578,7 @@ dialog.modal::backdrop {
 }
 
 /* Nombres largos no se salen de la fila */
-.row-name,
-.row-meta {
+.row-name {
   overflow-wrap: anywhere;
 }
 

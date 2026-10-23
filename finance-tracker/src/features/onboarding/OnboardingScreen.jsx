@@ -9,11 +9,13 @@ import QuincenaSetting from '../../components/QuincenaSetting'
 import { formatMoney, currencies } from '../../lib/money'
 import { categoryLabel } from '../../lib/categories'
 import {
-  BILLS_CATEGORY_ID,
   MAX_CATEGORY_NAME_LENGTH,
+  MAX_NOTE_LENGTH,
+  MAX_PROFILE_NAME_LENGTH,
+} from '../../lib/limits'
+import {
+  BILLS_CATEGORY_ID,
   NEW_CATEGORY,
-  MAX_NAME_LENGTH,
-  MAX_EXPENSE_NOTE_LENGTH,
   buildFixedExpense,
   cleanName,
   freePerQuincena,
@@ -356,7 +358,7 @@ export default function OnboardingScreen() {
               <input
                 type="text"
                 autoComplete="given-name"
-                maxLength={MAX_NAME_LENGTH}
+                maxLength={MAX_PROFILE_NAME_LENGTH}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -465,7 +467,7 @@ export default function OnboardingScreen() {
                 <input
                   ref={draftNameInput}
                   type="text"
-                  maxLength={MAX_EXPENSE_NOTE_LENGTH}
+                  maxLength={MAX_NOTE_LENGTH}
                   aria-invalid={draftError === 'name'}
                   aria-describedby={draftError === 'name' ? 'ob-draft-error' : undefined}
                   value={draftName}
