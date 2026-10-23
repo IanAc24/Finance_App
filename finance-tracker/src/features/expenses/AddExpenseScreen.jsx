@@ -10,7 +10,7 @@ import {
 import { categoryLabel } from '../../lib/categories'
 import { dateWithYear, deleteMessage, itemName, signedAmount } from '../../lib/describe'
 import { daysBetween, isValidDate, parseDate, todayString } from '../../lib/dates'
-import { lastDays } from '../../lib/days'
+import { lastDays, pillDate } from '../../lib/days'
 import { formatDate } from '../../lib/format'
 import { applyKey, formatTyping } from '../../lib/keypad'
 import { MAX_CATEGORY_NAME_LENGTH, MAX_NOTE_LENGTH } from '../../lib/limits'
@@ -26,17 +26,18 @@ import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useToast } from '../../context/useToast'
 import { useTransactions } from '../../context/useTransactions'
-import CategoryPicker from '../../components/CategoryPicker'
-import CurrencyPills from '../../components/CurrencyPills'
+import CategoryIcon, { Icon } from '../../components/CategoryIcon'
+import CategoryRow from '../../components/CategoryRow'
 import DateStrip from '../../components/DateStrip'
 import Keypad from '../../components/Keypad'
-import PaymentPills from '../../components/PaymentPills'
+import PaymentToggles from '../../components/PaymentToggles'
+import Sheet from '../../components/Sheet'
 
 // A warning shows when the date is more than this many days ahead
 const FUTURE_DAYS_LIMIT = 3
 
-// Under this width the Save bar covers part of the screen, so a focused field
-// is scrolled to the middle
+// Under this width the bars cover part of the screen, so a focused field is
+// scrolled to the middle
 const PHONE_WIDTH = 900
 
 // The name of the screen the edit came from, for the back link
@@ -132,6 +133,10 @@ export default function AddExpenseScreen() {
   // date is not one of the days of the strip)
   const [showOtherDate, setShowOtherDate] = useState(false)
   const [toSavingsText, setToSavingsText] = useState('')
+  // the sheet on view: 'date', 'options' or none
+  const [sheet, setSheet] = useState(null)
+  // the field of the note has the focus (its suggestions float under it)
+  const [noteFocused, setNoteFocused] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
   // The lock against a double save. The saving state above only paints the
@@ -171,6 +176,7 @@ export default function AddExpenseScreen() {
   const amount = parseFloat(amountText) || 0
   const typed = formatTyping(amountText, currency) || '0'
   const { symbol } = currencies.find((c) => c.code === currency)
+  const category = categories.find((c) => c.id === categoryId)
   const isCustom = type === 'expense' && categoryId === null
   const dateValid = isValidDate(date)
   const isFarFuture =
@@ -193,6 +199,8 @@ export default function AddExpenseScreen() {
     dateValid &&
     (!isCustom || customName.trim() !== '') &&
     (!showToSavings || toSavingsValid)
+  // the date pill warns with a different icon when the date needs a look
+  const dateWarning = !dateValid || isFarFuture || closingDayIncome
 
   // the same name RecurringRow shows for the item
   const matchQuestion = (item) => {
@@ -290,6 +298,7 @@ export default function AddExpenseScreen() {
     if (type === 'expense' && categories.some((c) => c.id === suggestion.categoryId)) {
       setCategoryId(suggestion.categoryId)
     }
+    setNoteFocused(false)
   }
 
   const handleDelete = async () => {
@@ -319,7 +328,7 @@ export default function AddExpenseScreen() {
     }
   }
 
-  // On phones the Save bar and the top bar cover part of the screen: a field
+  // On phones the bars cover part of the screen: a field
   // that gets the focus is scrolled to the middle so it is never hidden
   const handleFocus = (event) => {
     if (window.innerWidth >= PHONE_WIDTH) return
@@ -332,6 +341,25 @@ export default function AddExpenseScreen() {
   let title = type === 'income' ? t('addIncome') : t('addExpense')
   if (editing) title = t('editTransaction')
 
+  // what is wrong or worth a look with the date; it shows under the pills and
+  // again inside the date sheet while that is open
+  const dateNotes = (
+    <>
+      {!dateValid && <p className="field-note error" role="alert">{t('invalidDate')}</p>}
+      {isFarFuture && (
+        <p className="field-note warning" role="status">{t('futureDateWarning')}</p>
+      )}
+      {closingDayIncome && (
+        <div className="field-note warning">
+          <p>{t('closingDayIncome')}</p>
+          <button type="button" className="pill" onClick={() => setDate(nextStart)}>
+            {t('dateItOn')} {formatDate(parseDate(nextStart), locale, { year: false })}
+          </button>
+        </div>
+      )}
+    </>
+  )
+
   return (
     <>
       {editing && (
@@ -339,30 +367,42 @@ export default function AddExpenseScreen() {
           ‹ {backLabel(backTo, t)}
         </Link>
       )}
-      <h1 className="screen-title">{title}</h1>
+      <h1 className={editing ? 'screen-title' : 'sr-only'}>{title}</h1>
 
-      <div className="cols add-form" onFocus={handleFocus}>
-        <div className="col">
-          <section className="card add-amount">
-            <div className="add-top">
-              <div className="pill-group">
-                {['expense', 'income'].map((tp) => (
-                  <button
-                    key={tp}
-                    type="button"
-                    className={type === tp ? 'pill active' : 'pill'}
-                    aria-pressed={type === tp}
-                    onClick={() => setType(tp)}
-                  >
-                    {tp === 'expense' ? t('typeExpense') : t('typeIncome')}
-                  </button>
-                ))}
-              </div>
-              <CurrencyPills value={currency} onChange={setCurrency} />
+      <div className="add-screen" onFocus={handleFocus}>
+        <div className="add-left">
+          <div className="add-toprow">
+            <div className="seg" role="group" aria-label={t('type')}>
+              {['expense', 'income'].map((tp) => (
+                <button
+                  key={tp}
+                  type="button"
+                  className={type === tp ? 'is-on' : undefined}
+                  aria-pressed={type === tp}
+                  onClick={() => setType(tp)}
+                >
+                  {tp === 'expense' ? t('typeExpense') : t('typeIncome')}
+                </button>
+              ))}
             </div>
-            <p className="label amount-label">{t('amount')}</p>
+            <div className="seg" role="group" aria-label={t('currencyLabel')}>
+              {currencies.map(({ code }) => (
+                <button
+                  key={code}
+                  type="button"
+                  className={currency === code ? 'is-on' : undefined}
+                  aria-pressed={currency === code}
+                  onClick={() => setCurrency(code)}
+                >
+                  {code}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <section className="add-card" aria-label={t('amount')}>
             <p
-              className={typed.length > 9 ? 'amount-display is-long' : 'amount-display'}
+              className={typed.length > 9 ? 'add-amount is-long' : 'add-amount'}
               role="status"
               aria-live="polite"
               aria-atomic="true"
@@ -370,121 +410,128 @@ export default function AddExpenseScreen() {
               <span className="money-symbol">{symbol}</span>
               {typed}
             </p>
-            <Keypad onKey={handleKey} currency={currency} />
-          </section>
-        </div>
-
-        <div className="col">
-          {type === 'expense' && (
-            <section className="card">
-              <h2 className="field-title">{t('category')}</h2>
-              <CategoryPicker
-                categories={categories}
-                value={categoryId}
-                onChange={setCategoryId}
-              />
-              {isCustom && (
-                <label className="field">
-                  <span className="label">{t('categoryName')}</span>
+            <div className="add-card-row">
+              {/* the chosen category, or the field to name a new one */}
+              {isCustom ? (
+                <label className="add-chip is-input">
+                  <span className="sr-only">{t('categoryName')}</span>
                   <input
                     type="text"
                     autoFocus
                     value={customName}
+                    placeholder={t('categoryName')}
                     maxLength={MAX_CATEGORY_NAME_LENGTH}
                     onChange={(e) => setCustomName(e.target.value)}
                   />
                 </label>
+              ) : (
+                <p className="add-chip">
+                  <CategoryIcon
+                    category={type === 'expense' ? category : undefined}
+                    kind={type === 'income' ? 'income' : undefined}
+                    size={28}
+                  />
+                  <span>
+                    {type === 'income'
+                      ? t('typeIncome')
+                      : category
+                        ? categoryLabel(category, t)
+                        : t('category.uncategorized')}
+                  </span>
+                </p>
               )}
-            </section>
-          )}
-
-          <section className="card">
-            <h2 className="field-title">{t('date')}</h2>
-            <DateStrip
-              today={today}
-              value={date}
-              onChange={(day) => {
-                setDate(day)
-                setShowOtherDate(false)
-              }}
-              otherOpen={otherDateOpen}
-              onToggleOther={() => setShowOtherDate((open) => !open)}
-            />
-            {otherDateOpen && (
-              <label className="field">
-                <span className="label">{t('otherDate')}</span>
-                <input
-                  type="date"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
-              </label>
-            )}
-            {!dateValid && <p className="field-note error" role="alert">{t('invalidDate')}</p>}
-            {isFarFuture && (
-              <p className="field-note warning" role="status">{t('futureDateWarning')}</p>
-            )}
-            {closingDayIncome && (
-              <div className="field-note warning">
-                <p>{t('closingDayIncome')}</p>
-                <button
-                  type="button"
-                  className="pill"
-                  onClick={() => setDate(nextStart)}
-                >
-                  {t('dateItOn')}{' '}
-                  {formatDate(parseDate(nextStart), locale, { year: false })}
-                </button>
-              </div>
-            )}
+              <PaymentToggles value={paymentMethod} onChange={setPaymentMethod} />
+            </div>
           </section>
 
-          <section className="card">
-            <h2 className="field-title">{t('paymentMethod')}</h2>
-            <PaymentPills value={paymentMethod} onChange={setPaymentMethod} />
-            <label className="field">
-              <span className="label">{t('note')}</span>
+          <div className="add-pills">
+            <button
+              type="button"
+              className="add-pill"
+              aria-haspopup="dialog"
+              aria-label={`${t('date')}: ${pillDate(date, today, locale, t)}. ${t('changeDate')}`}
+              onClick={() => setSheet('date')}
+            >
+              <Icon name={dateWarning ? 'alert' : 'calendar'} size={20} />
+              <span>{dateValid ? pillDate(date, today, locale, t) : t('invalidDate')}</span>
+            </button>
+            <div className="add-pill is-field">
+              <Icon name="notePen" size={20} />
               <input
                 type="text"
                 autoComplete="off"
-                aria-describedby="note-hint"
+                aria-label={t('note')}
+                placeholder={t('note')}
                 value={note}
                 maxLength={MAX_NOTE_LENGTH}
                 onChange={(e) => setNote(e.target.value)}
+                onFocus={() => setNoteFocused(true)}
+                onBlur={() => setNoteFocused(false)}
               />
-            </label>
-            <p className="sub note-hint" id="note-hint">
-              {t('noteHint')}
+              {noteFocused && suggestions.length > 0 && (
+                <ul className="add-suggest">
+                  {suggestions.map((s) => (
+                    <li key={s.note}>
+                      <button
+                        type="button"
+                        // keeps the focus on the field until the click lands
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => applySuggestion(s)}
+                      >
+                        {s.note}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {sheet !== 'date' && dateNotes}
+          {amountTooBig && (
+            <p className="field-note error" role="alert">
+              {t('amountTooBig')}
             </p>
-            {suggestions.length > 0 && (
-              <div className="pill-group wrap suggestions">
-                {suggestions.map((s) => (
-                  <button
-                    key={s.note}
-                    type="button"
-                    className="pill"
-                    onClick={() => applySuggestion(s)}
-                  >
-                    {s.note}
-                  </button>
-                ))}
-              </div>
-            )}
-            {showToSavings && (
-              <label className="field">
-                <span className="label">{t('toSavingsOptional')}</span>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={toSavingsText}
-                  onChange={(e) => setToSavingsText(e.target.value)}
-                />
-              </label>
-            )}
-            {showToSavings && !toSavingsValid && (
-              <p className="field-note error" role="alert">{t('toSavingsInvalid')}</p>
-            )}
-          </section>
+          )}
+          {saveError && <p className="field-note error" role="alert">{t('saveError')}</p>}
+
+          {type === 'expense' ? (
+            <CategoryRow categories={categories} value={categoryId} onChange={setCategoryId} />
+          ) : (
+            <p className="add-income-note">
+              {t('incomeNoCategory')} {t('incomeSavingsHint')}
+            </p>
+          )}
+        </div>
+
+        <div className="add-right">
+          <button
+            type="button"
+            className="add-more"
+            aria-haspopup="dialog"
+            onClick={() => setSheet('options')}
+          >
+            <span>{t('moreOptions')}</span>
+            {toSavings > 0 && <span className="add-more-dot" aria-hidden="true" />}
+          </button>
+
+          {amount === 0 && (
+            <p className="sr-only" id="save-hint">
+              {t('typeAmountFirst')}
+            </p>
+          )}
+          <Keypad onKey={handleKey} currency={currency} />
+          <button
+            type="button"
+            className="btn save-key"
+            disabled={!canSave || saving}
+            aria-busy={saving || undefined}
+            aria-describedby={amount === 0 ? 'save-hint' : undefined}
+            onClick={handleSave}
+          >
+            <Icon name="check" size={22} stroke={2.5} />
+            <span>{saving ? t('saving') : t('save')}</span>
+          </button>
 
           {editing && (
             <button
@@ -510,31 +557,51 @@ export default function AddExpenseScreen() {
         </div>
       </div>
 
-      {amountTooBig && (
-        <p className="field-note error" role="alert">
-          {t('amountTooBig')}
-        </p>
-      )}
-      {saveError && <p className="field-note error" role="alert">{t('saveError')}</p>}
-
-      {/* always visible at the bottom of the screen, even with the
-          keypad and the category list above it */}
-      <div className="save-bar">
-        {amount === 0 && (
-          <p className="sub" id="save-hint">
-            {t('typeAmountFirst')}
-          </p>
+      <Sheet open={sheet === 'date'} onClose={() => setSheet(null)} title={t('date')}>
+        <DateStrip
+          today={today}
+          value={date}
+          onChange={(day) => {
+            setDate(day)
+            setShowOtherDate(false)
+          }}
+          otherOpen={otherDateOpen}
+          onToggleOther={() => setShowOtherDate((open) => !open)}
+        />
+        {otherDateOpen && (
+          <label className="field">
+            <span className="label">{t('otherDate')}</span>
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </label>
         )}
-        <button
-          type="button"
-          className="btn"
-          disabled={!canSave || saving}
-          aria-describedby={amount === 0 ? 'save-hint' : undefined}
-          onClick={handleSave}
-        >
-          {saving ? t('saving') : t('save')}
+        {dateNotes}
+        <button type="button" className="btn" onClick={() => setSheet(null)}>
+          {t('done')}
         </button>
-      </div>
+      </Sheet>
+
+      <Sheet open={sheet === 'options'} onClose={() => setSheet(null)} title={t('moreOptions')}>
+        {showToSavings ? (
+          <label className="field">
+            <span className="label">{t('toSavingsOptional')}</span>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={toSavingsText}
+              onChange={(e) => setToSavingsText(e.target.value)}
+            />
+          </label>
+        ) : (
+          <p className="sub">{t('optionsOnlyIncome')}</p>
+        )}
+        {showToSavings && !toSavingsValid && (
+          <p className="field-note error" role="alert">{t('toSavingsInvalid')}</p>
+        )}
+        <p className="sub">{t('noteHint')}</p>
+        <button type="button" className="btn" onClick={() => setSheet(null)}>
+          {t('done')}
+        </button>
+      </Sheet>
     </>
   )
 }

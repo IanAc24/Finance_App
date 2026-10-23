@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { formatMoney } from './money'
-import { budgetPercent, shareText, splitMoney } from './moneyDisplay'
+import { THIN, budgetPercent, shareText, splitMoney } from './moneyDisplay'
 
 const join = ({ sign, symbol, whole, decimals }) => sign + symbol + whole + decimals
 
@@ -84,5 +84,12 @@ describe('budgetPercent', () => {
     expect(budgetPercent(0.58)).toBe(58)
     expect(budgetPercent(0.29)).toBe(29)
     expect(budgetPercent(0.8)).toBe(80)
+  })
+})
+
+describe('THIN', () => {
+  it('is one thin space, so a sign and its money stay on one line', () => {
+    expect(THIN).toBe('\u2009')
+    expect(`−${THIN}₡6.400`).toHaveLength(8)
   })
 })

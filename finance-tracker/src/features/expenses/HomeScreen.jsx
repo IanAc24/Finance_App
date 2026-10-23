@@ -10,6 +10,7 @@ import {
   quincenaKey,
   todayString,
 } from '../../lib/dates'
+import { longDate } from '../../lib/days'
 import { formatDate } from '../../lib/format'
 import { useToday } from '../../lib/useToday'
 import { currencies, formatMoney } from '../../lib/money'
@@ -30,11 +31,12 @@ import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useToast } from '../../context/useToast'
 import CategoryBars from '../../components/CategoryBars'
-import CategoryIcon from '../../components/CategoryIcon'
+import CategoryIcon, { Icon } from '../../components/CategoryIcon'
 import EmptyState from '../../components/EmptyState'
 import Money from '../../components/Money'
+import RecentRow from '../../components/RecentRow'
 import RecurringRow from '../../components/RecurringRow'
-import TransactionItem from '../../components/TransactionItem'
+import SpendBar from '../../components/SpendBar'
 
 export default function HomeScreen() {
   const { locale, t } = useSettings()
@@ -262,7 +264,6 @@ export default function HomeScreen() {
         </h2>
         {categoryTotals.length > 0 ? (
           <CategoryBars
-            stacked
             totals={categoryTotals}
             currency={code}
             budgets={budgets.filter((b) => b.currency === code)}
@@ -375,6 +376,10 @@ export default function HomeScreen() {
             {t('includesLaterIncome')} {formatMoney(laterIncome, code)}
           </p>
         )}
+
+        {/* the quincena's spending by category in one bar; the rows with
+            their budgets are in "where the money went" */}
+        {categoryTotals.length > 0 && <SpendBar totals={categoryTotals} />}
 
         {compact && <div className="summary-where">{where}</div>}
       </section>
@@ -519,15 +524,24 @@ export default function HomeScreen() {
 
   return (
     <>
-      <div className="greeting">
-        {profile.name && (
-          <p className="hello">
-            {t('hello')}, {profile.name}
+      <header className="home-head">
+        <div className="home-date">
+          {profile.name && (
+            <p className="hello">
+              {t('hello')}, {profile.name}
+            </p>
+          )}
+          <h1>{longDate(today, locale)}</h1>
+          <p className="sub">
+            {t('quincena')} · {rangeText}
           </p>
-        )}
-        <h1 className="screen-title">
-          {t('quincena')} · {rangeText}
-        </h1>
+        </div>
+        <Link className="home-add" to="/add?type=expense" aria-label={t('addExpense')}>
+          <span>{t('add')}</span>
+          <Icon name="plus" size={18} stroke={2.5} />
+        </Link>
+      </header>
+      <div className="home-day-line">
         <p className="sub">
           {t('day')} {dayNumber} {t('dayOf')} {totalDays}
         </p>
@@ -579,15 +593,6 @@ export default function HomeScreen() {
           </div>
 
           <div className="home-col">
-            <div className="home-cta hs-cta">
-              <Link className="btn" to="/add?type=expense">
-                {t('addExpense')}
-              </Link>
-              <Link className="btn secondary" to="/add?type=income">
-                {t('addIncome')}
-              </Link>
-            </div>
-
             {hasDue && (
               <section className="card hs-due">
                 <h2 className="section-title">{t('dueThisQuincena')}</h2>
@@ -631,11 +636,15 @@ export default function HomeScreen() {
             )}
 
             {recent.length > 0 && (
-              <section className="card hs-recent">
+              <section className="home-section hs-recent">
                 <h2 className="section-title">{t('recent')}</h2>
-                <ul className="list">
+                <ul className="recent-list">
                   {recent.map((tx) => (
-                    <TransactionItem key={tx.id} tx={tx} />
+                    <RecentRow
+                      key={tx.id}
+                      tx={tx}
+                      category={categories.find((cat) => cat.id === tx.categoryId)}
+                    />
                   ))}
                 </ul>
                 <Link className="see-all" to="/history">

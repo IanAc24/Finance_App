@@ -29,3 +29,7 @@ export function shareText(part, whole) {
 export function budgetPercent(ratio) {
   return Math.floor(ratio * 100 + 1e-9)
 }
+
+// A thin space (U+2009) between the sign and the money, so '−₡6.400' reads
+// '− ₡6.400' without leaving room for a line break
+export const THIN = '\u2009'

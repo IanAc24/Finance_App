@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dayHeading, lastDays, signedNet } from './days'
+import { dayTitle, lastDays, longDate, pillDate, signedNet } from './days'
 
 const t = (key) => ({ today: 'Hoy', yesterday: 'Ayer' })[key] ?? key
 const today = new Date(2026, 9, 13) // Tuesday
@@ -27,23 +27,46 @@ describe('lastDays', () => {
   })
 })
 
-describe('dayHeading', () => {
-  it('says Hoy and Ayer, then the weekday and date', () => {
-    expect(dayHeading('2026-10-13', today, 'es-CR', t)).toBe('Hoy · mar 13/10')
-    expect(dayHeading('2026-10-12', today, 'es-CR', t)).toBe('Ayer · lun 12/10')
-    expect(dayHeading('2026-10-09', today, 'es-CR', t)).toBe('vie 09/10')
+describe('dayTitle', () => {
+  it('says Hoy and Ayer, then the weekday, day and month', () => {
+    expect(dayTitle('2026-10-13', today, 'es-CR', t)).toBe('Hoy')
+    expect(dayTitle('2026-10-12', today, 'es-CR', t)).toBe('Ayer')
+    expect(dayTitle('2026-10-09', today, 'es-CR', t)).toBe('vie 9 de octubre')
   })
 
   it('adds the year when asked', () => {
-    expect(dayHeading('2025-10-09', today, 'es-CR', t, { year: true })).toBe(
-      'jue 09/10/2025',
+    expect(dayTitle('2025-10-09', today, 'es-CR', t, { year: true })).toBe(
+      'jue 9 de octubre de 2025',
     )
   })
 
   it('works across a month boundary', () => {
-    expect(dayHeading('2026-09-30', new Date(2026, 9, 1), 'es-CR', t)).toBe(
-      'Ayer · mié 30/09',
+    expect(dayTitle('2026-09-30', new Date(2026, 9, 1), 'es-CR', t)).toBe('Ayer')
+    expect(dayTitle('2026-09-29', new Date(2026, 9, 1), 'es-CR', t)).toBe(
+      'mar 29 de septiembre',
     )
+  })
+
+  it('writes English dates in the English order', () => {
+    expect(dayTitle('2026-10-09', today, 'en-US', t)).toBe('Fri, Oct 9')
+    expect(dayTitle('2025-10-09', today, 'en-US', t, { year: true })).toBe(
+      'Thu, Oct 9, 2025',
+    )
+  })
+})
+
+describe('longDate', () => {
+  it('writes the weekday in capitals and the date for the header of Home', () => {
+    expect(longDate(new Date(2026, 9, 23), 'es-CR')).toBe('Viernes · 23 de octubre')
+    expect(longDate(new Date(2026, 9, 23), 'en-US')).toBe('Friday · October 23')
+  })
+})
+
+describe('pillDate', () => {
+  it('says Hoy and Ayer, then day/month', () => {
+    expect(pillDate('2026-10-13', today, 'es-CR', t)).toBe('Hoy')
+    expect(pillDate('2026-10-12', today, 'es-CR', t)).toBe('Ayer')
+    expect(pillDate('2026-10-09', today, 'es-CR', t)).toBe('09/10')
   })
 })
 

@@ -13,9 +13,7 @@ import CategoryIcon from './CategoryIcon'
 // currency. A category with a budget shows "total / budget", and a bar that
 // fills against the budget (amber from 80%, red when exceeded, always with a
 // text that says it too).
-// stacked is optional: draws one bar above the rows with every category's
-// share, and then only rows with a budget keep their own bar. Without it every
-// row has a thin bar with its share.
+// Every row has a thin bar with its share of the spending (or its budget).
 // limit is optional: it collapses the list to that many rows (rows near or
 // over their budget are always kept) with a button to show all of them.
 export default function CategoryBars({
@@ -24,7 +22,6 @@ export default function CategoryBars({
   budgets = [],
   className = 'list',
   limit,
-  stacked = false,
 }) {
   const { t } = useSettings()
   const [showAll, setShowAll] = useState(false)
@@ -38,19 +35,6 @@ export default function CategoryBars({
 
   return (
     <>
-      {stacked && (
-        <div className="stack-bar" aria-hidden="true">
-          {totals.map(({ category, total }) => (
-            <span
-              key={category.id}
-              style={{
-                flexGrow: (total / all) * 100,
-                background: categoryColor(category),
-              }}
-            />
-          ))}
-        </div>
-      )}
       <ul className={`${className} cat-list`}>
         {rows.map(({ category, total }, index) => {
           const budget = budgets.find((b) => b.categoryId === category.id)
@@ -78,11 +62,9 @@ export default function CategoryBars({
                   )}
                 </span>
               </div>
-              {(budget || !stacked) && (
-                <div className="mini-bar" aria-hidden="true">
-                  <div style={{ width: `${barWidth}%`, background: barColor }} />
-                </div>
-              )}
+              <div className="mini-bar" aria-hidden="true">
+                <div style={{ width: `${barWidth}%`, background: barColor }} />
+              </div>
               {budget && ratio >= 1 && (
                 <p className="budget-note over">
                   {t('overBudgetBy').replace(

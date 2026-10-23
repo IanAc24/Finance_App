@@ -6,9 +6,9 @@ import DialogProvider from './context/DialogProvider'
 import SettingsProvider from './context/SettingsProvider'
 import ToastProvider from './context/ToastProvider'
 import TransactionsProvider from './context/TransactionsProvider'
-import AddFab from './components/AddFab'
 import AppBar from './components/AppBar'
 import SkipLink from './components/SkipLink'
+import TabBar from './components/TabBar'
 import DocumentTitle from './components/DocumentTitle'
 import ScrollToTop from './components/ScrollToTop'
 import HomeScreen from './features/expenses/HomeScreen'
@@ -68,7 +68,7 @@ function Shell() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
-      <AddFab />
+      <TabBar />
     </>
   )
 }

@@ -223,26 +223,36 @@ main {
   gap: 16px; /* espacio entre las secciones de la pantalla */
 }
 
-/* Barra superior en todo el ancho de la ventana: marca a la izquierda,
-   pestañas al centro y ajustes a la derecha. Queda pegada arriba al hacer
-   scroll. En celular son dos filas (marca y ajustes / pestañas) */
+/* Barra superior, pegada arriba al hacer scroll. En celular solo lleva la marca
+   (las pestañas y Ajustes están en la barra de abajo). Desde 900px: marca a la
+   izquierda, pestañas con ícono y ajustes a la derecha, en dos filas, y desde
+   1100px en una sola */
 .app-bar {
   position: sticky;
-  /* Solo la fila de pestañas debe quedar visible al hacer scroll, así que la
-     barra sube lo que mide la fila 1: 8px de relleno superior + 44px del logo
-     y del engranaje + 8px de separación entre filas = 60px */
-  top: -60px;
+  top: 0;
   z-index: 10; /* por encima del contenido que pasa por debajo */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'brand gear'
-    'tabs tabs';
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'brand';
   align-items: center;
-  gap: 8px 12px;
-  padding: 8px 16px;
+  padding: 4px 16px;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
+}
+
+@media (min-width: 900px) {
+  .app-bar {
+    /* Solo la fila de pestañas debe quedar visible al hacer scroll, así que la
+       barra sube lo que mide la fila 1: 8px de relleno superior + 44px del logo
+       y del engranaje + 8px de separación entre filas = 60px */
+    top: -60px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand gear'
+      'tabs tabs';
+    gap: 8px 12px;
+    padding: 8px 16px;
+  }
 }
 
 /* Marca: logo y nombre de la app, enlace al inicio (mín. 44px para tocar) */
@@ -306,11 +316,12 @@ main {
   stroke: var(--accent);
 }
 
-/* Botón redondo con el ícono de engranaje, a la derecha de la barra */
+/* Botón redondo con el ícono de engranaje, a la derecha de la barra (solo
+   desde 900px: en celular Ajustes es una pestaña de abajo) */
 .app-bar .icon-link {
   grid-area: gear;
   justify-self: end;
-  display: grid;
+  display: none;
   width: 44px;
   height: 44px;
   place-items: center;
@@ -321,10 +332,16 @@ main {
   cursor: pointer;
 }
 
+@media (min-width: 900px) {
+  .app-bar .icon-link {
+    display: grid;
+  }
+}
+
 /* Tamaño del ícono de engranaje */
 .icon-link svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
 /* Enlace resaltado cuando estamos en ajustes */
@@ -356,11 +373,12 @@ main {
 
 /* Barra de las pantallas previas (abriendo, bloqueada, con error): solo
    el logo y el nombre, centrados y sin subir al hacer scroll */
-.app-bar--lite {
+.app-bar.app-bar--lite {
   top: 0;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: 'brand';
   justify-items: center;
+  padding: 8px 16px;
 }
 
 .app-bar--lite .brand {
@@ -391,12 +409,12 @@ main {
   top: 8px;
 }
 
-/* Pestañas dentro de la barra: segunda fila a todo el ancho, centradas.
-   El relleno de 4px (compensado con margen negativo) deja sitio al contorno
-   de foco, que el overflow recortaría */
+/* Pestañas dentro de la barra (solo desde 900px): segunda fila a todo el
+   ancho, centradas. El relleno de 4px (compensado con margen negativo) deja
+   sitio al contorno de foco, que el overflow recortaría */
 .top-nav {
   grid-area: tabs;
-  display: flex;
+  display: none;
   justify-content: safe center; /* centradas, pero sin cortar la primera si no caben */
   gap: 8px;
   margin: -4px;
@@ -405,17 +423,24 @@ main {
   scrollbar-width: none; /* oculta la barra, pero se sigue pudiendo deslizar */
 }
 
+@media (min-width: 900px) {
+  .top-nav {
+    display: flex;
+  }
+}
+
 /* Oculta la barra de scroll en Chrome/Safari (el deslizamiento sigue funcionando) */
 .top-nav::-webkit-scrollbar {
   display: none;
 }
 
-/* Pestañas: píldora suave. La inactiva es transparente y apagada; la activa
-   lleva el fondo suave del acento, el texto del acento y peso 600 */
+/* Pestañas: píldora suave con ícono. La inactiva es transparente y apagada; la
+   activa lleva el fondo suave del acento, el texto del acento y peso 600 */
 .top-nav a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-height: 44px; /* tamaño mínimo cómodo para tocar */
   padding: 10px 18px;
   border-radius: var(--radius-pill);
@@ -435,44 +460,6 @@ main {
   font-weight: 600;
 }
 
-/* En celulares: menos relleno y las pestañas reparten el ancho para que quepan las cuatro */
-@media (max-width: 440px) {
-  /* Las pestañas se reparten el ancho */
-  .top-nav a {
-    flex: 1 0 auto;
-    padding: 10px 8px;
-    text-align: center;
-  }
-}
-
-/* En celulares muy angostos (320px) las pestañas en español necesitan aún menos espacio */
-@media (max-width: 360px) {
-  /* La barra usa menos margen lateral para que quepan las pestañas */
-  .app-bar {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  /* Menos espacio entre pestañas */
-  .top-nav {
-    gap: 6px;
-  }
-
-  /* Pestañas más compactas */
-  .top-nav a {
-    padding: 10px 6px;
-    font-size: 13px;
-  }
-}
-
-/* Por debajo de 360px el nombre no cabe junto al engranaje: solo queda el logo */
-@media (max-width: 359px) {
-  /* Oculta el nombre */
-  .brand-name {
-    display: none;
-  }
-}
-
 /* Estilos de texto */
 
 /* Título de cada pantalla, centrado */
@@ -487,11 +474,6 @@ main {
 
 /* Texto de introducción justo debajo del título: también centrado */
 .screen-title + .sub {
-  text-align: center;
-}
-
-/* Inicio: saludo y fecha de la quincena, centrados como un bloque */
-.greeting {
   text-align: center;
 }
 
@@ -675,13 +657,6 @@ main {
   gap: 8px;
 }
 
-/* Método de pago: tres píldoras seguidas; en pantallas angostas pasan a la
-   línea de abajo antes de salirse */
-.pill-group.payment {
-  flex-wrap: wrap;
-  margin: 6px 0 14px;
-}
-
 /* Pill base: 44px de alto para poder tocarla */
 .pill {
   padding: 12px 16px;
@@ -843,100 +818,6 @@ main {
   margin-top: 12px;
 }
 
-/* Sugerencias de nota: pegadas al campo y con aire antes de la fecha */
-.pill-group.suggestions {
-  margin-top: 0;
-  margin-bottom: 14px;
-}
-
-/* Las sugerencias no parecen categorías: borde punteado, más chicas y apagadas */
-.pill-group.suggestions .pill {
-  border-style: dashed;
-  font-size: 13px;
-  padding: 6px 12px;
-  color: var(--muted);
-}
-
-.amount-label {
-  margin-top: 16px;
-}
-
-/* Monto que se va escribiendo con el teclado */
-.amount-display {
-  font-size: 44px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 4px 0 16px;
-}
-
-/* Teclado numérico: cuadrícula de 3 columnas */
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.key {
-  height: 60px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-m);
-  color: var(--text);
-  font-size: 22px;
-  cursor: pointer;
-}
-
-/* Tecla mientras se presiona */
-.key:active {
-  background: var(--accent-dim);
-}
-
-/* Teclas más bajas en celular: así el teclado, las categorías y Guardar
-   caben juntos en pantallas de 360x640 y 390x844 */
-@media (max-width: 440px) {
-  .key {
-    height: 54px;
-  }
-}
-
-/* Barra de Guardar: queda pegada abajo y siempre visible mientras se escribe
-   el monto. El degradado es solo una franja corta arriba (el contenido se
-   desvanece al pasar por debajo) y el texto queda sobre fondo sólido; el
-   relleno inferior respeta la zona segura de los teléfonos con muesca */
-.save-bar {
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 20px 0 calc(12px + env(safe-area-inset-bottom, 0px));
-  margin-bottom: -12px;
-  background: linear-gradient(to bottom, transparent, var(--bg) 16px);
-}
-
-.save-bar .sub {
-  text-align: center;
-}
-
-/* En teléfonos bajos (375x667, 320x568) la barra de Guardar es más compacta y
-   las teclas un poco más bajas, para que no tape la última fila del teclado */
-@media (max-width: 440px) and (max-height: 700px) {
-  .key {
-    height: 48px;
-  }
-
-  .save-bar {
-    gap: 2px;
-    padding-top: 10px;
-  }
-
-  .save-bar .sub {
-    font-size: 13px;
-    line-height: 1.3;
-  }
-}
-
 /* Campo de formulario: etiqueta arriba, input abajo */
 .field {
   display: flex;
@@ -991,38 +872,6 @@ main > .field,
 }
 
 /* Pantalla de historial */
-
-/* Selector de mes: flecha, nombre del mes, flecha */
-.month-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.month-name {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-/* Flechas para cambiar de mes */
-.month-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-/* Flecha "siguiente" cuando ya se está en el mes actual */
-.month-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
 
 /* Balance del mes en la tarjeta de resumen */
 .month-balance {
@@ -1342,18 +1191,6 @@ main > p.empty {
     max-width: 640px;
     margin: 0 auto;
     gap: 20px;
-  }
-
-  /* Teclado con teclas de tamaño razonable y el monto centrado encima */
-  /* Teclado de hasta 360px, centrado */
-  .keypad {
-    max-width: 360px;
-    margin: 0 auto;
-  }
-
-  /* Monto centrado sobre el teclado */
-  .amount-display {
-    text-align: center;
   }
 
   /* Bienvenida y consentimiento: columna de lectura de 560px, centrada */
@@ -1696,11 +1533,10 @@ dialog.modal::backdrop {
   text-decoration: underline;
 }
 
-/* Inicio: saludo con el nombre, encima de la quincena */
+/* Inicio: saludo con el nombre, encima de la fecha */
 .hello {
-  text-align: center;
   color: var(--muted);
-  font-size: 16px;
+  font-size: 14px;
 }
 
 /* Accesibilidad y uso real en el celular (revisión previa a entregar) */
@@ -2162,22 +1998,6 @@ a.tx-row:active {
   margin-top: var(--space-2);
 }
 
-/* Barra apilada: la parte de cada categoría en el gasto de esa moneda */
-.stack-bar {
-  display: flex;
-  gap: 2px;
-  height: 12px;
-  margin: var(--space-3) 0 var(--space-1);
-  border-radius: var(--radius-pill);
-  overflow: hidden;
-  transform-origin: left center;
-}
-
-.stack-bar span {
-  flex-basis: 0;
-  min-width: 6px;
-}
-
 /* Título de una sección o tarjeta */
 .section-title {
   font-family: var(--font-display);
@@ -2270,17 +2090,6 @@ a.tx-row:active {
   border-top: 1px solid var(--border);
 }
 
-/* Botones de agregar: uno debajo del otro, a todo el ancho */
-.home-cta {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.home-cta .btn {
-  flex: none;
-}
-
 /* "Ver todo el historial": enlace de 44px de alto, bajo la lista */
 .see-all {
   display: inline-flex;
@@ -2354,10 +2163,6 @@ a.tx-row:active {
 
 .hs-offers {
   order: 3; /* lo que sobró va justo debajo del resumen principal */
-}
-
-.hs-cta {
-  order: 4;
 }
 
 .hs-where {
@@ -2465,72 +2270,11 @@ a.tx-row:active {
   gap: var(--space-4);
 }
 
-/* Botón redondo "+" (agregar gasto): abajo a la derecha, solo en celular.
-   Sin sombra en oscuro: un aro del color del fondo lo separa del contenido */
-.add-fab {
-  position: fixed;
-  right: max(var(--space-4), env(safe-area-inset-right, 0px));
-  bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
-  z-index: 9;
-  display: grid;
-  place-items: center;
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  color: var(--on-accent);
-  box-shadow: 0 0 0 3px var(--bg), var(--shadow-card);
-  text-decoration: none;
-  touch-action: manipulation;
-  transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast);
-}
-
-.add-fab:active {
-  transform: scale(0.97);
-}
-
-/* En pantallas anchas Inicio ya trae sus botones: el + no se muestra */
-@media (min-width: 900px) {
-  .add-fab {
-    display: none;
-  }
-}
-
-/* Con un diálogo abierto tampoco se muestra */
-body:has(dialog[open]) .add-fab {
-  display: none;
-}
-
-/* Que el + no tape lo último de la pantalla */
-@media (max-width: 899px) {
-  main:has(+ .add-fab) {
-    padding-bottom: calc(40px + 56px + var(--space-4) + env(safe-area-inset-bottom, 0px));
-  }
-}
-
 /* Entrada suave: aparece subiendo un poco (solo si la persona no pidió menos
    movimiento) */
 @media (prefers-reduced-motion: no-preference) {
-  .add-fab {
-    animation: rise-in var(--dur) var(--ease-out) both;
-  }
-
   .welcome {
     animation: rise-in var(--dur) var(--ease-out) both;
-  }
-
-  .stack-bar {
-    animation: grow-x var(--dur-slow) var(--ease-out) both;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .add-fab {
-    transition: none;
-  }
-
-  .add-fab:active {
-    transform: none;
   }
 }
 
@@ -2538,19 +2282,6 @@ body:has(dialog[open]) .add-fab {
   from {
     opacity: 0;
     transform: translateY(6px);
-  }
-}
-
-@keyframes grow-x {
-  from {
-    transform: scaleX(0.6);
-    opacity: 0;
-  }
-}
-
-@media (hover: hover) {
-  .add-fab:hover {
-    filter: brightness(1.08);
   }
 }
 
@@ -2569,103 +2300,6 @@ body:has(dialog[open]) .add-fab {
   font-size: 15px;
   font-weight: 600;
   line-height: 1.3;
-}
-
-/* Agregar: la tarjeta del monto es suave como el resumen de Inicio, con el
-   tipo y la moneda arriba, el monto grande y el teclado */
-.add-amount {
-  background: var(--accent-soft);
-  border-color: transparent;
-}
-
-.add-top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-3);
-}
-
-.add-amount .amount-label {
-  margin-top: var(--space-4);
-}
-
-/* Monto que se escribe: cifra grande con el símbolo chico y apagado, igual
-   que las cifras de Inicio. Una sola línea; si es muy largo baja de tamaño */
-.amount-display {
-  font-family: var(--font-display);
-  font-size: clamp(36px, 11vw, 48px);
-  font-weight: 600;
-  line-height: 1.1;
-  white-space: nowrap;
-  letter-spacing: 0;
-}
-
-.amount-display.is-long {
-  font-size: clamp(24px, 7.5vw, 36px);
-}
-
-/* Sobre el fondo suave, las teclas y las pills se elevan con el color de la tarjeta */
-.add-amount .key {
-  background: var(--surface);
-  border-color: transparent;
-}
-
-.add-amount .pill:not(.active) {
-  background: var(--surface);
-}
-
-/* Categorías: cuadrícula de círculos grandes con el nombre debajo (4 por fila
-   en el celular). La elegida lleva anillo y fondo suave */
-.cat-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-2) var(--space-1);
-  margin-top: var(--space-3);
-}
-
-.cat-tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  padding: 10px 4px 8px;
-  border: 0;
-  border-radius: var(--radius-m);
-  background: transparent;
-  box-shadow: inset 0 0 0 2px transparent;
-  color: var(--text);
-  font: inherit;
-  font-size: 13px;
-  line-height: 1.25;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition: background-color var(--dur-fast), box-shadow var(--dur-fast),
-    transform var(--dur-fast) var(--ease-out);
-}
-
-.cat-tile.active {
-  background: var(--accent-soft);
-  box-shadow: inset 0 0 0 2px var(--accent);
-  font-weight: 600;
-}
-
-.cat-tile:active {
-  transform: scale(0.97);
-}
-
-/* El nombre: hasta dos líneas, sin salirse de su casilla */
-.cat-tile-label {
-  display: -webkit-box;
-  max-width: 100%;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  overflow-wrap: break-word; /* solo parte una palabra que no cabe ni sola en la línea */
-  hyphens: none;
-  text-align: center;
 }
 
 /* "Otra": círculo punteado con un + */
@@ -2755,32 +2389,24 @@ body:has(dialog[open]) .add-fab {
   white-space: nowrap;
 }
 
-/* Un campo que sigue a la tira o a la cuadrícula: con aire arriba */
-.date-strip + .field,
-.cat-grid + .field {
+/* Un campo que sigue a la tira de fechas: con aire arriba */
+.date-strip + .field {
   margin-top: var(--space-3);
 }
 
-/* Barra de Guardar fuera de las columnas: queda pegada abajo de toda la
-   pantalla. En pantallas anchas no se estira a 1120px */
-main > .save-bar {
-  width: 100%;
-  max-width: 480px;
-  margin-inline: auto;
-}
-
-/* Que un campo con foco no quede detrás de la barra de Guardar */
+/* Que un campo con foco no quede detrás de la barra de pestañas */
 html {
-  scroll-padding-bottom: 140px;
+  scroll-padding-bottom: 96px;
 }
 
-/* Avisos breves ("Gasto guardado"): arriba del botón + y de la zona segura en
-   el celular, abajo y centrados en pantallas anchas. La región es aria-live */
+/* Avisos breves ("Gasto guardado"): arriba de la barra de pestañas en el
+   celular (ver más abajo), abajo y centrados en pantallas anchas. La región es
+   aria-live */
 .toast-region {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(var(--space-4) + 56px + var(--space-3) + env(safe-area-inset-bottom, 0px));
+  bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
   z-index: 40;
   display: flex;
   justify-content: center;
@@ -2882,97 +2508,10 @@ html {
   }
 }
 
-/* Historial */
-
-.month-name {
-  font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 600;
-  text-align: center;
-}
-
-/* Resumen del mes: una línea por moneda, con ingresos y gastado (nunca se
-   suman colones con dólares) */
-.hist-summary {
-  gap: var(--space-3);
-}
-
-.hist-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-1) var(--space-3);
-}
-
-.hist-cur {
-  flex: 1 1 72px;
-  font-family: var(--font-display);
-  font-weight: 600;
-}
-
-.hist-fig {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  min-width: 88px; /* las columnas de las dos monedas quedan alineadas */
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.hist-fig .sub {
-  font-family: system-ui, sans-serif;
-  font-weight: 400;
-}
-
-/* Filtros: tipo, método y categoría, cada uno con su nombre */
-.filter-panel {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.filter-panel .field {
-  margin: 0;
-}
-
-/* Un día: título, total del día por moneda y sus filas con líneas finas */
-.day-group .list {
-  margin-top: 0;
-}
-
-.day-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding-bottom: var(--space-1);
-  border-bottom: 1px solid var(--border);
-}
-
-.day-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-.day-total {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0 var(--space-3);
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 600;
-}
+/* Historial: ver la sección "Historial: lista limpia" al final del archivo */
 
 .method-list {
+  gap: var(--space-2);
   margin-top: var(--space-3);
 }
 
@@ -3146,108 +2685,9 @@ button.tx-row .tx-meta {
   overflow-wrap: anywhere;
 }
 
-/* Los grupos de pills de los filtros ya tienen su nombre y su espacio */
-.filter-group .pill-group.wrap {
+/* Los grupos de pills dentro de una hoja ya tienen su nombre y su espacio */
+.sheet-body .pill-group.wrap {
   margin-top: 0;
-}
-
-/* En pantallas anchas Guardar sigue pegado al borde de abajo de la ventana
-   (dentro del formulario), con fondo sólido para que no se lea nada detrás.
-   Termina donde termina el formulario. El scroll-padding-bottom de html (más
-   arriba) evita que al enfocar un campo quede tapado por la barra */
-@media (min-width: 900px) {
-  main > .save-bar {
-    max-width: none;
-    align-items: center;
-    padding: var(--space-3) 0 calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
-    margin-bottom: 0;
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-  }
-
-  main > .save-bar .btn {
-    width: 100%;
-    max-width: 360px;
-  }
-}
-
-
-/* Ajustes finos de la revisión de calidad */
-
-/* Botón "+": se esconde al bajar la pantalla (sube y se desvanece) y vuelve al
-   subir o al llegar al final. Con menos movimiento solo cambia la opacidad */
-.add-fab {
-  transition: transform var(--dur) var(--ease-out), opacity var(--dur) var(--ease-out),
-    visibility 0s, filter var(--dur-fast);
-}
-
-.add-fab.is-hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateY(calc(56px + var(--space-4)));
-  transition: transform 200ms var(--ease-out), opacity 200ms var(--ease-out),
-    visibility 0s linear 200ms;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .add-fab,
-  .add-fab.is-hidden {
-    transition: opacity 200ms var(--ease-out), visibility 0s linear 200ms;
-  }
-
-  .add-fab.is-hidden {
-    transform: none;
-  }
-}
-
-/* Historial: el total de cada día, por moneda: lo gastado ("−", color normal)
-   y, solo si hubo, el ingreso ("+", verde). Sin neto y sin sumar monedas. En
-   320 px el nombre del día queda arriba y las cifras debajo */
-.day-head {
-  flex-wrap: wrap;
-}
-
-.day-total {
-  flex: 1 1 auto;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.day-total-cur {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 0 var(--space-3);
-}
-
-/* Resumen del mes en pantallas chicas: cada moneda es una rejilla de dos
-   columnas, con la etiqueta alineada sobre su cifra */
-@media (max-width: 440px) {
-  .hist-line {
-    display: grid;
-    grid-template-columns: repeat(2, max-content);
-    justify-content: space-between;
-    align-items: start;
-    gap: var(--space-1) var(--space-3);
-  }
-
-  .hist-cur {
-    grid-column: 1 / -1;
-  }
-
-  .hist-fig {
-    align-items: flex-start;
-    min-width: 0;
-  }
-}
-
-/* Categorías en el celular más chico: 3 por fila para que ningún nombre se
-   parta a la mitad */
-@media (max-width: 359px) {
-  .cat-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 /* Aviso de "no tienes tanto" en Ahorros: con aire antes de lo que sigue */
@@ -3279,8 +2719,7 @@ button.tx-row .tx-meta {
 .back-link:active,
 .text-link:active,
 .see-all:active,
-.toast-action:active,
-.month-btn:active:not(:disabled) {
+.toast-action:active {
   opacity: 0.6;
 }
 
@@ -3288,8 +2727,1186 @@ button.tx-row .tx-meta {
   .back-link:active,
   .text-link:active,
   .see-all:active,
-  .toast-action:active,
-  .month-btn:active:not(:disabled) {
+  .toast-action:active {
     opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   Rediseño amable, ronda 3: barra de pestañas del celular, Agregar compacto,
+   Historial en lista limpia e Inicio en panel. Reglas que se respetan: gasto
+   en el color del texto con "−", ingreso en verde con "+", cero apagado, el
+   color nunca es la única señal, cifras en una sola línea, 44px para tocar,
+   hover solo con (hover: hover) y (pointer: fine), movimiento solo con
+   transform y opacity (<= 250ms) y nada con prefers-reduced-motion.
+   ========================================================================== */
+
+:root {
+  --tab-bar-h: 56px; /* alto de la barra de pestañas del celular, sin la zona segura */
+  --on-seg: #0e1517; /* texto sobre los segmentos de colores (tema oscuro) */
+}
+
+:root[data-theme='light'] {
+  --on-seg: #ffffff; /* sobre los colores oscuros del tema claro */
+}
+
+/* ---- Barra de pestañas del celular ---------------------------------------- */
+
+/* Inicio, Historial, + (Agregar), Estadísticas y Ajustes. Fija abajo y con la
+   zona segura de los teléfonos con barra de gestos. Desde 900px no se muestra:
+   los mismos enlaces están en la barra de arriba */
+.tab-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  height: calc(var(--tab-bar-h) + env(safe-area-inset-bottom, 0px));
+  padding: 0 max(0px, calc((100vw - 560px) / 2)) env(safe-area-inset-bottom, 0px);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0 2px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.2;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.tab-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+}
+
+/* El nombre no se corta: en 320px "Estadísticas" se asoma un poco a los lados */
+.tab-label {
+  white-space: nowrap;
+}
+
+/* Pestaña activa: teal, texto en negrita y una marca arriba (no solo color) */
+.tab.is-active {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.tab.is-active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 24px;
+  height: 3px;
+  margin-left: -12px;
+  border-radius: 0 0 3px 3px;
+  background: var(--accent);
+}
+
+/* El + central: círculo teal dentro de la barra */
+.tab.is-add .tab-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* En 320px un punto menos y sin relleno */
+@media (max-width: 359px) {
+  .tab {
+    padding-inline: 0;
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 900px) {
+  .tab-bar {
+    display: none;
+  }
+}
+
+/* Con un diálogo u hoja abierta la barra se esconde */
+body:has(dialog[open]) .tab-bar {
+  display: none;
+}
+
+/* La página deja sitio a la barra para que nada quede escondido debajo; el
+   aviso breve ("Gasto guardado") queda por encima de ella */
+@media (max-width: 899px) {
+  main {
+    padding-bottom: calc(var(--tab-bar-h) + var(--space-5) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .toast-region {
+    bottom: calc(var(--tab-bar-h) + var(--space-3) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ---- Botones y piezas compartidas ----------------------------------------- */
+
+/* Botón redondo con un ícono (cerrar, buscar, mes anterior...) */
+.icon-btn {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.icon-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Interruptor de dos opciones (tipo y moneda de Agregar). El borde va como
+   sombra interior para que mida exactamente 44px */
+.seg {
+  display: inline-flex;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--control-border);
+}
+
+.seg button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.seg button.is-on {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+/* Chip de filtro (Historial): una pastilla suave; la elegida va en teal */
+.chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.chip.is-on {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.chip:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+/* ---- Hojas (fecha y más opciones de Agregar; mes y filtros de Historial) -- */
+
+dialog.sheet {
+  width: 100%;
+  max-width: 560px;
+  max-height: 85dvh;
+  margin: auto auto 0;
+  padding: 0;
+  border: 0;
+  border-radius: 24px 24px 0 0;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+}
+
+dialog.sheet::backdrop {
+  background: rgba(4, 10, 12, 0.62);
+}
+
+.sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sheet-head h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.sheet-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.sheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Hoja del mes: flechas a los lados del nombre */
+.sheet-month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sheet-month-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Dentro de una hoja los campos y botones no llevan margen propio */
+.sheet-body .field,
+.sheet-body .date-strip {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+@media (min-width: 900px) {
+  dialog.sheet {
+    width: min(92vw, 440px);
+    margin: auto;
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  }
+}
+
+/* Entra desde abajo y se aclara (solo transform y opacity) */
+@media (prefers-reduced-motion: no-preference) {
+  dialog.sheet[open] {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+  }
+
+  @starting-style {
+    dialog.sheet[open] {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+}
+
+/* ---- Agregar: todo en una pantalla ----------------------------------------- */
+
+/* En celular la pantalla cabe sin scroll en 375x667: poco aire entre bloques,
+   el teclado de 4 filas y Guardar justo debajo, encima de la barra */
+main:has(> .add-screen) {
+  gap: 5px;
+  padding-top: 4px;
+}
+
+@media (max-width: 899px) {
+  main:has(> .add-screen) {
+    padding-bottom: calc(var(--tab-bar-h) + 4px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.add-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.add-left,
+.add-right {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.add-right .btn {
+  flex: none;
+}
+
+.add-left .field-note {
+  margin-top: 0;
+}
+
+.add-toprow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* Tarjeta del monto: cifra grande al centro y, debajo, la categoría elegida
+   y los tres métodos de pago */
+.add-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px 6px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.add-amount {
+  max-width: 100%;
+  font-family: var(--font-display);
+  font-size: clamp(36px, 11vw, 44px);
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.add-amount.is-long {
+  font-size: clamp(24px, 8vw, 34px);
+}
+
+.add-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+}
+
+/* La categoría elegida (o el campo para nombrar una nueva) */
+.add-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 4px 12px 4px 4px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.add-chip .cat-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.add-chip > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-chip.is-input {
+  padding: 0 14px;
+  border: 1px dashed var(--control-border);
+}
+
+.add-chip.is-input:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.add-chip.is-input input {
+  width: 100%;
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+/* Método de pago: tres interruptores redondos con ícono; el elegido muestra
+   también su nombre */
+.pay-toggles {
+  flex: none;
+  display: flex;
+}
+
+.pay-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.pay-toggle.is-on {
+  padding: 0 14px 0 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+/* Fecha y nota: dos pastillas de 44px */
+.add-pills {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.add-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.add-pill > svg {
+  flex: none;
+  color: var(--muted);
+}
+
+.add-pill > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-pill.is-field {
+  cursor: text;
+}
+
+.add-pill:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.add-pill input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+/* Sugerencias de nota: flotan debajo del campo, sin mover nada */
+.add-suggest {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: 188px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--control-border);
+  border-radius: 16px;
+  background: var(--surface-2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.add-suggest button {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.add-income-note {
+  padding: 12px 4px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Categorías: una fila que se desliza de lado en celular (y se ajusta en
+   varias líneas desde 900px). La elegida lleva un aro por dentro del círculo
+   y el nombre en negrita */
+.cat-row {
+  display: flex;
+  gap: 4px;
+  margin: 0 -16px;
+  padding: 2px 16px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 28px), transparent 100%);
+}
+
+.cat-row::-webkit-scrollbar {
+  display: none;
+}
+
+.cat-tile {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 68px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+  scroll-snap-align: center;
+  touch-action: manipulation;
+}
+
+.cat-tile .cat-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.cat-tile > span:last-child {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cat-tile.is-on .cat-icon {
+  box-shadow: inset 0 0 0 2.5px var(--accent);
+}
+
+.cat-tile.is-on > span:last-child {
+  font-weight: 700;
+}
+
+/* "Más opciones": pastilla chica sobre el teclado. El área para tocar mide
+   44px aunque se vea más baja */
+.add-more {
+  position: relative;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 34px;
+  padding: 0 14px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.add-more::after {
+  content: '';
+  position: absolute;
+  inset: -5px -8px;
+}
+
+/* Punto: hay algo elegido en "Más opciones" (pasar a ahorros) */
+.add-more-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Teclado: 1 2 3 / 4 5 6 / 7 8 9 / 000 0 ⌫, con teclas suaves y redondas, y
+   debajo la tecla grande de Guardar */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px 6px;
+}
+
+.key {
+  display: grid;
+  place-items: center;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Tecla mientras se presiona */
+.key:active {
+  background: var(--accent-dim);
+}
+
+.save-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 44px;
+  padding-block: 0;
+  font-size: 17px;
+}
+
+/* Desde 900px: dos columnas (monto, fecha y categorías | teclado) */
+@media (min-width: 900px) {
+  main:has(> .add-screen) {
+    gap: 20px;
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .add-screen {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    align-items: start;
+    gap: 32px;
+    width: 100%;
+    max-width: 1040px;
+    margin-inline: auto;
+  }
+
+  .add-left,
+  .add-right {
+    gap: 12px;
+  }
+
+  .add-card {
+    gap: 6px;
+    padding: 10px 14px 12px;
+  }
+
+  .add-amount {
+    font-size: 56px;
+  }
+
+  .add-amount.is-long {
+    font-size: 38px;
+  }
+
+  .cat-row {
+    flex-wrap: wrap;
+    gap: 8px 4px;
+    margin: 0;
+    padding: 4px 0;
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .cat-tile {
+    width: 76px;
+    font-size: 13px;
+  }
+
+  .cat-tile .cat-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .keypad {
+    gap: 10px 8px;
+  }
+
+  .key {
+    height: 60px;
+    font-size: 26px;
+  }
+
+  .save-key {
+    height: 56px;
+  }
+}
+
+/* ---- Historial: lista limpia ---------------------------------------------- */
+
+.hist {
+  gap: 12px;
+}
+
+.hist-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.hist-chips {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Los chips se deslizan de lado; el relleno deja sitio al contorno de foco */
+.hist-chip-row {
+  flex: 1;
+  display: flex;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: -4px 0 -4px -4px;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.hist-chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+/* Búsqueda: se abre con el botón de la lupa */
+.hist-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.hist-search:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.hist-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hist-search {
+    animation: rise-in var(--dur) var(--ease-out) both;
+  }
+}
+
+/* Resumen del mes: una línea por moneda con ingresos y gastado (nunca se
+   suman colones con dólares) */
+.hist-sum {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.hist-sum p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+}
+
+.hist-sum p > span:first-child {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* Un día: título en negrita y, a la derecha, lo gastado ese día por moneda y,
+   solo si hubo, el ingreso. Sin neto y sin sumar monedas. En 320px el nombre
+   del día queda arriba y las cifras debajo */
+.day-group {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space-2);
+}
+
+.day-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--space-3);
+}
+
+.day-title {
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+
+.day-total {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-total-cur {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 var(--space-3);
+}
+
+.hist-rows {
+  display: flex;
+  flex-direction: column;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hist-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: var(--space-2) 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.hist-row .cat-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.hist-row-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hist-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.hist-row-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Monto de la fila: a la derecha, en el color del texto (solo el ingreso lleva
+   color) y sin partirse */
+.hist-row-amount {
+  flex: none;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* "Exportar" al final de la lista */
+.hist-export {
+  display: flex;
+  margin-top: var(--space-2);
+}
+
+@media (min-width: 900px) {
+  .hist-chip-row {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
+/* ---- Inicio: panel --------------------------------------------------------- */
+
+.home-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.home-date {
+  min-width: 0;
+}
+
+.home-date h1 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* "Agregar +": la acción principal de Inicio */
+.home-add {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.home-day-line {
+  margin-top: -8px;
+}
+
+/* Tarjeta resumen fuerte: fondo del acento más marcado y la cifra más grande */
+.summary.hs-summary {
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  box-shadow: inset 0 0 0 1px var(--accent-dim);
+}
+
+:root[data-theme='light'] .summary.hs-summary {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent-dim), var(--shadow-card);
+}
+
+.hs-summary .money {
+  font-size: clamp(44px, 13vw, 60px);
+}
+
+.hs-summary .money.is-long {
+  font-size: clamp(30px, 9vw, 44px);
+}
+
+/* Barra segmentada del gasto de la quincena por categoría, con el % dentro de
+   los segmentos anchos y la leyenda con punto, nombre y % */
+.spend-block {
+  margin-top: var(--space-2);
+}
+
+.spend-bar {
+  display: flex;
+  gap: 2px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+}
+
+.spend-bar span {
+  flex-basis: 0;
+  min-width: 6px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--on-seg);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.spend-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.spend-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.spend-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.spend-pct {
+  font-weight: 700;
+}
+
+/* Movimientos recientes: filas suaves con ícono cuadrado y el método debajo
+   del monto */
+.home-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 64px;
+  padding: 10px var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  color: inherit;
+  text-decoration: none;
+}
+
+.recent-row .cat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+}
+
+.recent-side {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+/* ---- Toques, pasar el ratón y menos movimiento ---------------------------- */
+
+/* Al apretar, el control se encoge (sin movimiento no) */
+@media (prefers-reduced-motion: no-preference) {
+  .seg button,
+  .chip,
+  .icon-btn,
+  .pay-toggle,
+  .add-pill,
+  .add-more,
+  .cat-tile,
+  .home-add,
+  .tab {
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .seg button:active,
+  .chip:active:not(:disabled),
+  .icon-btn:active:not(:disabled),
+  .pay-toggle:active,
+  .add-pill:active,
+  .add-more:active,
+  .cat-tile:active,
+  .home-add:active,
+  .tab:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Filas que llevan a editar: se aclaran un poco al apretarlas */
+.hist-row:active,
+.recent-row:active {
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hist-row:active,
+  .recent-row:active {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .add-pill:hover,
+  .add-more:hover,
+  .icon-btn:hover:not(:disabled) {
+    border-color: var(--muted);
+  }
+
+  .chip:hover:not(:disabled):not(.is-on) {
+    background: var(--border);
+  }
+
+  .tab:hover:not(.is-active) {
+    color: var(--text);
+  }
+
+  .hist-row:hover .hist-row-name,
+  .recent-row:hover .hist-row-name {
+    text-decoration: underline;
   }
 }
