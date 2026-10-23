@@ -1,11 +1,13 @@
-import { categoryColor, categoryLabel } from '../lib/categories'
+import { categoryLabel } from '../lib/categories'
 import { formatMoney } from '../lib/money'
 import { scheduleKey } from '../lib/recurring'
 import { useSettings } from '../context/useSettings'
 import { useTransactions } from '../context/useTransactions'
+import CategoryIcon from './CategoryIcon'
 
-// One recurring item: name, category and schedule, and the signed amount.
-// The children go after the amount (the Edit pill on the settings screen).
+// One recurring item as a list row: icon, name, category and schedule, and the
+// signed amount. The children go after the amount (the Edit pill on the
+// settings screen).
 export default function RecurringRow({ item, children }) {
   const { t } = useSettings()
   const { categories, quincenaSchedule } = useTransactions()
@@ -13,31 +15,25 @@ export default function RecurringRow({ item, children }) {
   const category = isIncome
     ? undefined
     : categories.find((c) => c.id === item.categoryId)
-  const fallback = isIncome ? t('income') : t('typeExpense')
+  const fallback = isIncome ? t('typeIncome') : t('category.uncategorized')
   const label = category ? categoryLabel(category, t) : fallback
 
   return (
-    <div className="row">
-      <div>
-        <p className="row-name">{item.note || label}</p>
-        <p className="row-meta">
-          {category && (
-            <span
-              className="dot"
-              aria-hidden="true"
-              style={{ background: categoryColor(category) }}
-            />
-          )}
+    <div className="tx-row">
+      <CategoryIcon category={category} kind={isIncome ? 'income' : undefined} />
+      <span className="tx-text">
+        <span className="tx-name">{item.note || label}</span>
+        <span className="tx-meta">
           {label} · {t(scheduleKey(item.schedule, quincenaSchedule))}
-        </p>
-      </div>
-      <div className="row-side">
-        <p className={isIncome ? 'row-amount income' : 'row-amount spending'}>
+        </span>
+      </span>
+      <span className="row-side">
+        <span className={isIncome ? 'tx-amount income' : 'tx-amount'}>
           {isIncome ? '+' : '−'}
           {formatMoney(item.amount, item.currency)}
-        </p>
+        </span>
         {children}
-      </div>
+      </span>
     </div>
   )
 }

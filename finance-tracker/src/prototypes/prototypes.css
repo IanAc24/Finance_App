@@ -1,0 +1,779 @@
+/* ==========================================================================
+   Prototipos de Inicio e Historial (solo en desarrollo, rutas /prototypes/*).
+   Todo cuelga de .proto y usa las variables de index.css, así que funciona en
+   los dos temas. Solo lo carga src/prototypes/index.jsx.
+   Dirección "amable": colores suaves, íconos claros, movimiento discreto.
+   ========================================================================== */
+
+.proto {
+  /* Tokens suaves solo de los prototipos (se recalculan con cada tema) */
+  --accent-soft: color-mix(in srgb, var(--accent) 14%, transparent);
+  --hairline: color-mix(in srgb, var(--border) 75%, transparent);
+  --meter-bg: color-mix(in srgb, var(--accent) 16%, transparent);
+  --ease: cubic-bezier(0.23, 1, 0.32, 1);
+  /* Cuánto queda tapado por la barra superior pegada (para los días fijos) */
+  --proto-sticky: 64px;
+  padding-bottom: 96px; /* espacio para la barra de propuestas */
+  font-size: 16px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+@media (min-width: 1100px) {
+  .proto {
+    --proto-sticky: 84px;
+  }
+}
+
+/* Columna del contenido: angosta y centrada, sin scroll horizontal */
+.proto-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  min-width: 0;
+}
+
+.proto-screen > * {
+  min-width: 0;
+}
+
+/* Textos */
+
+.proto-hello {
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.proto-eyebrow {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.proto-big {
+  margin-top: 4px;
+  font-size: clamp(30px, 9.5vw, 44px);
+  line-height: 1.1;
+  font-weight: 700;
+  overflow-wrap: anywhere; /* ₡1.000.000.000 cabe a 320px */
+}
+
+.proto-mid {
+  font-size: 20px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.proto-body {
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.proto-h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Bloques: título y contenido, sin tarjetas */
+.proto-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proto-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Línea finísima entre filas */
+.proto-list.is-lines > li + li {
+  border-top: 1px solid var(--hairline);
+}
+
+/* Botones y enlaces */
+
+.proto-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.proto-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  min-height: 44px;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  touch-action: manipulation;
+}
+
+.proto-chip {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.proto-chip.is-primary,
+.proto-chip.is-on {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.proto-chip:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.proto-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-left: 48px; /* debajo del texto, no del ícono */
+}
+
+/* Ícono de categoría: círculo de 36px con fondo suave */
+.proto-ico {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  color: var(--c);
+}
+
+.proto-letter {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  /* la letra se oscurece/aclara con el texto para llegar a 4.5:1 */
+  color: color-mix(in srgb, var(--c) 55%, var(--text));
+}
+
+/* Filas: ícono, texto que se corta con puntos suspensivos y monto a la derecha */
+.proto-row,
+.proto-cat,
+.proto-savings,
+.proto-due-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.proto-row,
+.proto-savings {
+  min-height: 56px;
+  padding: 10px 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.proto-cat {
+  min-height: 52px;
+  padding: 8px 0;
+}
+
+.proto-cat.is-rest {
+  padding-left: 48px;
+}
+
+.proto-row-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.proto-row-name {
+  font-size: 16px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.proto-row-meta {
+  color: var(--muted);
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Gasto en el color del texto con "−", ingreso en verde con "+" */
+.proto-amt {
+  flex: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.proto-amt.is-income {
+  color: var(--income);
+}
+
+/* Mensaje de confirmación */
+.proto-live:empty {
+  display: none;
+}
+
+.proto-notice {
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  font-size: 16px;
+}
+
+/* Estado vacío acogedor */
+.proto-welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 8px;
+  text-align: center;
+}
+
+.proto .proto-welcome-logo {
+  width: 72px;
+  height: 72px;
+}
+
+.proto-welcome-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: 100%;
+  max-width: 320px;
+}
+
+.proto-welcome-actions .proto-link {
+  align-self: center;
+}
+
+/* Pagos de la quincena */
+.proto-due {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.proto-due-list > li + li {
+  border-top: 1px solid var(--hairline);
+}
+
+.proto-done {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--income);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.proto-offer-amount {
+  font-size: 22px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.proto-offer .proto-list > li {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.proto-offer .proto-actions {
+  padding-left: 0;
+}
+
+.proto-savings {
+  border-top: 1px solid var(--hairline);
+}
+
+.proto-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--hairline);
+}
+
+/* ---------- Dirección 1: Resumen ---------- */
+
+.proto-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 24px 20px;
+  border-radius: 24px;
+  background: var(--accent-soft);
+}
+
+.proto-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.proto-cta .proto-link {
+  align-self: center;
+}
+
+/* Barra apilada: dónde se fue el dinero */
+.proto-stack {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 4px 0 8px;
+  transform-origin: left center;
+}
+
+.proto-stack span {
+  flex-basis: 0;
+  min-width: 6px;
+}
+
+/* Historial: totales del mes y días */
+.proto-month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.proto-month-name {
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.proto-arrow {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.proto-arrow:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.proto-month-totals {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.proto-month-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 16px;
+}
+
+.proto-month-cur {
+  flex: 1 1 96px;
+  font-weight: 600;
+}
+
+.proto-day-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.proto-day-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.proto-day-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.proto-day-total,
+.proto-tl-total {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Dirección 2: Diario ---------- */
+
+.proto-talk {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+}
+
+.proto-day {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.proto-meter {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--meter-bg);
+  overflow: hidden;
+}
+
+.proto-meter span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  transform-origin: left center;
+}
+
+/* Atajos grandes */
+.proto-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.proto-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 88px;
+  padding: 12px 4px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.proto-tile svg {
+  color: var(--accent);
+}
+
+/* Presupuestos con barras suaves; el estado también va escrito */
+.proto-budget {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.proto-budget + .proto-budget {
+  border-top: 1px solid var(--hairline);
+}
+
+.proto-budget-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.proto-budget.is-near .proto-meter span {
+  background: var(--warning);
+}
+
+.proto-budget.is-over .proto-meter span {
+  background: var(--danger);
+}
+
+.proto-budget-words {
+  font-size: 14px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.proto-budget.is-over .proto-budget-words {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* Pagos como lista de tareas: círculo vacío, círculo lleno si ya está */
+.proto-diario .proto-due-top::before {
+  content: '';
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--muted);
+  border-radius: 50%;
+}
+
+.proto-diario .proto-due.is-done .proto-due-top::before {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.proto-diario .proto-due .proto-actions {
+  padding-left: 80px;
+}
+
+/* Historial en línea de tiempo */
+.proto-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.proto-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.proto-tl-head {
+  position: sticky;
+  top: var(--proto-sticky);
+  z-index: 5;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+  padding: 10px 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.proto-tl-list {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* La línea vertical pasa por el centro de los íconos (36px / 2 = 18px) */
+.proto-tl-list::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 17px;
+  width: 2px;
+  background: var(--border);
+}
+
+.proto-tl-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 12px 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Fondo opaco: la línea no se ve a través del círculo */
+.proto-tl-link .proto-ico {
+  background: color-mix(in srgb, var(--c) 14%, var(--bg));
+  box-shadow: 0 0 0 4px var(--bg);
+}
+
+/* ---------- Barra de propuestas ---------- */
+
+.proto-switcher {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.proto-switch {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.proto-switch.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.proto-switch-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 8px;
+  color: var(--text);
+  font-size: 16px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Movimiento: solo transform y opacity, con curva suave ---------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .proto-screen > * {
+    animation: proto-in 220ms var(--ease) both;
+  }
+
+  .proto-stack,
+  .proto-meter span {
+    animation: proto-fill 250ms var(--ease) both;
+  }
+
+  .proto-meter span {
+    transition: transform 250ms var(--ease);
+  }
+
+  .proto-btn,
+  .proto-chip,
+  .proto-tile,
+  .proto-arrow,
+  .proto-switch,
+  .proto-row,
+  .proto-tl-link,
+  .proto-savings {
+    transition:
+      transform 120ms var(--ease),
+      opacity 120ms var(--ease);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proto *,
+  .proto *::before {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@keyframes proto-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes proto-fill {
+  from {
+    transform: scaleX(0.4);
+    opacity: 0.4;
+  }
+}
+
+/* Toque: respuesta inmediata */
+.proto-btn:active,
+.proto-chip:not(:disabled):active,
+.proto-tile:active,
+.proto-arrow:not(:disabled):active,
+.proto-switch:active {
+  transform: scale(0.97);
+}
+
+.proto-row:active,
+.proto-tl-link:active,
+.proto-savings:active {
+  opacity: 0.7;
+}
+
+/* Ratón: solo donde hay hover real */
+@media (hover: hover) and (pointer: fine) {
+  .proto-btn:hover,
+  .proto-tile:hover {
+    transform: translateY(-1px);
+  }
+
+  .proto-chip:not(:disabled):hover,
+  .proto-arrow:not(:disabled):hover,
+  .proto-switch:hover {
+    border-color: var(--accent);
+  }
+
+  .proto-row:hover,
+  .proto-tl-link:hover,
+  .proto-savings:hover {
+    opacity: 0.8;
+  }
+}

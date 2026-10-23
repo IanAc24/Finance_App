@@ -3,84 +3,125 @@
    (se importa en main.jsx).
    ========================================================================== */
 
-/* Variables de color: tema oscuro (por defecto).
-   Todos los colores de la app salen de aquí; para cambiar la paleta
-   solo hay que tocar estas variables. */
+/* Variables de diseño: tema oscuro (por defecto).
+   Todos los colores, radios, espacios y tiempos de la app salen de aquí; para
+   cambiar el aspecto solo hay que tocar estas variables. Dirección "amable y
+   cercana": colores suaves, calma antes que alerta. Valores y contrastes en
+   docs/diseno/investigacion.md. */
 :root {
   color-scheme: dark; /* controles nativos (scroll, calendario) en oscuro */
-  --bg: #0b1114; /* fondo de la página */
-  --surface: #121b20; /* fondo de las tarjetas */
-  --surface-2: #1a262c; /* fondo de pills, teclas e inputs */
-  --border: #243239; /* bordes y líneas divisorias */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* curva de las animaciones: arranca rápido y frena suave */
-  --text: #e6eef0; /* texto principal */
-  --muted: #94a8ad; /* texto secundario */
+  --bg: #0e1517; /* fondo de la página */
+  --surface: #151e21; /* fondo de las tarjetas */
+  --surface-2: #1d282c; /* fondo de pills, teclas e inputs */
+  --border: #2a373c; /* bordes y líneas divisorias (solo decorativos) */
+  --text: #e8eeee; /* texto principal */
+  --muted: #9aacb0; /* texto secundario */
 
-  /* Color de marca (teal): solo para cosas que se pueden tocar
+  /* Color de marca (teal suave): solo para cosas que se pueden tocar
      (botones, pestaña activa) y el acento del título */
-  --accent: #2dd4bf;
-  --accent-dim: rgba(45, 212, 191, 0.3); /* teal transparente */
-  --on-accent: #04201c; /* texto encima del teal */
+  --accent: #4cc9b8;
+  --accent-soft: #1e3939; /* acento al 16% sobre --surface: fondo de la tarjeta resumen y de pestañas activas */
+  --accent-dim: rgba(76, 201, 184, 0.3); /* teal transparente */
+  --on-accent: #052a26; /* texto encima del teal */
 
-  /* Colores con significado: cada uno se usa solo para lo suyo */
-  --income: #34d399; /* menta: montos de ingreso */
-  --spending: #fb7185; /* coral: montos de gasto */
-  --spending-dim: rgba(251, 113, 133, 0.62); /* barras del gráfico */
-  --warning: #fbbf24; /* ámbar: avisos */
-  --danger: #f35b5b; /* rojo: borrar, errores y presupuesto pasado */
-
-  /* Tarjeta principal del inicio */
-  --hero-from: #123038; /* inicio del degradado */
-  --hero-stop: 85%; /* dónde el degradado llega al color de la tarjeta */
-  --hero-glow: rgba(45, 212, 191, 0.14); /* brillo alrededor */
+  /* Colores con significado: cada uno se usa solo para lo suyo.
+     El gasto normal NO es un error: sus montos van en --text con signo "−";
+     --spending queda solo para barras y gráficos. */
+  --income: #7fd1a6; /* verde suave: montos de ingreso */
+  --spending: #e59a8f; /* terracota: solo gráficos */
+  --spending-dim: rgba(229, 154, 143, 0.62); /* barras del gráfico */
+  --warning: #e6b566; /* ámbar: avisos (siempre con texto) */
+  --danger: #f0928a; /* borrar, errores y presupuesto pasado (siempre con texto) */
 
   /* Colores de categoría. Cada categoría guarda el nombre del color
-     (por ejemplo "orange") y aquí se define su valor en cada tema. */
-  --cat-orange: #fb923c; /* Comida */
-  --cat-blue: #60a5fa; /* Transporte */
-  --cat-violet: #a78bfa; /* Servicios */
-  --cat-lime: #a3e635; /* Diversión */
-  --cat-cyan: #22d3ee; /* de aquí en adelante: categorías personalizadas */
-  --cat-fuchsia: #e879f9;
-  --cat-slate: #94a3b8;
-  --cat-sand: #d6b98c;
+     (por ejemplo "orange") y aquí se define su valor en cada tema, junto con
+     el fondo suave del círculo del ícono (el color al 14% sobre --surface). */
+  --cat-orange: #e8a06b; /* Comida */
+  --cat-blue: #85b4e8; /* Transporte */
+  --cat-violet: #b6a3e8; /* Servicios */
+  --cat-lime: #aecb70; /* Diversión */
+  --cat-cyan: #6fc8d8; /* de aquí en adelante: categorías personalizadas */
+  --cat-fuchsia: #d99ee2;
+  --cat-slate: #a3b0ba; /* Sin categoría */
+  --cat-sand: #d4ba90;
+  --cat-orange-soft: #33302b;
+  --cat-blue-soft: #25333d;
+  --cat-violet-soft: #2c313d;
+  --cat-lime-soft: #2a362c;
+  --cat-cyan-soft: #22363b;
+  --cat-fuchsia-soft: #30303c;
+  --cat-slate-soft: #293236;
+  --cat-sand-soft: #303431;
+
+  /* Radios: tres valores */
+  --radius-s: 10px; /* campos, teclas */
+  --radius-m: 16px; /* tarjetas */
+  --radius-pill: 999px; /* botones, pills, círculos y barras */
+
+  /* Espacios (base 4/8) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Movimiento: una sola curva (arranca rápido y frena suave) y tres duraciones */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --dur-fast: 120ms; /* pulsación, cambio de color */
+  --dur: 200ms; /* aparecer, barras que crecen */
+  --dur-slow: 280ms; /* hojas, confirmaciones */
+
+  /* Elevación: en oscuro no hay sombras (se separa con capas de color) */
+  --shadow-card: none;
+
+  /* Fuente de títulos y cifras grandes (Poppins, ver main.jsx) */
+  --font-display: 'Poppins', system-ui, sans-serif;
 }
 
-/* Tema claro: mismas variables con otros valores (base arena, no blanco
-   puro, y acentos más oscuros para que se lean sobre fondo claro).
+/* Tema claro (base arena, no blanco puro, y acentos más oscuros para que se
+   lean sobre fondo claro). Corrige los contrastes que antes fallaban:
+   --income, --cat-lime y --cat-sand.
    SettingsProvider pone data-theme="light" en <html> al cambiar de tema. */
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #f5f2ee;
-  --surface: #ffffff;
-  --surface-2: #ece8e1;
-  --border: #ddd7ce;
-  --text: #14201f;
-  --muted: #5b6b6a;
+  --bg: #f6f3ee;
+  --surface: #fffefb;
+  --surface-2: #efebe4;
+  --border: #e0dad0;
+  --text: #1c2a29;
+  --muted: #586867;
 
   --accent: #0f766e;
+  --accent-soft: #e2eeea; /* acento al 12% sobre --surface */
   --accent-dim: rgba(15, 118, 110, 0.3);
   --on-accent: #ffffff;
 
-  --income: #15803d;
-  --spending: #d1103f;
-  --spending-dim: rgba(209, 16, 63, 0.62);
-  --warning: #a04a08;
-  --danger: #b91c1c;
+  --income: #2b7550;
+  --spending: #a8493f;
+  --spending-dim: rgba(168, 73, 63, 0.62);
+  --warning: #8f5a0c;
+  --danger: #b0352c;
 
-  --hero-from: #e3f3f0;
-  /* termina antes: los montos quedan sobre blanco y se leen bien */
-  --hero-stop: 40%;
-  --hero-glow: rgba(15, 118, 110, 0.12);
+  --cat-orange: #a9531a;
+  --cat-blue: #2b66b0;
+  --cat-violet: #6b50b5;
+  --cat-lime: #566f1c;
+  --cat-cyan: #14738a;
+  --cat-fuchsia: #94409f;
+  --cat-slate: #4f5d68;
+  --cat-sand: #7f6429;
+  --cat-orange-soft: #f3e6dc;
+  --cat-blue-soft: #e1e9f1;
+  --cat-violet-soft: #eae6f1;
+  --cat-lime-soft: #e7eadc;
+  --cat-cyan-soft: #deebeb;
+  --cat-fuchsia-soft: #f0e3ee;
+  --cat-slate-soft: #e6e7e6;
+  --cat-sand-soft: #ede8de;
 
-  --cat-orange: #c2410c;
-  --cat-blue: #2563eb;
-  --cat-violet: #7c3aed;
-  --cat-lime: #4d7c0f;
-  --cat-cyan: #0e7490;
-  --cat-fuchsia: #a21caf;
-  --cat-slate: #475569;
-  --cat-sand: #8a6d3b;
+  /* Elevación: una sola sombra muy suave para las tarjetas */
+  --shadow-card: 0 1px 2px rgba(28, 42, 41, 0.06), 0 4px 12px rgba(28, 42, 41, 0.05);
 }
 
 /* Base */
@@ -176,7 +217,7 @@ h1, h2, h3, h4, p {
 main {
   max-width: 480px;
   margin: 0 auto;
-  padding: 8px 20px 40px;
+  padding: 8px var(--space-4) 40px;
   display: flex;
   flex-direction: column;
   gap: 16px; /* espacio entre las secciones de la pantalla */
@@ -275,8 +316,8 @@ main {
   place-items: center;
   background: transparent;
   color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 999px; /* 999px = bordes totalmente redondos */
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
   cursor: pointer;
 }
 
@@ -289,7 +330,7 @@ main {
 /* Enlace resaltado cuando estamos en ajustes */
 .app-bar .icon-link.active {
   color: var(--accent);
-  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 /* Título de la app */
@@ -339,7 +380,7 @@ main {
   top: -64px;
   z-index: 30;
   padding: 10px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 600;
@@ -369,15 +410,16 @@ main {
   display: none;
 }
 
+/* Pestañas: píldora suave. La inactiva es transparente y apagada; la activa
+   lleva el fondo suave del acento, el texto del acento y peso 600 */
 .top-nav a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-height: 44px; /* tamaño mínimo cómodo para tocar */
   padding: 10px 18px;
-  border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
   color: var(--muted);
   text-decoration: none;
   font-size: 14px;
@@ -388,9 +430,8 @@ main {
 
 /* Pantalla actual (React Router agrega la clase "active") */
 .top-nav a.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
+  background: var(--accent-soft);
+  color: var(--accent);
   font-weight: 600;
 }
 
@@ -436,8 +477,11 @@ main {
 
 /* Título de cada pantalla, centrado */
 .screen-title {
-  font-size: 20px;
-  font-weight: 500;
+  font-family: var(--font-display);
+  /* crece con el ancho de la pantalla, entre 19px y 24px */
+  font-size: clamp(19px, 5.6vw, 24px);
+  font-weight: 600;
+  line-height: 1.25;
   text-align: center;
 }
 
@@ -462,8 +506,8 @@ main {
 }
 
 .day-bar span {
-  height: 8px;
-  border-radius: 4px;
+  height: 6px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
 }
 
@@ -475,12 +519,13 @@ main {
   background: var(--accent);
 }
 
-/* Etiqueta pequeña en mayúsculas, encima de un dato */
+/* Etiqueta pequeña encima de un dato: en minúsculas de oración (las
+   mayúsculas espaciadas se leen como formulario), 13px, peso 600 y apagada */
 .label {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 /* Monto grande de la tarjeta principal del inicio */
@@ -489,13 +534,6 @@ main {
   font-weight: 700;
   letter-spacing: -0.02em;
   margin: 6px 0 14px;
-}
-
-/* En la tarjeta principal el número protagonista es lo que se puede gastar
-   hoy: más grande que cualquier otra cifra de la pantalla */
-.card.hero .balance {
-  font-size: clamp(38px, 12vw, 54px);
-  overflow-wrap: anywhere; /* un monto larguísimo se parte en vez de salirse */
 }
 
 /* Cuando no hay nada que gastar hoy el número baja de peso y se explica
@@ -534,24 +572,14 @@ main {
   color: var(--muted);
 }
 
-/* Tarjetas: tranquilas, la profundidad viene del color de fondo */
+/* Tarjetas: tranquilas, la profundidad viene del color de fondo (en claro,
+   además, una sombra muy suave) */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
-}
-
-/* Tarjeta principal del inicio: la única con degradado fuerte, borde
-   teal y un brillo suave alrededor, para que sea la que más destaca */
-.card.hero {
-  background: linear-gradient(
-    160deg,
-    var(--hero-from) 0%,
-    var(--surface) var(--hero-stop)
-  );
-  border-color: var(--accent-dim);
-  box-shadow: 0 0 28px var(--hero-glow);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-4);
 }
 
 /* Barra de progreso y estadísticas */
@@ -559,7 +587,7 @@ main {
 /* Fondo de la barra de "% del ingreso gastado" */
 .progress {
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
   overflow: hidden; /* recorta el relleno a los bordes redondos */
   margin-bottom: 8px;
@@ -568,7 +596,7 @@ main {
 /* Relleno de la barra, en color de gasto; el ancho (%) se pone desde React */
 .progress-fill {
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--spending);
 }
 
@@ -584,16 +612,26 @@ main {
   font-size: 16px;
   font-weight: 600;
   margin-top: 2px;
+  white-space: nowrap; /* el signo − se queda pegado a su número */
+}
+
+/* Otras cifras sueltas: tampoco se parten ni separan el signo */
+.left-amount,
+.month-balance,
+.day-totals span {
+  white-space: nowrap;
 }
 
 /* Montos con significado: se usan junto con .stat, .row-amount o solos.
-   El signo + o − siempre va en el texto; el color solo lo refuerza. */
+   El signo + o − siempre va en el texto; el color solo lo refuerza.
+   Solo el ingreso lleva color: el gasto normal no es un error, así que va en
+   el color del texto con su "−" (--spending queda solo para gráficos). */
 .income {
   color: var(--income);
 }
 
 .spending {
-  color: var(--spending);
+  color: var(--text);
 }
 
 /* Un monto en cero no lleva el color de gasto: queda en el color secundario */
@@ -615,7 +653,7 @@ main {
   text-align: center;
   padding: 14px 16px;
   border: 1px solid transparent; /* misma altura que los botones con borde */
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--accent);
   color: var(--on-accent);
   font-size: 16px;
@@ -647,7 +685,7 @@ main {
 /* Pill base: 44px de alto para poder tocarla */
 .pill {
   padding: 12px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--muted);
@@ -729,7 +767,7 @@ main {
 /* Barra delgada bajo cada categoría: su parte del gasto total */
 .mini-bar {
   height: 4px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
   margin-top: 8px;
   overflow: hidden;
@@ -738,7 +776,7 @@ main {
 /* Relleno; el ancho (%) y el color de la categoría se ponen desde React */
 .mini-bar > div {
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 /* Punto con el color de la categoría, antes de su nombre */
@@ -746,7 +784,7 @@ main {
   display: inline-block;
   width: 8px;
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   margin-right: 6px;
 }
 
@@ -783,7 +821,7 @@ main {
 .bar-fill {
   width: 100%;
   min-height: 4px; /* se ve una línea aunque el total sea 0 */
-  border-radius: 8px;
+  border-radius: var(--radius-s);
   background: var(--spending-dim); /* color de gasto, atenuado */
 }
 
@@ -842,7 +880,7 @@ main {
   height: 60px;
   background: var(--surface-2);
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-m);
   color: var(--text);
   font-size: 22px;
   cursor: pointer;
@@ -908,7 +946,7 @@ main > .field,
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-s);
   padding: 12px 14px;
   font-size: 16px; /* con menos de 16px el teléfono hace zoom al escribir */
   font-family: inherit;
@@ -925,7 +963,7 @@ main > .field,
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-s);
   padding: 12px 14px;
   font-size: 16px;
   font-family: inherit;
@@ -958,7 +996,7 @@ main > .field,
 .month-btn {
   width: 44px;
   height: 44px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--text);
@@ -1071,7 +1109,7 @@ main > .field,
 .swatch {
   width: 44px;
   height: 44px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 2px solid transparent;
   cursor: pointer;
 }
@@ -1101,7 +1139,7 @@ main > .field,
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-s);
   padding: 10px 12px;
   font-size: 16px;
   font-family: inherit;
@@ -1133,9 +1171,11 @@ main > .field,
   flex-wrap: wrap;
 }
 
-/* Marca "Listo" de un pendiente ya confirmado u omitido */
+/* Marca "Listo" de un pendiente ya confirmado u omitido (con el texto, no
+   solo con el color), debajo del texto de la fila */
 .due-done {
-  margin-top: 10px;
+  margin: 0;
+  padding: 0 0 var(--space-3) 48px;
   font-size: 14px;
   color: var(--muted);
 }
@@ -1179,20 +1219,6 @@ main > .field,
 .text-link {
   color: var(--accent);
   text-underline-offset: 3px;
-}
-
-/* Inicio: aviso de copia de seguridad en una sola línea, centrado */
-.backup-line {
-  text-align: center;
-}
-
-/* Inicio: "Ahora no" del aviso de respaldo, un botón con aspecto de enlace */
-.backup-line button.text-link {
-  background: none;
-  border: 0;
-  padding: 0;
-  font: inherit;
-  text-decoration: underline;
 }
 
 /* Botón "Ver todas" bajo la última categoría */
@@ -1358,7 +1384,8 @@ main > p.empty {
   }
 
   /* Filas que llevan a editar: el nombre se subraya */
-  .row-link:hover .row-name {
+  .row-link:hover .row-name,
+  a.tx-row:hover .tx-name {
     text-decoration: underline;
   }
 
@@ -1380,8 +1407,9 @@ main > p.empty {
 .link-card,
 .top-nav a,
 .icon-link {
-  transition: border-color 0.15s, color 0.15s, filter 0.15s,
-    transform 160ms var(--ease-out);
+  transition: border-color var(--dur-fast), color var(--dur-fast),
+    background-color var(--dur-fast), filter var(--dur-fast),
+    transform var(--dur-fast) var(--ease-out);
 }
 
 /* Al apretar, el botón se encoge un poco (no si está desactivado) */
@@ -1425,7 +1453,7 @@ dialog.modal {
   margin: auto;
   padding: 20px;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-m);
   background: var(--surface);
   color: var(--text);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
@@ -1441,12 +1469,12 @@ dialog.modal::backdrop {
   dialog.modal[open] {
     opacity: 1;
     transform: scale(1);
-    transition: opacity 200ms var(--ease-out), transform 200ms var(--ease-out);
+    transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
   }
 
   dialog.modal[open]::backdrop {
     opacity: 1;
-    transition: opacity 200ms var(--ease-out);
+    transition: opacity var(--dur) var(--ease-out);
   }
 
   @starting-style {
@@ -1545,21 +1573,21 @@ dialog.modal::backdrop {
 /* Barra de progreso: llena en teal hasta el paso actual */
 .ob-progress {
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
   overflow: hidden;
 }
 
 .ob-progress-fill {
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--accent);
 }
 
 /* La barra avanza con animación solo si la persona no pidió menos movimiento */
 @media (prefers-reduced-motion: no-preference) {
   .ob-progress-fill {
-    transition: width 250ms var(--ease-out);
+    transition: width var(--dur-slow) var(--ease-out);
   }
 }
 
@@ -1602,13 +1630,13 @@ dialog.modal::backdrop {
 /* Cuánto queda libre por quincena */
 /* El monto grande se achica en pantallas angostas en vez de salirse */
 .ob-free .balance {
-  font-size: clamp(28px, 9vw, 40px);
-  overflow-wrap: anywhere;
+  font-size: clamp(24px, 8vw, 40px);
+  white-space: nowrap; /* un monto nunca se parte a la mitad */
 }
 
 .ob-free {
   padding: 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-s);
   background: var(--surface-2);
   text-align: center;
 }
@@ -1654,7 +1682,7 @@ dialog.modal::backdrop {
 .hello {
   text-align: center;
   color: var(--muted);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 /* Accesibilidad y uso real en el celular (revisión previa a entregar) */
@@ -1905,5 +1933,604 @@ button.back-link {
 @media (max-width: 360px) {
   .legal-text {
     padding: 14px;
+  }
+}
+
+/* ==========================================================================
+   Rediseño amable, ronda 1: íconos de categoría, filas de lista, cifras
+   grandes, Inicio, botón + del celular y estados vacíos.
+   ========================================================================== */
+
+/* Cifras grandes (componente Money). Todo el monto va en una sola línea
+   (nowrap): ni el número se parte ni el signo − se separa de él. Si el monto
+   es muy largo baja el tamaño con clamp en vez de romperse. El símbolo de
+   moneda y los decimales van más chicos y apagados: domina el entero. */
+.money {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(36px, 10vw, 48px);
+  line-height: 1.1;
+}
+
+.money.is-long {
+  font-size: clamp(26px, 8.5vw, 40px);
+}
+
+.money-symbol {
+  margin-right: 0.08em;
+  font-size: 0.55em;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.money-decimals {
+  font-size: 0.58em;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Texto que nunca se parte (un monto dentro de una frase) */
+.nowrap {
+  white-space: nowrap;
+}
+
+/* Ícono de categoría: círculo con fondo suave y el color de la categoría.
+   Los colores (--c y --c-soft) los pone el componente; es decorativo */
+.cat-icon {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background: var(--c-soft, var(--surface-2));
+  color: var(--c);
+}
+
+.cat-icon.is-large {
+  width: 44px;
+  height: 44px;
+}
+
+/* Categorías propias: la primera letra del nombre. Se mezcla un poco con el
+   color del texto para que la letra llegue a 4.5:1 sobre su círculo */
+.cat-icon-letter {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--c);
+  color: color-mix(in srgb, var(--c) 80%, var(--text));
+}
+
+.cat-icon.is-large .cat-icon-letter {
+  font-size: 19px;
+}
+
+/* Filas de lista: ícono a la izquierda, descripción y datos en medio (una sola
+   línea, con puntos suspensivos si es larga) y el monto a la derecha. Toda la
+   fila es el área para tocar */
+.tx-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 56px;
+  padding: 10px 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.tx-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tx-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.tx-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+/* Monto de la fila: a la derecha, cifras de ancho fijo, en el color del texto
+   (el gasto normal no es un error); solo el ingreso (.income) lleva color.
+   Nunca se parte: el signo se queda con su número */
+.tx-amount {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-amount.income {
+  color: var(--income);
+}
+
+/* Al apretar la fila se aclara un poco (sin movimiento) */
+a.tx-row:active {
+  opacity: 0.7;
+}
+
+/* Listas de filas: sin espacio entre filas y una línea finísima entre ellas
+   (sin tarjetas por fila) */
+.list:has(> li > .tx-row) {
+  gap: 0;
+}
+
+.list:has(> li > .tx-row) > li + li {
+  border-top: 1px solid var(--border);
+}
+
+.section-title + .list {
+  margin-top: var(--space-1);
+}
+
+/* Pendientes: los botones quedan debajo del texto, no del ícono */
+.list:has(> li > .tx-row) .due-actions {
+  margin-top: 0;
+  padding: 0 0 var(--space-3) 48px;
+}
+
+/* Confirmar y Omitir lado a lado (la base de 140px los apilaba) */
+.list:has(> li > .tx-row) .due-actions .pill {
+  flex: 1 1 96px;
+}
+
+/* Categorías (dónde se fue el dinero): sin líneas entre filas, más juntas */
+.list.cat-list,
+.list.cat-list:has(> li > .tx-row) {
+  gap: var(--space-1);
+}
+
+.list.cat-list > li + li,
+.list.cat-list:has(> li > .tx-row) > li + li {
+  border-top: 0;
+}
+
+.cat-list .tx-row {
+  min-height: 52px;
+  padding: 8px 0;
+}
+
+.cat-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.cat-budget {
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Barra de presupuesto y su aviso quedan alineados con el texto de la fila */
+.cat-list .mini-bar,
+.cat-list .budget-note {
+  margin-left: 48px;
+}
+
+.cat-list .mini-bar {
+  margin-top: 0;
+}
+
+.cat-list .show-all {
+  margin-top: var(--space-2);
+}
+
+/* Barra apilada: la parte de cada categoría en el gasto de esa moneda */
+.stack-bar {
+  display: flex;
+  gap: 2px;
+  height: 12px;
+  margin: var(--space-3) 0 var(--space-1);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  transform-origin: left center;
+}
+
+.stack-bar span {
+  flex-basis: 0;
+  min-width: 6px;
+}
+
+/* Título de una sección o tarjeta */
+.section-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Inicio */
+
+/* Tarjeta resumen: fondo suave del acento, sin borde (en claro, la sombra
+   suave de las tarjetas). Lleva lo que se puede gastar hoy */
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: 20px;
+  border-radius: var(--radius-m);
+  background: var(--accent-soft);
+  box-shadow: var(--shadow-card);
+}
+
+.summary .sub {
+  font-size: 14px;
+}
+
+.summary-amount {
+  margin: 2px 0 0;
+}
+
+/* Sin nada que gastar hoy la cifra baja de peso y el mensaje la explica */
+.summary-amount.is-muted .money {
+  color: var(--muted);
+}
+
+.summary-sentence {
+  font-size: 16px;
+  line-height: 1.4;
+  text-wrap: pretty; /* sin una palabra suelta en la última línea */
+}
+
+/* Ingresos y gastado: en línea, y pasan a otra fila antes de apretarse */
+.summary-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-1);
+}
+
+.summary-stats > div {
+  min-width: 0;
+}
+
+/* Barra delgada de cuánto del ingreso se gastó (y su texto debajo) */
+.summary-share {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: var(--space-1);
+}
+
+.summary-share .progress {
+  height: 6px;
+  margin-bottom: 0;
+  background: var(--surface);
+}
+
+/* Moneda secundaria: bloque compacto, en tarjeta normal y con la cifra más chica */
+.summary.is-compact {
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.summary.is-compact .money {
+  font-size: clamp(28px, 8vw, 34px);
+}
+
+.summary.is-compact .money.is-long {
+  font-size: clamp(22px, 7vw, 30px);
+}
+
+.summary-where {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+/* Botones de agregar: uno debajo del otro, a todo el ancho */
+.home-cta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.home-cta .btn {
+  flex: none;
+}
+
+/* "Ver todo el historial": enlace de 44px de alto, bajo la lista */
+.see-all {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: var(--space-1);
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Tarjeta de ahorros: ícono, nombre y saldos de cada moneda */
+.link-card-balance {
+  min-width: 0;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Aviso de respaldo: tarjeta tranquila con dos enlaces de 44px */
+.backup-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
+}
+
+.backup-card .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Disposición: en celular una sola columna con este orden (el número es el
+   orden); en pantallas anchas, dos columnas: resúmenes a la izquierda y
+   acciones, pendientes y lo reciente a la derecha */
+.home-cols {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.home-col {
+  display: contents; /* en celular las dos columnas se mezclan y se ordenan por "order" */
+}
+
+.home-cols > .home-col > * {
+  min-width: 0;
+}
+
+.hs-manual {
+  order: 1;
+}
+
+.hs-summary {
+  order: 2;
+}
+
+.hs-cta {
+  order: 3;
+}
+
+.hs-where {
+  order: 4;
+}
+
+.hs-offers {
+  order: 5;
+}
+
+.hs-due {
+  order: 6;
+}
+
+.hs-secondary {
+  order: 7;
+}
+
+.hs-recent {
+  order: 8;
+}
+
+.hs-savings {
+  order: 9;
+}
+
+.hs-backup {
+  order: 10;
+}
+
+@media (min-width: 900px) {
+  .home-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .home-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+  }
+
+  .summary {
+    padding: var(--space-5);
+  }
+}
+
+/* Estados vacíos acogedores: ícono suave, una frase tranquila y un botón */
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.welcome.is-card {
+  max-width: none;
+  padding: var(--space-5) var(--space-4);
+}
+
+.welcome-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.welcome-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.welcome-text {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 320px;
+  margin-top: var(--space-2);
+}
+
+.welcome-actions .btn {
+  flex: none;
+}
+
+/* Inicio sin datos: el mensaje solo, centrado, con las tarjetas que haya */
+.home-empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Botón redondo "+" (agregar gasto): abajo a la derecha, solo en celular.
+   Sin sombra en oscuro: un aro del color del fondo lo separa del contenido */
+.add-fab {
+  position: fixed;
+  right: max(var(--space-4), env(safe-area-inset-right, 0px));
+  bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  z-index: 9;
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  box-shadow: 0 0 0 3px var(--bg), var(--shadow-card);
+  text-decoration: none;
+  touch-action: manipulation;
+  transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-fast);
+}
+
+.add-fab:active {
+  transform: scale(0.97);
+}
+
+/* En pantallas anchas Inicio ya trae sus botones: el + no se muestra */
+@media (min-width: 900px) {
+  .add-fab {
+    display: none;
+  }
+}
+
+/* Con un diálogo abierto tampoco se muestra */
+body:has(dialog[open]) .add-fab {
+  display: none;
+}
+
+/* Que el + no tape lo último de la pantalla */
+@media (max-width: 899px) {
+  main:has(+ .add-fab) {
+    padding-bottom: calc(40px + 56px + var(--space-4) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Entrada suave: aparece subiendo un poco (solo si la persona no pidió menos
+   movimiento) */
+@media (prefers-reduced-motion: no-preference) {
+  .add-fab {
+    animation: rise-in var(--dur) var(--ease-out) both;
+  }
+
+  .welcome {
+    animation: rise-in var(--dur) var(--ease-out) both;
+  }
+
+  .stack-bar {
+    animation: grow-x var(--dur-slow) var(--ease-out) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .add-fab {
+    transition: none;
+  }
+
+  .add-fab:active {
+    transform: none;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0.6);
+    opacity: 0;
+  }
+}
+
+@media (hover: hover) {
+  .add-fab:hover {
+    filter: brightness(1.08);
   }
 }
