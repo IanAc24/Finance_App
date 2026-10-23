@@ -166,7 +166,7 @@ export default function HomeScreen() {
       ...c,
       // due bills are not transactions yet, but the money is spoken for
       ...quincenaFigures(
-        { transactions, savings, recurring, quincenaSchedule },
+        { transactions, savings, recurring, quincenaSchedule, profile },
         c.code,
         today,
       ),
@@ -190,6 +190,8 @@ export default function HomeScreen() {
       laterIncome,
       status,
       perDay,
+      perDayFull,
+      reserve,
     },
     index,
   ) => {
@@ -227,6 +229,15 @@ export default function HomeScreen() {
             {message && (
               <p className="sub warn" role="status">
                 {message}
+              </p>
+            )}
+            {status === 'ok' && reserve > 0 && (
+              <p className="sub" data-testid="goal-note">
+                {perDay === 0
+                  ? t('goalUsesAll')
+                  : t('goalReserveNote')
+                      .replace('{reserve}', formatMoney(perDayFull - perDay, code))
+                      .replace('{limit}', formatMoney(perDayFull, code))}
               </p>
             )}
             <p className="sub">

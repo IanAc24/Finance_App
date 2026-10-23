@@ -266,3 +266,103 @@ describe('availableForSavings', () => {
     expect(availableForSavings(f)).toBe(20000)
   })
 })
+
+// L5: the savings goal of the profile is set aside before the daily amount
+describe('quincenaFigures with a savings goal', () => {
+  const today = new Date(2026, 9, 20, 12) // 12 days left (20..31)
+  const withGoal = (txs, goal, currency = 'CRC', savings = []) => ({
+    ...state(txs, savings),
+    profile: { savingsGoal: goal, currency },
+  })
+
+  it('does not change anything without a goal', () => {
+    const f = quincenaFigures(state([tx('2026-10-17', 96000, 'income')]), 'CRC', today)
+    expect(f.reserve).toBe(0)
+    expect(f.perDay).toBe(8000)
+    expect(f.perDayFull).toBe(8000)
+  })
+
+  it('sets the goal aside before dividing by the days left', () => {
+    const f = quincenaFigures(
+      withGoal([tx('2026-10-17', 96000, 'income')], 36000),
+      'CRC',
+      today,
+    )
+    expect(f.reserve).toBe(36000)
+    expect(f.perDayFull).toBe(8000)
+    expect(f.perDay).toBe(5000) // (96000 - 36000) / 12
+  })
+
+  it('counts what was already moved to savings this quincena toward the goal', () => {
+    // 36000 goal, 12000 already saved: left is 84000, still 24000 to set aside
+    const f = quincenaFigures(
+      withGoal(
+        [tx('2026-10-17', 96000, 'income')],
+        36000,
+        'CRC',
+        [move('2026-10-18', 12000)],
+      ),
+      'CRC',
+      today,
+    )
+    expect(f.left).toBe(84000)
+    expect(f.reserve).toBe(24000)
+    expect(f.perDay).toBe(5000) // (84000 - 24000) / 12
+  })
+
+  it('stops reserving once the goal is met', () => {
+    const f = quincenaFigures(
+      withGoal(
+        [tx('2026-10-17', 96000, 'income')],
+        20000,
+        'CRC',
+        [move('2026-10-18', 25000)],
+      ),
+      'CRC',
+      today,
+    )
+    expect(f.reserve).toBe(0)
+    expect(f.perDay).toBe(5916) // 71000 / 12 rounded down
+  })
+
+  it('never reserves more than what is available', () => {
+    const f = quincenaFigures(
+      withGoal([tx('2026-10-17', 10000, 'income')], 50000),
+      'CRC',
+      today,
+    )
+    expect(f.reserve).toBe(10000)
+    expect(f.status).toBe('ok')
+    expect(f.perDay).toBe(0)
+    expect(f.perDayFull).toBe(833)
+  })
+
+  it('does not touch the other currency', () => {
+    const f = quincenaFigures(
+      withGoal([tx('2026-10-17', 120, 'income', 'USD')], 50000, 'CRC'),
+      'USD',
+      today,
+    )
+    expect(f.goal).toBe(0)
+    expect(f.reserve).toBe(0)
+    expect(f.perDay).toBe(10)
+  })
+
+  it('reserves nothing when there is nothing available', () => {
+    const f = quincenaFigures(withGoal([tx('2026-10-17', 5000)], 30000), 'CRC', today)
+    expect(f.reserve).toBe(0)
+    expect(f.status).toBe('over')
+    expect(f.perDay).toBe(0)
+  })
+
+  it('also takes pending bills out before the goal', () => {
+    const f = quincenaFigures(
+      { ...withGoal([tx('2026-10-17', 96000, 'income')], 36000), recurring: [item(12000)] },
+      'CRC',
+      today,
+    )
+    expect(f.available).toBe(84000)
+    expect(f.reserve).toBe(36000)
+    expect(f.perDay).toBe(4000) // (84000 - 36000) / 12
+  })
+})

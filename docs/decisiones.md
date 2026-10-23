@@ -1,0 +1,35 @@
+# Registro de decisiones
+
+Última actualización: 19/10/2026 (23:00). Una línea por decisión. Lo que está en **Abierto** no se construye hasta que una persona decida.
+
+## Vigentes
+| Fecha | Decisión | Quién |
+|---|---|---|
+| 15/10 | El nombre es **I AM POOR FOR NOW** (ES: **POBRE, POR AHORA**). "Quincena" deja de ser el nombre de la app | Furyan |
+| 15/10 | El foco de la ronda actual es **Android**. El objetivo es que ningún usuario pueda romper la app | Furyan |
+| 18/10 | Reparto: **Ian** lleva lo visual y el diseño web; **Furyan** lleva la base de datos | ambos |
+| 18/10 | Por ahora solo Ian y Furyan prueban la app | Furyan |
+| 19/10 | La rama de Ian (`ZOH`) no se edita. Se trabaja en `PAT` con `ZOH` mezclada | Furyan |
+| 19/10 | "Puedes gastar hoy" aparta primero la meta de ahorro por quincena (monto fijo del perfil). Implementado en la rama `feat/colchon-ahorro` (commit `1a31e44`); falta aplicarlo en `PAT` | Furyan (propuesta de Claude) |
+| 19/10 | **Firebase se queda** como base de datos (Auth + Firestore); Supabase queda descartado | Furyan |
+| 19/10 | **Los mismos datos en la web y en el celular, y cada persona solo ve los suyos** (Ian no ve los de Furyan ni al revés); pensado para producción | Furyan |
+| 19/10 | **Sin pantalla de usuario y contraseña.** Identidad: **Google de un toque** ("Continuar con Google"); la sesión queda guardada en el aparato | Furyan (opción propuesta por Claude) |
+| 19/10 | El `appId` de Android es **`cr.iampoorfornow`** (sin nombre de persona) | Furyan (opción propuesta por Claude) |
+| 19/10 | Sesiones de Claude = investigación, propuestas, preguntas y fichas. Claude Code = construir con calidad a partir de las fichas | Furyan |
+
+## En cambio
+| Fecha | Tema | Estado |
+|---|---|---|
+| 19/10 | Base de datos: de Supabase a **Firebase** por el modo sin internet y los mismos datos en varios aparatos | Decidido. Siguiente paso: **ficha 001**, prueba de humo en un Android real (`docs/traspasos/001-firebase-prueba-de-humo.md`). Mientras tanto la base sigue siendo SQLite local |
+| 18/10 | Supabase solo con internet, sin login | **Superado.** El esquema y sus 52 pruebas existen solo en una rama local de una sesión de Claude (`db/supabase-esquema`); no está en este repo. Sirve de referencia de reglas |
+| 18/10 | "No hace falta login" | **Cambiado el 19/10:** no hay formulario de login, pero sí una cuenta de Google, porque hace falta saber quién es cada persona |
+
+## Abiertas
+- Ficha 001: falta confirmar que Ian y Furyan entran con su cuenta de Google.
+- ¿Qué pasa con los datos que ya hay guardados en cada aparato al activar la cuenta? (propuesto: subirlos una sola vez, desde un aparato y con confirmación; evita duplicados)
+- Privacidad: Ley 8968 y PRODHAB antes de abrir la app a más personas.
+- ¿Quién usa iOS? Hoy solo hay `@capacitor/android`.
+- ¿"Quincena" se queda como nombre del periodo en la interfaz?
+- Nombre en Play Store (el `appId` ya está decidido).
+- ¿Se agrega un campo en Ajustes para cambiar la meta de ahorro? Hoy solo se cambia repitiendo la configuración inicial.
+- ¿Botón "Apartar ahora" que mueva el dinero a Ahorros? (propuesto, sin decidir)

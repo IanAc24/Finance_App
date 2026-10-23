@@ -287,6 +287,9 @@ export const translations = {
     cannotUndo: 'No se puede deshacer.',
     deleteDigit: 'Borrar un dígito',
     canSpendToday: 'Puedes gastar hoy',
+    goalReserveNote:
+      'Incluye apartar {reserve} al día para tu meta de ahorro. Sin la meta: {limit}.',
+    goalUsesAll: 'Tu meta de ahorro usa todo lo que tienes disponible.',
     day: 'Día',
     dayOf: 'de',
     typeAmountFirst: 'Escribe el monto para poder guardar',
@@ -586,6 +589,9 @@ export const translations = {
     cannotUndo: 'This cannot be undone.',
     deleteDigit: 'Delete last digit',
     canSpendToday: 'You can spend today',
+    goalReserveNote:
+      'Includes setting aside {reserve} a day for your savings goal. Without it: {limit}.',
+    goalUsesAll: 'Your savings goal uses everything you have available.',
     day: 'Day',
     dayOf: 'of',
     typeAmountFirst: 'Type the amount to be able to save',

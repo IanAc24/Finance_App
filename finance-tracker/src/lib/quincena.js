@@ -11,10 +11,23 @@ import { leftInRange, previousQuincenaRange, savingsInRange } from './savings'
 // in the totals, but it is taken out of what can be spent per day until its
 // date arrives. Bills still pending (recurring items due) are taken out too.
 //
+// Savings goal (case L5): the goal of the profile is per quincena and in one
+// currency. What is still missing of it (the goal minus what was already moved
+// to savings in this quincena) is set aside BEFORE dividing by the days, so the
+// daily amount is the recommended one and the goal is not left for the end.
+// The reserve never exceeds what is available. perDayFull is the daily amount
+// without any goal, so the screen can show both.
+//
 // status says what to show instead of a number when there is nothing to
 // spend: 'ok' | 'pendingExceeds' | 'waitingIncome' | 'over'.
 export function quincenaFigures(
-  { transactions, savings, recurring, quincenaSchedule = DEFAULT_SCHEDULE },
+  {
+    transactions,
+    savings,
+    recurring,
+    quincenaSchedule = DEFAULT_SCHEDULE,
+    profile = null,
+  },
   code,
   today = new Date(),
 ) {
@@ -33,6 +46,11 @@ export function quincenaFigures(
   const inHand = sum([left, -laterIncome])
   const available = sum([inHand, -pending])
   const days = daysLeftInQuincena(today, quincenaSchedule)
+
+  // the goal only applies to the currency it was set in
+  const goal =
+    profile?.savingsGoal > 0 && profile.currency === code ? profile.savingsGoal : 0
+  const reserve = Math.min(Math.max(sum([goal, -toSavings]), 0), Math.max(available, 0))
 
   let status = 'ok'
   if (available <= 0) {
@@ -53,7 +71,10 @@ export function quincenaFigures(
     available,
     days,
     status,
-    perDay: status === 'ok' ? safePerDay(available, days, code) : 0,
+    goal,
+    reserve,
+    perDayFull: status === 'ok' ? safePerDay(available, days, code) : 0,
+    perDay: status === 'ok' ? safePerDay(sum([available, -reserve]), days, code) : 0,
   }
 }
 
