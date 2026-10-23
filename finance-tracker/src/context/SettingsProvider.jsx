@@ -21,7 +21,6 @@ export default function SettingsProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.lang = lang === 'es' ? 'es-CR' : 'en'
-    document.title = `${translations[lang].titleMain} ${translations[lang].titleAccent}`
   }, [lang])
 
   useEffect(() => {

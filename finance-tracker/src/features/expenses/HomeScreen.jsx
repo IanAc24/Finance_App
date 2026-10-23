@@ -24,9 +24,11 @@ import {
   rolloverSkipKey,
   savingsBalance,
 } from '../../lib/savings'
+import { itemName } from '../../lib/describe'
 import { getCategoryTotals } from '../../lib/stats'
 import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
+import { useToast } from '../../context/useToast'
 import CategoryBars from '../../components/CategoryBars'
 import CategoryIcon from '../../components/CategoryIcon'
 import EmptyState from '../../components/EmptyState'
@@ -37,6 +39,7 @@ import TransactionItem from '../../components/TransactionItem'
 export default function HomeScreen() {
   const { locale, t } = useSettings()
   const { alert, confirm } = useDialog()
+  const toast = useToast()
 
   const today = useToday()
   const {
@@ -109,15 +112,19 @@ export default function HomeScreen() {
   // dated the last day of the previous quincena, so that period closes at
   // zero and this quincena is not touched
   const moveLeftover = (code, leftover) =>
-    run(() =>
-      addSavingsMove({
+    run(async () => {
+      await addSavingsMove({
         amount: leftover,
         currency: code,
         direction: 'in',
         note: ROLLOVER_NOTE,
         date: todayString(previous.end),
-      }),
-    )
+      })
+      // the card disappears, so say where the money went
+      toast.show({
+        message: t('toastLeftoverMoved').replace('{amount}', formatMoney(leftover, code)),
+      })
+    })
 
   const skipLeftover = (code) =>
     run(async () => {
@@ -552,6 +559,8 @@ export default function HomeScreen() {
 
             {main?.summary}
 
+            {offersCard}
+
             {shown.length === 0 && (
               <div className="hs-summary">
                 <EmptyState
@@ -579,8 +588,6 @@ export default function HomeScreen() {
               </Link>
             </div>
 
-            {offersCard}
-
             {hasDue && (
               <section className="card hs-due">
                 <h2 className="section-title">{t('dueThisQuincena')}</h2>
@@ -596,6 +603,7 @@ export default function HomeScreen() {
                           type="button"
                           className="pill active"
                           disabled={busy}
+                          aria-label={`${t('confirm')} ${itemName(item, categories, t)}`}
                           onClick={() => run(() => confirmRecurring(item))}
                         >
                           {t('confirm')}
@@ -604,6 +612,7 @@ export default function HomeScreen() {
                           type="button"
                           className="pill"
                           disabled={busy}
+                          aria-label={`${t('skip')} ${itemName(item, categories, t)}`}
                           onClick={() => run(() => skipRecurring(item))}
                         >
                           {t('skip')}

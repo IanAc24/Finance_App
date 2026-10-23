@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { categoryColor, categoryLabel } from '../../lib/categories'
 import { getQuincenaRange, parseDate } from '../../lib/dates'
 import { currencies, formatMoney, parseAmount, sum } from '../../lib/money'
+import { budgetPercent, splitMoney } from '../../lib/moneyDisplay'
 import { getCategoryTotals } from '../../lib/stats'
 import { useToday } from '../../lib/useToday'
 import { useSettings } from '../../context/useSettings'
@@ -45,10 +46,22 @@ function BudgetForm({ currency }) {
       categories.map((c) => [c.id, current(c.id) > 0 ? String(current(c.id)) : '']),
     ),
   )
+  // the field being typed in shows what was typed; the others show it grouped
+  const [focusedId, setFocusedId] = useState(null)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
   const invalid = categories.some((c) => parseAmount(texts[c.id] ?? '') === null)
+
+  // '20000' reads as '20.000' once the field is left; text that is not a valid
+  // amount stays as typed so the mistake can be seen
+  const shownText = (id) => {
+    const raw = texts[id] ?? ''
+    const value = parseAmount(raw)
+    if (focusedId === id || !(value > 0)) return raw
+    const { whole, decimals } = splitMoney(formatMoney(value, currency))
+    return whole + decimals
+  }
 
   const handleChange = (id, value) => {
     setTexts((prev) => ({ ...prev, [id]: value }))
@@ -85,7 +98,7 @@ function BudgetForm({ currency }) {
       }
     }
     if (ratio >= 0.8) {
-      return { kind: 'near', text: `${Math.round(ratio * 100)}% ${t('ofBudget')}` }
+      return { kind: 'near', text: `${budgetPercent(ratio)}% ${t('ofBudget')}` }
     }
     return {
       kind: 'ok',
@@ -122,7 +135,9 @@ function BudgetForm({ currency }) {
                       inputMode="decimal"
                       placeholder={t('noLimit')}
                       aria-label={categoryLabel(c, t)}
-                      value={texts[c.id] ?? ''}
+                      value={shownText(c.id)}
+                      onFocus={() => setFocusedId(c.id)}
+                      onBlur={() => setFocusedId(null)}
                       onChange={(e) => handleChange(c.id, e.target.value)}
                     />
                   </span>

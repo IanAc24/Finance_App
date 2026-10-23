@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { categoryColor, categoryLabel } from '../lib/categories'
 import { formatMoney, sum } from '../lib/money'
-import { shareText } from '../lib/moneyDisplay'
+import { budgetPercent, shareText } from '../lib/moneyDisplay'
 import { pickCategoryRows } from '../lib/stats'
 import { useSettings } from '../context/useSettings'
 import CategoryIcon from './CategoryIcon'
@@ -93,7 +93,7 @@ export default function CategoryBars({
               )}
               {budget && ratio >= 0.8 && ratio < 1 && (
                 <p className="budget-note near">
-                  {Math.round(ratio * 100)}% {t('ofBudget')}
+                  {budgetPercent(ratio)}% {t('ofBudget')}
                 </p>
               )}
               {hidden && index === rows.length - 1 && (

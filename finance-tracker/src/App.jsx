@@ -9,6 +9,7 @@ import TransactionsProvider from './context/TransactionsProvider'
 import AddFab from './components/AddFab'
 import AppBar from './components/AppBar'
 import SkipLink from './components/SkipLink'
+import DocumentTitle from './components/DocumentTitle'
 import ScrollToTop from './components/ScrollToTop'
 import HomeScreen from './features/expenses/HomeScreen'
 import AddExpenseScreen from './features/expenses/AddExpenseScreen'
@@ -82,6 +83,7 @@ export default function App() {
           <ToastProvider>
             <SkipLink />
             <ScrollToTop />
+            <DocumentTitle />
             <Shell />
           </ToastProvider>
         </BrowserRouter>

@@ -5,7 +5,7 @@ export default function TopNav() {
   const { t } = useSettings()
 
   return (
-    <nav className="top-nav">
+    <nav className="top-nav" aria-label={t('mainNav')}>
       <NavLink to="/" end>
         {t('home')}
       </NavLink>

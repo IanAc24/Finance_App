@@ -8,6 +8,7 @@ import {
   useSearchParams,
 } from 'react-router-dom'
 import { categoryLabel } from '../../lib/categories'
+import { dateWithYear, deleteMessage, itemName, signedAmount } from '../../lib/describe'
 import { daysBetween, isValidDate, parseDate, todayString } from '../../lib/dates'
 import { lastDays } from '../../lib/days'
 import { formatDate } from '../../lib/format'
@@ -295,7 +296,16 @@ export default function AddExpenseScreen() {
     if (saving) return
     // once deleted, the check above sends the screen back
     const { confirmed } = await confirm({
-      message: t('confirmDelete'),
+      // names the movement so it is clear which one is about to go
+      message: deleteMessage(t('confirmDelete'), {
+        name: itemName(editing, categories, t),
+        amount: signedAmount(
+          editing.type === 'income' ? '+' : '−',
+          editing.amount,
+          editing.currency,
+        ),
+        date: dateWithYear(parseDate(editing.date), today, locale),
+      }),
       confirmLabel: t('delete'),
       danger: true,
     })

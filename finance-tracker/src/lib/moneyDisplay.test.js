@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { formatMoney } from './money'
-import { shareText, splitMoney } from './moneyDisplay'
+import { budgetPercent, shareText, splitMoney } from './moneyDisplay'
 
 const join = ({ sign, symbol, whole, decimals }) => sign + symbol + whole + decimals
 
@@ -66,5 +66,23 @@ describe('shareText', () => {
     expect(shareText(1, 1000)).toBe('<1%')
     expect(shareText(0, 100)).toBe('0%')
     expect(shareText(10, 0)).toBe('0%')
+  })
+})
+
+describe('budgetPercent', () => {
+  it('rounds down so an almost spent budget never reads 100%', () => {
+    expect(budgetPercent(19900 / 20000)).toBe(99)
+    expect(budgetPercent(0.995)).toBe(99)
+  })
+
+  it('shows 100 at the limit and the real percent above it', () => {
+    expect(budgetPercent(1)).toBe(100)
+    expect(budgetPercent(1.012)).toBe(101)
+  })
+
+  it('keeps exact percents exact despite floating point', () => {
+    expect(budgetPercent(0.58)).toBe(58)
+    expect(budgetPercent(0.29)).toBe(29)
+    expect(budgetPercent(0.8)).toBe(80)
   })
 })

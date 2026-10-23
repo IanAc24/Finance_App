@@ -97,7 +97,7 @@ function CategoryEditor({ category, onDone }) {
       {used > 0 && (
         <label className="field">
           <span className="label">
-            {t('moveTo')} ({used})
+            {used === 1 ? t('moveToOne') : t('moveTo').replace('{n}', used)}
           </span>
           <select value={moveTo} onChange={(e) => setMoveTo(e.target.value)}>
             {others.map((c) => (
@@ -133,10 +133,67 @@ function CategoryEditor({ category, onDone }) {
   )
 }
 
+// The form of a new category: a name, saved with the same function (and so the
+// same colour rule) the Add screen uses for its "Custom" category
+function NewCategory({ onDone }) {
+  const { t } = useSettings()
+  const { categories, addCategory } = useTransactions()
+  const [name, setName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState(false)
+
+  const trimmedName = name.trim()
+  const clash = findCategoryByName(categories, name)
+  const canSave = trimmedName !== '' && !clash && !saving
+
+  const handleSave = async () => {
+    if (!canSave) return
+    setSaving(true)
+    setSaveError(false)
+    try {
+      await addCategory(trimmedName)
+      onDone()
+    } catch (error) {
+      console.error(error)
+      setSaving(false)
+      setSaveError(true)
+    }
+  }
+
+  return (
+    <div className="editor">
+      <label className="field">
+        <span className="label">{t('categoryName')}</span>
+        <input
+          type="text"
+          autoFocus
+          value={name}
+          maxLength={MAX_CATEGORY_NAME_LENGTH}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSave()
+          }}
+        />
+      </label>
+      {clash && <p className="field-note error" role="alert">{t('categoryExists')}</p>}
+      {saveError && <p className="field-note error" role="alert">{t('saveError')}</p>}
+      <div className="actions">
+        <button type="button" className="btn" disabled={!canSave} onClick={handleSave}>
+          {t('save')}
+        </button>
+        <button type="button" className="btn secondary" disabled={saving} onClick={onDone}>
+          {t('cancel')}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function CategoriesScreen() {
   const { t } = useSettings()
   const { categories } = useTransactions()
   const [editingId, setEditingId] = useState(null)
+  const [creating, setCreating] = useState(false)
 
   const hasCustom = categories.some((c) => c.name)
 
@@ -182,6 +239,24 @@ export default function CategoriesScreen() {
             ))}
           </ul>
         </section>
+
+        {creating ? (
+          <section className="card">
+            <h2 className="section-title">{t('newCategory')}</h2>
+            <NewCategory onDone={() => setCreating(false)} />
+          </section>
+        ) : (
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => {
+              setEditingId(null)
+              setCreating(true)
+            }}
+          >
+            {t('newCategory')}
+          </button>
+        )}
 
         {!hasCustom && <p className="sub empty">{t('noCustomCategories')}</p>}
       </div>

@@ -22,3 +22,10 @@ export function shareText(part, whole) {
   const percent = Math.round((part / whole) * 100)
   return percent < 1 ? '<1%' : `${percent}%`
 }
+
+// The percent of a budget that is used, rounded DOWN so that 99.5% never reads
+// as "100%" (the budget is not spent yet). The small epsilon keeps exact
+// values such as 0.58 from falling to 57 because of floating point.
+export function budgetPercent(ratio) {
+  return Math.floor(ratio * 100 + 1e-9)
+}

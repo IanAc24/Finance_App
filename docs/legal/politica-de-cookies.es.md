@@ -4,7 +4,7 @@ Versión 1.0 · [FECHA]
 
 > BORRADOR: debe revisarlo un abogado costarricense antes de publicarse
 
-English version: `politica-de-cookies.en.md`
+English version: change the language to English in Settings (Ajustes).
 
 ## 1. Resumen corto
 

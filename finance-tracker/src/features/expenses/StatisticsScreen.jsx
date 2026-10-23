@@ -116,7 +116,7 @@ export default function StatisticsScreen() {
                           <span className="tag">{t('thisQuincena')}</span>
                         )}
                       </p>
-                      <p className="row-meta">
+                      <p className="row-meta figures">
                         {/* a zero is muted and has no sign */}
                         {q.income > 0 ? (
                           <span className="nowrap income">

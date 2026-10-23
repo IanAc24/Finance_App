@@ -919,6 +919,24 @@ main {
   text-align: center;
 }
 
+/* En teléfonos bajos (375x667, 320x568) la barra de Guardar es más compacta y
+   las teclas un poco más bajas, para que no tape la última fila del teclado */
+@media (max-width: 440px) and (max-height: 700px) {
+  .key {
+    height: 48px;
+  }
+
+  .save-bar {
+    gap: 2px;
+    padding-top: 10px;
+  }
+
+  .save-bar .sub {
+    font-size: 13px;
+    line-height: 1.3;
+  }
+}
+
 /* Campo de formulario: etiqueta arriba, input abajo */
 .field {
   display: flex;
@@ -2334,15 +2352,15 @@ a.tx-row:active {
   order: 2;
 }
 
-.hs-cta {
-  order: 3;
+.hs-offers {
+  order: 3; /* lo que sobró va justo debajo del resumen principal */
 }
 
-.hs-where {
+.hs-cta {
   order: 4;
 }
 
-.hs-offers {
+.hs-where {
   order: 5;
 }
 
@@ -2645,7 +2663,8 @@ body:has(dialog[open]) .add-fab {
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word; /* solo parte una palabra que no cabe ni sola en la línea */
+  hyphens: none;
   text-align: center;
 }
 
@@ -3132,13 +3151,145 @@ button.tx-row .tx-meta {
   margin-top: 0;
 }
 
-/* En pantallas anchas Guardar no se pega abajo: taparía los campos de la
-   columna derecha. Queda al final del formulario, centrado */
+/* En pantallas anchas Guardar sigue pegado al borde de abajo de la ventana
+   (dentro del formulario), con fondo sólido para que no se lea nada detrás.
+   Termina donde termina el formulario. El scroll-padding-bottom de html (más
+   arriba) evita que al enfocar un campo quede tapado por la barra */
 @media (min-width: 900px) {
   main > .save-bar {
-    position: static;
-    padding: 0;
+    max-width: none;
+    align-items: center;
+    padding: var(--space-3) 0 calc(var(--space-3) + env(safe-area-inset-bottom, 0px));
     margin-bottom: 0;
-    background: none;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+
+  main > .save-bar .btn {
+    width: 100%;
+    max-width: 360px;
+  }
+}
+
+
+/* Ajustes finos de la revisión de calidad */
+
+/* Botón "+": se esconde al bajar la pantalla (sube y se desvanece) y vuelve al
+   subir o al llegar al final. Con menos movimiento solo cambia la opacidad */
+.add-fab {
+  transition: transform var(--dur) var(--ease-out), opacity var(--dur) var(--ease-out),
+    visibility 0s, filter var(--dur-fast);
+}
+
+.add-fab.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(calc(56px + var(--space-4)));
+  transition: transform 200ms var(--ease-out), opacity 200ms var(--ease-out),
+    visibility 0s linear 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .add-fab,
+  .add-fab.is-hidden {
+    transition: opacity 200ms var(--ease-out), visibility 0s linear 200ms;
+  }
+
+  .add-fab.is-hidden {
+    transform: none;
+  }
+}
+
+/* Historial: el total de cada día, por moneda: lo gastado ("−", color normal)
+   y, solo si hubo, el ingreso ("+", verde). Sin neto y sin sumar monedas. En
+   320 px el nombre del día queda arriba y las cifras debajo */
+.day-head {
+  flex-wrap: wrap;
+}
+
+.day-total {
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.day-total-cur {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 var(--space-3);
+}
+
+/* Resumen del mes en pantallas chicas: cada moneda es una rejilla de dos
+   columnas, con la etiqueta alineada sobre su cifra */
+@media (max-width: 440px) {
+  .hist-line {
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    justify-content: space-between;
+    align-items: start;
+    gap: var(--space-1) var(--space-3);
+  }
+
+  .hist-cur {
+    grid-column: 1 / -1;
+  }
+
+  .hist-fig {
+    align-items: flex-start;
+    min-width: 0;
+  }
+}
+
+/* Categorías en el celular más chico: 3 por fila para que ningún nombre se
+   parta a la mitad */
+@media (max-width: 359px) {
+  .cat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Aviso de "no tienes tanto" en Ahorros: con aire antes de lo que sigue */
+.savings-warning {
+  margin-bottom: var(--space-3);
+}
+
+/* El aviso de guardado cabe en una línea en 375 px */
+.toast {
+  gap: var(--space-2);
+}
+
+.toast-close {
+  width: 40px;
+}
+
+/* Cifras de cada quincena (Estadísticas): al menos 14 px */
+.row-meta.figures {
+  font-size: 14px;
+}
+
+/* La tira de fechas se desvanece en los bordes: avisa que se desliza */
+.date-strip {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+}
+
+/* Enlaces de texto que hacen de botón: se nota que se apretaron */
+.back-link:active,
+.text-link:active,
+.see-all:active,
+.toast-action:active,
+.month-btn:active:not(:disabled) {
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back-link:active,
+  .text-link:active,
+  .see-all:active,
+  .toast-action:active,
+  .month-btn:active:not(:disabled) {
+    opacity: 1;
   }
 }

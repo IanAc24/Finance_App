@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { categoryLabel } from '../lib/categories'
 import { parseDate, todayString } from '../lib/dates'
+import { dateWithYear } from '../lib/describe'
 import { formatDate } from '../lib/format'
 import { formatMoney } from '../lib/money'
 import { paymentNote } from '../lib/payment'
@@ -20,7 +21,11 @@ export default function TransactionItem({ tx, showDate = true }) {
   const category = categories.find((c) => c.id === tx.categoryId)
   const fallback = isIncome ? t('typeIncome') : t('category.uncategorized')
   const label = category ? categoryLabel(category, t) : fallback
-  const date = formatDate(parseDate(tx.date), locale, { year: false })
+  const upcoming = tx.date > todayString()
+  // a movement dated in a later year says which, so '05/03' is never a guess
+  const date = upcoming
+    ? dateWithYear(parseDate(tx.date), new Date(), locale)
+    : formatDate(parseDate(tx.date), locale, { year: false })
   // card and SINPE are named in the row; cash is the default and says nothing
   const method = paymentNote(tx.paymentMethod, t)
   const join = (...parts) => parts.filter(Boolean).join(' · ')
@@ -30,8 +35,6 @@ export default function TransactionItem({ tx, showDate = true }) {
       ? join(label, date, method)
       : join(label, method)
     : join(showDate && date, method)
-
-  const upcoming = tx.date > todayString()
 
   return (
     <li>

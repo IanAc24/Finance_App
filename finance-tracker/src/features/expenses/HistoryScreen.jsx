@@ -3,7 +3,7 @@ import { useTransactions } from '../../context/useTransactions'
 import { categoryLabel } from '../../lib/categories'
 import { downloadCsv, transactionRows } from '../../lib/csv'
 import { byNewest, getQuincenaRange, isSameMonth, parseDate } from '../../lib/dates'
-import { dayHeading, signedNet } from '../../lib/days'
+import { dayHeading } from '../../lib/days'
 import { formatDate, formatMonth, monthName } from '../../lib/format'
 import { currencies, formatMoney, getTotals } from '../../lib/money'
 import { paymentMethods, totalsByMethod } from '../../lib/payment'
@@ -27,13 +27,6 @@ function Figure({ amount, code, kind }) {
   ) : (
     <span className="nowrap">−{formatMoney(amount, code)}</span>
   )
-}
-
-// Colour of the net of a day: income green when positive, plain when negative,
-// muted at zero
-function netClass(net) {
-  if (net === 0) return 'nowrap is-zero'
-  return net > 0 ? 'nowrap income' : 'nowrap'
 }
 
 export default function HistoryScreen() {
@@ -81,8 +74,8 @@ export default function HistoryScreen() {
       : transactions.filter((tx) => isSameMonth(parseDate(tx.date), month))
   ).sort(byNewest)
 
-  // one group per day, newest first, with the day's net per currency (never a
-  // total across currencies)
+  // one group per day, newest first, with the day's spending and income per
+  // currency (never netted, never a total across currencies)
   const days = []
   for (const tx of list) {
     const last = days[days.length - 1]
@@ -201,7 +194,8 @@ export default function HistoryScreen() {
             {t('filters')}
             {activeFilters > 0 ? ` (${activeFilters})` : ''}
           </button>
-          {filtering && (
+          {/* with no results the empty state has its own "clear filters" button */}
+          {filtering && list.length > 0 && (
             <button type="button" className="pill" onClick={clearFilters}>
               {t('clearFilters')}
             </button>
@@ -313,11 +307,19 @@ export default function HistoryScreen() {
                   year: filtering,
                 })}
               </h2>
-              {/* net of the day per currency: + income colour, − plain, zero muted */}
+              {/* per currency: the spending of the day (text colour, "−") and,
+                  only when the day has income, the income (green, "+"). Never
+                  netted and never added across currencies */}
               <span className="day-total">
                 {day.totals.map((c) => (
-                  <span className={netClass(c.net)} key={c.code}>
-                    {signedNet(c.net, c.code)}
+                  <span className="day-total-cur" key={c.code}>
+                    {/* a day with only income shows just the income */}
+                    {(c.spent > 0 || c.income === 0) && (
+                      <Figure amount={c.spent} code={c.code} kind="spent" />
+                    )}
+                    {c.income > 0 && (
+                      <Figure amount={c.income} code={c.code} kind="income" />
+                    )}
                   </span>
                 ))}
               </span>

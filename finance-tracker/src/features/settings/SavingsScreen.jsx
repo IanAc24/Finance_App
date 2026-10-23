@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { byNewest, getQuincenaRange, parseDate, todayString } from '../../lib/dates'
+import { dateWithYear, deleteMessage, signedAmount } from '../../lib/describe'
 import { formatDate } from '../../lib/format'
 import { MAX_NOTE_LENGTH } from '../../lib/limits'
 import { currencies, formatMoney, parseAmount } from '../../lib/money'
@@ -34,6 +35,9 @@ export default function SavingsScreen() {
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
+  // the button the person last pointed at or focused: when both directions
+  // lack funds, only the warning of this one shows
+  const [direction, setDirection] = useState('in')
 
   const amount = parseAmount(amountText)
   const amountValid = amount !== null && amount > 0
@@ -50,6 +54,13 @@ export default function SavingsScreen() {
   )
   const tooMuchToSave = amountValid && amount > available
   const canMove = amountValid && !saving
+  // one "not enough" warning at a time: the only one that applies, or the one
+  // of the chosen direction when both do
+  const warning =
+    tooMuchToSave && tooMuch ? (direction === 'in' ? 'save' : 'take')
+      : tooMuchToSave ? 'save'
+        : tooMuch ? 'take'
+          : null
 
   const move = async (direction) => {
     if (!canMove) return
@@ -73,12 +84,25 @@ export default function SavingsScreen() {
     }
   }
 
+  // the name a movement shows: its note, or what kind of move it was
+  const moveName = (item) =>
+    item.note ||
+    (item.direction === 'in' ? t('moveToSavings') : t('takeFromSavings'))
+
   // deleting an old move is how a mistake is corrected, so the balance may
   // go below zero
-  const handleDelete = async (id) => {
+  const handleDelete = async (item) => {
     if (saving) return
     const { confirmed } = await confirm({
-      message: t('confirmDeleteMove'),
+      message: deleteMessage(t('confirmDeleteMove'), {
+        name: moveName(item),
+        amount: signedAmount(
+          item.direction === 'in' ? '+' : '−',
+          item.amount,
+          item.currency,
+        ),
+        date: dateWithYear(parseDate(item.date), today, locale),
+      }),
       confirmLabel: t('delete'),
       danger: true,
     })
@@ -86,7 +110,7 @@ export default function SavingsScreen() {
     setSaving(true)
     setSaveError(false)
     try {
-      await deleteSavingsMove(id)
+      await deleteSavingsMove(item.id)
     } catch (error) {
       console.error(error)
       setSaveError(true)
@@ -148,13 +172,13 @@ export default function SavingsScreen() {
           {amountText.trim() !== '' && !amountValid && (
             <p className="field-note error" role="alert">{t('invalidAmount')}</p>
           )}
-          {tooMuchToSave && (
-            <p className="field-note warning" role="status">
+          {warning === 'save' && (
+            <p className="field-note warning savings-warning" role="status">
               {t('notEnoughAvailable')} {formatMoney(available, currency)}
             </p>
           )}
-          {tooMuch && (
-            <p className="field-note warning" role="status">
+          {warning === 'take' && (
+            <p className="field-note warning savings-warning" role="status">
               {t('notEnoughSavings')} {formatMoney(balance, currency)}
             </p>
           )}
@@ -181,6 +205,8 @@ export default function SavingsScreen() {
               type="button"
               className="btn"
               disabled={!canMove || tooMuchToSave}
+              onFocus={() => setDirection('in')}
+              onPointerEnter={() => setDirection('in')}
               onClick={() => move('in')}
             >
               {t('moveToSavings')}
@@ -189,6 +215,8 @@ export default function SavingsScreen() {
               type="button"
               className="btn secondary"
               disabled={!canMove || tooMuch}
+              onFocus={() => setDirection('out')}
+              onPointerEnter={() => setDirection('out')}
               onClick={() => move('out')}
             >
               {t('takeFromSavings')}
@@ -208,10 +236,7 @@ export default function SavingsScreen() {
                     <CategoryIcon kind={item.direction === 'in' ? 'savings' : 'savingsOut'} />
                     <span className="tx-text">
                       <span className="tx-name">
-                        {item.note ||
-                          (item.direction === 'in'
-                            ? t('moveToSavings')
-                            : t('takeFromSavings'))}
+                        {moveName(item)}
                       </span>
                       <span className="tx-meta">
                         {formatDate(parseDate(item.date), locale)}
@@ -227,7 +252,7 @@ export default function SavingsScreen() {
                       type="button"
                       className="pill"
                       disabled={saving}
-                      onClick={() => handleDelete(item.id)}
+                      onClick={() => handleDelete(item)}
                     >
                       {t('delete')}
                     </button>

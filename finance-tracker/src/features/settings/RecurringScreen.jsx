@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { categoryLabel } from '../../lib/categories'
+import { deleteMessage, itemName, signedAmount } from '../../lib/describe'
 import { MAX_NOTE_LENGTH } from '../../lib/limits'
 import { parseAmount } from '../../lib/money'
 import { scheduleKey, schedules } from '../../lib/recurring'
@@ -68,7 +69,14 @@ function RecurringEditor({ item, onDone }) {
   const handleDelete = async () => {
     if (saving) return
     const { confirmed } = await confirm({
-      message: t('confirmDeleteRecurring'),
+      message: deleteMessage(t('confirmDeleteRecurring'), {
+        name: itemName(item, categories, t),
+        amount: signedAmount(
+          item.type === 'income' ? '+' : '−',
+          item.amount,
+          item.currency,
+        ),
+      }),
       confirmLabel: t('delete'),
       danger: true,
     })

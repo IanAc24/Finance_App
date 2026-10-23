@@ -4,7 +4,7 @@ Version 1.0 · [FECHA / DATE]
 
 > DRAFT: must be reviewed by a Costa Rican lawyer before it is published. The Spanish text is the main one; this is a courtesy translation.
 
-Versión en español: `terminos-y-condiciones.es.md`
+Versión en español: cambia el idioma a Español en Ajustes (Settings).
 
 ## 1. Who we are and what you accept
 
