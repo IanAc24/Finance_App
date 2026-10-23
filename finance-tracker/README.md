@@ -7,11 +7,17 @@ A personal finance tracker built with React. I AM POOR FOR NOW (shown as "POBRE,
 
 ## Features
 
+**Welcome and profile**
+- On first use a welcome screen asks for a few things in five steps: your name and main currency, when you get paid, how much you earn per pay, your fixed expenses and a savings goal. Every step can be skipped, or the whole setup
+- Your name is shown as a greeting on Home
+- Settings > "Repeat initial setup" opens the welcome again, over the data already there
+
 **Home**
 - The quincena dates with "day X of Y" and a bar of its days
-- Per currency, the headline is "You can spend today" (with the days left and what was set aside for recurring bills still due), plus what is left this quincena, income and spent, and the percent of income spent. Spent shows no minus sign when it is zero. With no income yet, it shows what is left instead; messages appear when pending bills exceed the money or the quincena is overspent
+- Per currency, the headline is "You can spend today" (with the days left and what was set aside for recurring bills still due; the savings goal is set aside first), plus what is left this quincena, income and spent, and the percent of income spent. Spent shows no minus sign when it is zero. With no income yet, it shows what is left instead; messages appear when pending bills exceed the money or the quincena is overspent
 - Category bars with budgets (amber from 80%, red when exceeded) and an "Uncategorized" row; on the cards after the first, the list is collapsed to a few rows with "Show all"
 - "Due this quincena" list for recurring items: Confirm or Skip; handled items stay listed with a check mark
+- With the "I was paid" pay-day mode, a card on Home lets you register the day you were paid (today or another date), which starts a new quincena
 - Last quincena's leftover can be moved to savings with one tap ("Move to savings") or skipped
 - Later-dated transactions are flagged, and the five most recent ones are listed
 - A backup reminder when the last backup is more than 14 days old; with no backup yet, the 14 days count from the oldest transaction
@@ -38,7 +44,7 @@ A personal finance tracker built with React. I AM POOR FOR NOW (shown as "POBRE,
 - CSV export of what History shows (the month, or the search results)
 
 **Settings and safety**
-- Quincena schedule: the default is days 1 and 16; you can set your own pay days (one or two a month). A change takes effect after the quincena in progress, so past quincenas keep the way they were cut
+- Quincena schedule: the default is days 1 and 16; you can set your own pay days (one or two a month), or choose "I was paid" when your pay lands on different days each month: a quincena then starts on the day you register a payment. A change takes effect after the quincena in progress, so past quincenas keep the way they were cut
 - Language (Spanish / English, Spanish (Costa Rica) by default) and theme (dark / light)
 - Export everything as CSV, download a backup and restore from one, load sample data and clear all data (which also resets the pay days to 15/30 and forgets skipped leftover offers)
 - Only one tab can use the data at a time
@@ -129,7 +135,7 @@ Vite prints a local address in the terminal, usually `http://localhost:5173`.
 ### Data and storage
 
 - **Where it lives:** a SQLite database. In the browser it is kept in memory and saved to IndexedDB. A fresh install starts with no transactions and the four built-in categories (Food, Transport, Bills, Fun).
-- **Schema (version 6):** `categories` (built-in and custom), `transactions`, `budgets` (a limit per category and currency), `recurring` (repeating items and the last quincena handled) and `savings` (money moved in or out of savings). Transactions also keep the payment method (version 5), and the quincena schedule is saved with the settings (version 6).
+- **Schema (version 8):** `categories` (built-in and custom), `transactions`, `budgets` (a limit per category and currency), `recurring` (repeating items and the last quincena handled) and `savings` (money moved in or out of savings). Transactions also keep the payment method (version 5). Added since: `quincena_config` (when the quincena starts, version 6), `profile` (name, currency, income, savings goal and whether the welcome was done, version 7) and `quincena_manual` (the days marked with "I was paid", version 8).
 - **Internal names kept for compatibility:** the database is named `quincena`, the tab lock is `quincena-db` and backup files carry the marker `app: 'quincena'`; these are internal names the user never sees, and they stay unchanged so existing data and old backups keep working.
 - **Amounts** are stored as whole cents to avoid rounding errors.
 - **Migrations** in `src/db/migrations.js` are versioned, one per schema version, and are never edited once shipped: a change is a new migration.
@@ -138,40 +144,21 @@ Vite prints a local address in the terminal, usually `http://localhost:5173`.
 - **WebAssembly file:** `public/assets/sql-wasm.wasm` must be the one from sql.js 1.11.0, the version `jeep-sqlite` 2.8.0 is built with. It is not the same as the sql.js installed for the tests (1.14.x), so do not copy that one over it.
 - **One tab at a time:** each tab keeps its own copy of the database in memory and saves all of it, so a second tab would overwrite the first. A second tab is blocked with a message instead.
 - **Persistent storage:** the app asks the browser to keep the data safe from clean-up, which the browser may or may not grant.
-- **Backups:** the JSON backup holds your custom categories, transactions, budgets, recurring items and savings (the built-in categories are in every install). Restoring one replaces all current data. It is the way to move your data between browsers or to protect it if the browser's storage is cleared. Cloud backups come later.
-- **Preferences** are not in the backup. They stay in the browser's `localStorage`: language, theme, the last currency and category used, the date of the last backup, and which leftover offers were skipped.
+- **Backups:** the JSON backup holds your custom categories, transactions, budgets, recurring items, savings, the pay-day schedule and the profile (the built-in categories are in every install). Restoring one replaces all current data. It is the way to move your data between browsers or to protect it if the browser's storage is cleared. Cloud backups come later.
+- **Preferences** are not in the backup. They stay in the browser's `localStorage`: language, theme, the last currency, category and payment method used, the date of the last backup, and which leftover offers were skipped.
 - **Sample data:** `src/db/mockData.js` holds the built-in categories and the optional sample transactions.
 
 ## Project structure
 
-```text
-public/
-  assets/sql-wasm.wasm  SQLite WebAssembly file (see Data and storage)
-  favicon.svg           Browser tab icon
-  logo.svg              Standalone logo artwork
-src/
-  components/           Shared interface components (app bar and tabs, bar charts, keypad, rows and pills)
-  context/              Settings (language, theme) and transactions: contexts, providers and hooks
-  db/
-    database.js         Opens SQLite and runs the migrations
-    migrations.js       Schema migrations
-    migrations.test.js  Tests for the migrations
-    mockData.js         Built-in categories and optional sample transactions
-    storage.js          Reads and writes data (the only file with SQL)
-    storage.test.js     Tests for the storage layer
-    tabLock.js          Allows only one open tab at a time
-    testDb.js           In-memory SQLite (sql.js) used by the tests
-  features/
-    expenses/           Home, add and edit, statistics and history screens
-    settings/           Settings, categories, budgets, recurring and savings screens
-  lib/                  Helpers: backup, categories, csv, dates, money, prefs,
-                        recurring, savings, search, stats, suggest, translations
-                        and useToday. Tests sit next to the code as *.test.js
-  App.jsx               Routes and page layout
-  Header.jsx            App title
-  index.css             All styles
-  main.jsx              App entry point
-```
+- `public/`: static files. `assets/sql-wasm.wasm` is the SQLite WebAssembly file (see Data and storage); `favicon.svg` is the browser tab icon.
+- `src/components/`: shared interface pieces (app bar and tabs, bar charts, keypad, pills, rows).
+- `src/context/`: settings (language, theme) and transactions: contexts, providers and hooks.
+- `src/db/`: opens SQLite, the migrations, the built-in categories and sample data, the tab lock and the test database. `storage.js` is the only file with SQL.
+- `src/features/expenses/`: Home, add and edit, statistics and history screens.
+- `src/features/settings/`: Settings, categories, budgets, recurring and savings screens.
+- `src/features/onboarding/`: the first-use welcome screen.
+- `src/lib/`: pure helpers (backup, dates, money, quincena rules, translations and more). Tests sit next to the code as `*.test.js`.
+- `src/App.jsx`: routes and page layout. `src/main.jsx`: app entry point. `src/index.css`: all styles.
 
 ## Troubleshooting
 
@@ -193,7 +180,7 @@ src/
 - [x] History screen, with search and filters
 - [x] CSV export
 - [x] Start empty, with optional sample data
-- [x] "Safe to spend per day" on the dashboard
+- [x] "You can spend today" on the dashboard
 - [x] Settings screen
 - [x] SQLite storage
 - [x] Backup file and restore
@@ -207,6 +194,21 @@ src/
 ## Progress log
 
 Newest first.
+
+### 2026-10-23
+- Merge PAT into ZOH: the savings goal is set aside before the daily amount; working notes and docs for Claude and Claude Code
+
+### 2026-10-19
+- Set the savings goal aside before the "You can spend today" amount
+
+### 2026-10-14
+- Merge main into ZOH: welcome screen, "I was paid" pay days and the profile
+- 0.23: Welcome screen on first use, profile with name and savings goal in backups, "I was paid" pay days (migrations v7 and v8)
+
+### 2026-10-13
+- 0.22: Merge PAT into main: payment method with a History filter, configurable quincena, closing rules
+- 0.21: Handled recurring items stay listed, Spanish leftover note, calmer backup reminder
+- 0.20: App name, logo and website layout
 
 ### 2026-10-12
 - Website layout: full-width top bar, centered headings, two-column pages on wide screens
