@@ -8,6 +8,7 @@ import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
 import CurrencyPills from '../../components/CurrencyPills'
+import EmptyState from '../../components/EmptyState'
 import RecurringRow from '../../components/RecurringRow'
 
 // item is null for a new one
@@ -172,6 +173,9 @@ function RecurringEditor({ item, onDone }) {
         >
           {t('save')}
         </button>
+        <button type="button" className="btn secondary" disabled={saving} onClick={onDone}>
+          {t('cancel')}
+        </button>
         {item && (
           <button
             type="button"
@@ -202,22 +206,18 @@ export default function RecurringScreen() {
       <p className="sub">{t('recurringHint')}</p>
 
       <div className="narrow">
-        <section className="card">
-          {recurring.length === 0 ? (
-            <p className="sub empty">{t('noRecurring')}</p>
-          ) : (
+        {recurring.length === 0 ? (
+          <EmptyState card actions={false} icon="repeat" text={t('noRecurring')} />
+        ) : (
+          <section className="card">
             <ul className="list">
               {recurring.map((item) => (
                 <li key={item.id}>
-                  <RecurringRow item={item}>
-                    <button
-                      type="button"
-                      className="pill"
-                      onClick={() => setEditing(editing === item.id ? null : item.id)}
-                    >
-                      {editing === item.id ? t('cancel') : t('edit')}
-                    </button>
-                  </RecurringRow>
+                  <RecurringRow
+                    item={item}
+                    expanded={editing === item.id}
+                    onClick={() => setEditing(editing === item.id ? null : item.id)}
+                  />
                   {editing === item.id && (
                     <RecurringEditor
                       key={item.id}
@@ -228,8 +228,8 @@ export default function RecurringScreen() {
                 </li>
               ))}
             </ul>
-          )}
-        </section>
+          </section>
+        )}
 
         {editing !== 'new' && (
           <button type="button" className="btn" onClick={() => setEditing('new')}>

@@ -96,6 +96,41 @@ const paths = {
     </>
   ),
   check: <path d="M20 6 9 17l-5-5" />,
+  repeat: (
+    <>
+      <path d="m17 2 4 4-4 4" />
+      <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+      <path d="m7 22-4-4 4-4" />
+      <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+    </>
+  ),
+  chevronRight: <path d="m9 18 6-6-6-6" />,
+  search: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </>
+  ),
+  x: (
+    <>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </>
+  ),
+  calendar: (
+    <>
+      <path d="M8 2v4" />
+      <path d="M16 2v4" />
+      <rect width="18" height="18" x="3" y="4" rx="2" />
+      <path d="M3 10h18" />
+    </>
+  ),
+  arrowUpRight: (
+    <>
+      <path d="M7 7h10v10" />
+      <path d="M7 17 17 7" />
+    </>
+  ),
 }
 
 // Built-in categories are known by their key, never by their translated name
@@ -136,7 +171,7 @@ function firstLetter(name) {
 
 // Round icon with a soft background and the colour of the category.
 //   category: a category object, or undefined (uncategorized)
-//   kind: 'income' | 'savings' to show those icons instead
+//   kind: 'income' | 'savings' | 'savingsOut' to show those icons instead
 //   size: 36 (rows) or 44 (bigger spots)
 // Custom categories (they have a name) show the first letter of the name, or
 // a tag when it does not start with a letter. The icon is decorative: the text
@@ -155,6 +190,10 @@ export default function CategoryIcon({ category, kind, size = 36 }) {
     color = 'var(--accent)'
     soft = 'var(--accent-soft)'
     content = <Icon name="piggyBank" size={inner} />
+  } else if (kind === 'savingsOut') {
+    color = 'var(--accent)'
+    soft = 'var(--accent-soft)'
+    content = <Icon name="arrowUpRight" size={inner} />
   } else if (category) {
     color = categoryColor(category)
     soft = `var(--cat-${category.color}-soft)`

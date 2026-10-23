@@ -82,14 +82,14 @@ export default function ConsentScreen() {
         <p className="sub">{t('consentPurpose')}</p>
         {hasData && <p className="sub">{t('consentExisting')}</p>}
 
-        <h2 className="label">{t('consentStoresTitle')}</h2>
+        <h2 className="field-title">{t('consentStoresTitle')}</h2>
         <p>{t('consentStores')}</p>
         <p>{t('consentLocal')}</p>
 
-        <h2 className="label">{t('consentRightsTitle')}</h2>
+        <h2 className="field-title">{t('consentRightsTitle')}</h2>
         <p>{t('consentRights')}</p>
 
-        <h2 className="label">{t('consentDocsTitle')}</h2>
+        <h2 className="field-title">{t('consentDocsTitle')}</h2>
         <ul className="legal-links" ref={list}>
           {LEGAL_DOCS.map(({ id, titleKey }) => (
             <li key={id}>

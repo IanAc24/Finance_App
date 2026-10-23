@@ -1,18 +1,44 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { categoryColor, categoryLabel } from '../../lib/categories'
-import { parseAmount } from '../../lib/money'
+import { getQuincenaRange, parseDate } from '../../lib/dates'
+import { currencies, formatMoney, parseAmount, sum } from '../../lib/money'
+import { getCategoryTotals } from '../../lib/stats'
+import { useToday } from '../../lib/useToday'
 import { useSettings } from '../../context/useSettings'
+import { useToast } from '../../context/useToast'
 import { useTransactions } from '../../context/useTransactions'
+import CategoryIcon from '../../components/CategoryIcon'
 import CurrencyPills from '../../components/CurrencyPills'
 
 function BudgetForm({ currency }) {
   const { t } = useSettings()
-  const { categories, budgets, setBudget } = useTransactions()
+  const toast = useToast()
+  const { categories, budgets, transactions, quincenaSchedule, setBudget } =
+    useTransactions()
+  const today = useToday()
+  const { symbol } = currencies.find((c) => c.code === currency)
 
   const current = (categoryId) =>
     budgets.find((b) => b.categoryId === categoryId && b.currency === currency)
       ?.amount ?? 0
+
+  // what each category has spent in this quincena, in this currency
+  const { start, end } = getQuincenaRange(today, quincenaSchedule)
+  const spentByCategory = getCategoryTotals(
+    transactions.filter((tx) => {
+      const date = parseDate(tx.date)
+      return (
+        tx.type === 'expense' &&
+        tx.currency === currency &&
+        date >= start &&
+        date <= end
+      )
+    }),
+    categories,
+  )
+  const spentOf = (categoryId) =>
+    spentByCategory.find((item) => item.category.id === categoryId)?.total ?? 0
 
   const [texts, setTexts] = useState(() =>
     Object.fromEntries(
@@ -21,27 +47,24 @@ function BudgetForm({ currency }) {
   )
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
-  const [saved, setSaved] = useState(false)
 
   const invalid = categories.some((c) => parseAmount(texts[c.id] ?? '') === null)
 
   const handleChange = (id, value) => {
     setTexts((prev) => ({ ...prev, [id]: value }))
-    setSaved(false)
   }
 
   const handleSave = async () => {
     if (saving || invalid) return
     setSaving(true)
     setSaveError(false)
-    setSaved(false)
     try {
       for (const c of categories) {
         const value = parseAmount(texts[c.id] ?? '')
         if (value !== current(c.id)) await setBudget(c.id, currency, value)
       }
       setSaving(false)
-      setSaved(true)
+      toast.show({ message: t('saved') })
     } catch (error) {
       console.error(error)
       setSaving(false)
@@ -49,31 +72,90 @@ function BudgetForm({ currency }) {
     }
   }
 
+  // the state of a saved budget, in words (the bar only repeats it)
+  const stateOf = (spent, limit) => {
+    const ratio = spent / limit
+    if (ratio >= 1) {
+      return {
+        kind: 'over',
+        text: t('overBudgetBy').replace(
+          '{amount}',
+          formatMoney(sum([spent, -limit]), currency),
+        ),
+      }
+    }
+    if (ratio >= 0.8) {
+      return { kind: 'near', text: `${Math.round(ratio * 100)}% ${t('ofBudget')}` }
+    }
+    return {
+      kind: 'ok',
+      text: t('budgetLeft').replace('{amount}', formatMoney(sum([limit, -spent]), currency)),
+    }
+  }
+
   return (
     <>
       <section className="card">
         <ul className="list">
-          {categories.map((c) => (
-            <li className="row" key={c.id}>
-              <span className="row-name">
-                <span
-                  className="dot"
-                  aria-hidden="true"
-                  style={{ background: categoryColor(c) }}
-                />
-                {categoryLabel(c, t)}
-              </span>
-              <input
-                className="budget-input"
-                type="text"
-                inputMode="decimal"
-                placeholder={t('noLimit')}
-                aria-label={categoryLabel(c, t)}
-                value={texts[c.id] ?? ''}
-                onChange={(e) => handleChange(c.id, e.target.value)}
-              />
-            </li>
-          ))}
+          {categories.map((c) => {
+            const limit = current(c.id)
+            const spent = spentOf(c.id)
+            const state = limit > 0 ? stateOf(spent, limit) : null
+            let barColor = categoryColor(c)
+            if (state?.kind === 'over') barColor = 'var(--danger)'
+            else if (state?.kind === 'near') barColor = 'var(--warning)'
+
+            return (
+              <li key={c.id}>
+                <div className="tx-row">
+                  <CategoryIcon category={c} />
+                  <span className="tx-text">
+                    <span className="tx-name">{categoryLabel(c, t)}</span>
+                  </span>
+                  <span className="budget-field">
+                    <span className="budget-symbol" aria-hidden="true">
+                      {symbol}
+                    </span>
+                    <input
+                      className="budget-input"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder={t('noLimit')}
+                      aria-label={categoryLabel(c, t)}
+                      value={texts[c.id] ?? ''}
+                      onChange={(e) => handleChange(c.id, e.target.value)}
+                    />
+                  </span>
+                </div>
+                {state && (
+                  <div className="budget-state">
+                    <div className="mini-bar" aria-hidden="true">
+                      <div
+                        style={{
+                          width: `${Math.min(spent / limit, 1) * 100}%`,
+                          background: barColor,
+                        }}
+                      />
+                    </div>
+                    <p className="budget-note">
+                      {t('budgetSpentOf')
+                        .replace('{spent}', formatMoney(spent, currency))
+                        .replace('{limit}', formatMoney(limit, currency))}
+                    </p>
+                    <p
+                      className={
+                        state.kind === 'ok'
+                          ? 'budget-note'
+                          : `budget-note ${state.kind}`
+                      }
+                    >
+                      {state.text}
+                    </p>
+                  </div>
+                )}
+              </li>
+            )
+          })}
         </ul>
       </section>
 
@@ -86,12 +168,8 @@ function BudgetForm({ currency }) {
         disabled={saving || invalid}
         onClick={handleSave}
       >
-        {t('save')}
+        {saving ? t('saving') : t('save')}
       </button>
-      {/* always in the page, so a screen reader announces the change */}
-      <p className="sub" role="status">
-        {saved ? t('saved') : ''}
-      </p>
     </>
   )
 }
@@ -109,7 +187,9 @@ export default function BudgetsScreen() {
       <p className="sub">{t('budgetHint')}</p>
 
       <div className="narrow">
-        <CurrencyPills value={currency} onChange={setCurrency} />
+        <div className="center-pills">
+          <CurrencyPills value={currency} onChange={setCurrency} />
+        </div>
 
         <BudgetForm key={currency} currency={currency} />
       </div>

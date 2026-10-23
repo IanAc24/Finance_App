@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
+  Link,
   Navigate,
   useLocation,
   useNavigate,
@@ -8,24 +9,41 @@ import {
 } from 'react-router-dom'
 import { categoryLabel } from '../../lib/categories'
 import { daysBetween, isValidDate, parseDate, todayString } from '../../lib/dates'
+import { lastDays } from '../../lib/days'
 import { formatDate } from '../../lib/format'
 import { applyKey, formatTyping } from '../../lib/keypad'
 import { MAX_CATEGORY_NAME_LENGTH, MAX_NOTE_LENGTH } from '../../lib/limits'
 import { MAX_AMOUNT, currencies, parseAmount } from '../../lib/money'
+import { onceAtATime } from '../../lib/onceAtATime'
 import { isClosingDay, nextQuincenaStart } from '../../lib/quincena'
 import { normalizePaymentMethod } from '../../lib/payment'
 import { readPref, writePref } from '../../lib/prefs'
 import { findMatchingDue } from '../../lib/recurring'
 import { suggestNotes } from '../../lib/suggest'
+import { useToday } from '../../lib/useToday'
 import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
+import { useToast } from '../../context/useToast'
 import { useTransactions } from '../../context/useTransactions'
+import CategoryPicker from '../../components/CategoryPicker'
 import CurrencyPills from '../../components/CurrencyPills'
+import DateStrip from '../../components/DateStrip'
 import Keypad from '../../components/Keypad'
 import PaymentPills from '../../components/PaymentPills'
 
 // A warning shows when the date is more than this many days ahead
 const FUTURE_DAYS_LIMIT = 3
+
+// Under this width the Save bar covers part of the screen, so a focused field
+// is scrolled to the middle
+const PHONE_WIDTH = 900
+
+// The name of the screen the edit came from, for the back link
+function backLabel(path, t) {
+  if (path === '/') return t('home')
+  if (path === '/stats') return t('statistics')
+  return t('history')
+}
 
 // The currency of the last transaction added, if it is still a known one
 function lastCurrency(fallback) {
@@ -56,6 +74,7 @@ function validRepeat(value) {
 export default function AddExpenseScreen() {
   const { locale, t } = useSettings()
   const { confirm } = useDialog()
+  const toast = useToast()
   const {
     transactions,
     addTransaction,
@@ -72,6 +91,7 @@ export default function AddExpenseScreen() {
   } = useTransactions()
   const navigate = useNavigate()
   const location = useLocation()
+  const today = useToday()
   const { id } = useParams()
   const [params] = useSearchParams()
 
@@ -107,9 +127,15 @@ export default function AddExpenseScreen() {
     typeof source?.note === 'string' ? source.note : '',
   )
   const [date, setDate] = useState(editing?.date ?? todayString)
+  // the "Other date" field was opened by hand (it is also open whenever the
+  // date is not one of the days of the strip)
+  const [showOtherDate, setShowOtherDate] = useState(false)
   const [toSavingsText, setToSavingsText] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
+  // The lock against a double save. The saving state above only paints the
+  // button: it does not change between two clicks of the same tick, this does.
+  const [runOnce] = useState(() => onceAtATime())
 
   const handleKey = (key) => {
     setAmountText((text) => applyKey(text, key, currency))
@@ -142,11 +168,14 @@ export default function AddExpenseScreen() {
 
   const suggestions = suggestNotes(transactions, note, type)
   const amount = parseFloat(amountText) || 0
+  const typed = formatTyping(amountText, currency) || '0'
   const { symbol } = currencies.find((c) => c.code === currency)
   const isCustom = type === 'expense' && categoryId === null
   const dateValid = isValidDate(date)
   const isFarFuture =
     dateValid && daysBetween(new Date(), parseDate(date)) > FUTURE_DAYS_LIMIT
+  const inStrip = lastDays(today, 7).includes(date)
+  const otherDateOpen = showOtherDate || !inStrip
   // part of an income can go straight to savings (only when adding)
   const showToSavings = !editing && type === 'income'
   const toSavingsParsed = parseAmount(toSavingsText)
@@ -175,8 +204,8 @@ export default function AddExpenseScreen() {
     return `${t('matchesRecurring')} "${name}". ${t('markPaidQuestion')}`
   }
 
-  const handleSave = async () => {
-    if (!canSave || saving) return
+  // The save itself. Only after it resolves does the screen leave and say so.
+  const save = async () => {
     setSaving(true)
     setSaveError(false)
     try {
@@ -196,6 +225,7 @@ export default function AddExpenseScreen() {
       if (editing) {
         await updateTransaction(editing.id, tx)
         navigate(backTo)
+        toast.show({ message: t('toastChangesSaved') })
       } else {
         // a due recurring item with the same amount may be this very bill
         const match = findMatchingDue(recurring, tx, new Date(), quincenaSchedule)
@@ -230,12 +260,23 @@ export default function AddExpenseScreen() {
         writePref('lastPaymentMethod', paymentMethod)
         if (type === 'expense') writePref('lastCategoryId', savedCategoryId)
         navigate('/')
+        toast.show({
+          message: type === 'income' ? t('toastIncomeSaved') : t('toastExpenseSaved'),
+          action: { label: t('addAnother'), to: `/add?type=${type}` },
+        })
       }
     } catch (error) {
       console.error(error)
       setSaving(false)
       setSaveError(true)
     }
+  }
+
+  // runOnce takes the lock before anything else: a second click of the same
+  // tick finds it taken and does nothing
+  const handleSave = () => {
+    if (!canSave) return
+    runOnce(save)
   }
 
   const handleRepeat = () => {
@@ -268,40 +309,56 @@ export default function AddExpenseScreen() {
     }
   }
 
+  // On phones the Save bar and the top bar cover part of the screen: a field
+  // that gets the focus is scrolled to the middle so it is never hidden
+  const handleFocus = (event) => {
+    if (window.innerWidth >= PHONE_WIDTH) return
+    const target = event.target
+    if (target.matches?.('input, select, textarea')) {
+      target.scrollIntoView({ block: 'center' })
+    }
+  }
+
   let title = type === 'income' ? t('addIncome') : t('addExpense')
   if (editing) title = t('editTransaction')
 
   return (
     <>
+      {editing && (
+        <Link className="back-link" to={backTo}>
+          ‹ {backLabel(backTo, t)}
+        </Link>
+      )}
       <h1 className="screen-title">{title}</h1>
 
-      <div className="pill-group center">
-        {['expense', 'income'].map((tp) => (
-          <button
-            key={tp}
-            type="button"
-            className={type === tp ? 'pill active' : 'pill'}
-            aria-pressed={type === tp}
-            onClick={() => setType(tp)}
-          >
-            {tp === 'expense' ? t('typeExpense') : t('typeIncome')}
-          </button>
-        ))}
-      </div>
-
-      <div className="cols">
+      <div className="cols add-form" onFocus={handleFocus}>
         <div className="col">
-          <section className="card">
-            <CurrencyPills value={currency} onChange={setCurrency} />
+          <section className="card add-amount">
+            <div className="add-top">
+              <div className="pill-group">
+                {['expense', 'income'].map((tp) => (
+                  <button
+                    key={tp}
+                    type="button"
+                    className={type === tp ? 'pill active' : 'pill'}
+                    aria-pressed={type === tp}
+                    onClick={() => setType(tp)}
+                  >
+                    {tp === 'expense' ? t('typeExpense') : t('typeIncome')}
+                  </button>
+                ))}
+              </div>
+              <CurrencyPills value={currency} onChange={setCurrency} />
+            </div>
             <p className="label amount-label">{t('amount')}</p>
             <p
-              className="amount-display"
+              className={typed.length > 9 ? 'amount-display is-long' : 'amount-display'}
               role="status"
               aria-live="polite"
               aria-atomic="true"
             >
-              {symbol}
-              {formatTyping(amountText, currency) || '0'}
+              <span className="money-symbol">{symbol}</span>
+              {typed}
             </p>
             <Keypad onKey={handleKey} currency={currency} />
           </section>
@@ -310,33 +367,18 @@ export default function AddExpenseScreen() {
         <div className="col">
           {type === 'expense' && (
             <section className="card">
-              <p className="label">{t('category')}</p>
-              <div className="pill-group wrap">
-                {categories.map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    className={categoryId === c.id ? 'pill active' : 'pill'}
-                    aria-pressed={categoryId === c.id}
-                    onClick={() => setCategoryId(c.id)}
-                  >
-                    {categoryLabel(c, t)}
-                  </button>
-                ))}
-                <button
-                  type="button"
-                  className={isCustom ? 'pill active' : 'pill'}
-                  aria-pressed={isCustom}
-                  onClick={() => setCategoryId(null)}
-                >
-                  + {t('customCategory')}
-                </button>
-              </div>
+              <h2 className="field-title">{t('category')}</h2>
+              <CategoryPicker
+                categories={categories}
+                value={categoryId}
+                onChange={setCategoryId}
+              />
               {isCustom && (
                 <label className="field">
                   <span className="label">{t('categoryName')}</span>
                   <input
                     type="text"
+                    autoFocus
                     value={customName}
                     maxLength={MAX_CATEGORY_NAME_LENGTH}
                     onChange={(e) => setCustomName(e.target.value)}
@@ -347,7 +389,48 @@ export default function AddExpenseScreen() {
           )}
 
           <section className="card">
-            <p className="label">{t('paymentMethod')}</p>
+            <h2 className="field-title">{t('date')}</h2>
+            <DateStrip
+              today={today}
+              value={date}
+              onChange={(day) => {
+                setDate(day)
+                setShowOtherDate(false)
+              }}
+              otherOpen={otherDateOpen}
+              onToggleOther={() => setShowOtherDate((open) => !open)}
+            />
+            {otherDateOpen && (
+              <label className="field">
+                <span className="label">{t('otherDate')}</span>
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </label>
+            )}
+            {!dateValid && <p className="field-note error" role="alert">{t('invalidDate')}</p>}
+            {isFarFuture && (
+              <p className="field-note warning" role="status">{t('futureDateWarning')}</p>
+            )}
+            {closingDayIncome && (
+              <div className="field-note warning">
+                <p>{t('closingDayIncome')}</p>
+                <button
+                  type="button"
+                  className="pill"
+                  onClick={() => setDate(nextStart)}
+                >
+                  {t('dateItOn')}{' '}
+                  {formatDate(parseDate(nextStart), locale, { year: false })}
+                </button>
+              </div>
+            )}
+          </section>
+
+          <section className="card">
+            <h2 className="field-title">{t('paymentMethod')}</h2>
             <PaymentPills value={paymentMethod} onChange={setPaymentMethod} />
             <label className="field">
               <span className="label">{t('note')}</span>
@@ -377,31 +460,6 @@ export default function AddExpenseScreen() {
                 ))}
               </div>
             )}
-            <label className="field">
-              <span className="label">{t('date')}</span>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-              />
-            </label>
-            {!dateValid && <p className="field-note error" role="alert">{t('invalidDate')}</p>}
-            {isFarFuture && (
-              <p className="field-note warning" role="status">{t('futureDateWarning')}</p>
-            )}
-            {closingDayIncome && (
-              <div className="field-note warning">
-                <p>{t('closingDayIncome')}</p>
-                <button
-                  type="button"
-                  className="pill"
-                  onClick={() => setDate(nextStart)}
-                >
-                  {t('dateItOn')}{' '}
-                  {formatDate(parseDate(nextStart), locale, { year: false })}
-                </button>
-              </div>
-            )}
             {showToSavings && (
               <label className="field">
                 <span className="label">{t('toSavingsOptional')}</span>
@@ -418,32 +476,6 @@ export default function AddExpenseScreen() {
             )}
           </section>
 
-          {amountTooBig && (
-            <p className="field-note error" role="alert">
-              {t('amountTooBig')}
-            </p>
-          )}
-          {saveError && <p className="field-note error" role="alert">{t('saveError')}</p>}
-
-          {/* always visible at the bottom of the screen, even with the
-              keypad and the category list above it */}
-          <div className="save-bar">
-            {amount === 0 && (
-              <p className="sub" id="save-hint">
-                {t('typeAmountFirst')}
-              </p>
-            )}
-            <button
-              type="button"
-              className="btn"
-              disabled={!canSave || saving}
-              aria-describedby={amount === 0 ? 'save-hint' : undefined}
-              onClick={handleSave}
-            >
-              {t('save')}
-            </button>
-          </div>
-
           {editing && (
             <button
               type="button"
@@ -456,11 +488,42 @@ export default function AddExpenseScreen() {
           )}
 
           {editing && (
-            <button type="button" className="btn danger" onClick={handleDelete}>
+            <button
+              type="button"
+              className="btn danger"
+              disabled={saving}
+              onClick={handleDelete}
+            >
               {t('delete')}
             </button>
           )}
         </div>
+      </div>
+
+      {amountTooBig && (
+        <p className="field-note error" role="alert">
+          {t('amountTooBig')}
+        </p>
+      )}
+      {saveError && <p className="field-note error" role="alert">{t('saveError')}</p>}
+
+      {/* always visible at the bottom of the screen, even with the
+          keypad and the category list above it */}
+      <div className="save-bar">
+        {amount === 0 && (
+          <p className="sub" id="save-hint">
+            {t('typeAmountFirst')}
+          </p>
+        )}
+        <button
+          type="button"
+          className="btn"
+          disabled={!canSave || saving}
+          aria-describedby={amount === 0 ? 'save-hint' : undefined}
+          onClick={handleSave}
+        >
+          {saving ? t('saving') : t('save')}
+        </button>
       </div>
     </>
   )

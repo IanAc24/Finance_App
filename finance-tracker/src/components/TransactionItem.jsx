@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { categoryLabel } from '../lib/categories'
-import { parseDate } from '../lib/dates'
+import { parseDate, todayString } from '../lib/dates'
 import { formatDate } from '../lib/format'
 import { formatMoney } from '../lib/money'
 import { paymentNote } from '../lib/payment'
@@ -9,7 +9,8 @@ import { useTransactions } from '../context/useTransactions'
 import CategoryIcon from './CategoryIcon'
 
 // One transaction as a list row: icon, description, meta and the amount on the
-// right. The whole row is the tap target. Long text is cut with an ellipsis on
+// right. The whole row is the tap target. A movement dated after today says
+// "Upcoming" in its meta line (in words, not only a colour). Long text is cut with an ellipsis on
 // one line. Expenses are "−" in the text colour, income "+" in the income colour.
 export default function TransactionItem({ tx, showDate = true }) {
   const { locale, t } = useSettings()
@@ -30,6 +31,8 @@ export default function TransactionItem({ tx, showDate = true }) {
       : join(label, method)
     : join(showDate && date, method)
 
+  const upcoming = tx.date > todayString()
+
   return (
     <li>
       {/* "from" tells the edit screen where to go back to */}
@@ -44,7 +47,13 @@ export default function TransactionItem({ tx, showDate = true }) {
         />
         <span className="tx-text">
           <span className="tx-name">{tx.note || label}</span>
-          {meta && <span className="tx-meta">{meta}</span>}
+          {(meta || upcoming) && (
+            <span className="tx-meta">
+              {upcoming && <span className="tx-upcoming">{t('upcoming')}</span>}
+              {upcoming && meta && ' · '}
+              {meta}
+            </span>
+          )}
         </span>
         <span className={isIncome ? 'tx-amount income' : 'tx-amount'}>
           {isIncome ? '+' : '−'}

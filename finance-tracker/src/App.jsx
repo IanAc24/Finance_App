@@ -1,10 +1,10 @@
-import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
 import { useConsent } from './context/useConsent'
 import { useTransactions } from './context/useTransactions'
 import ConsentProvider from './context/ConsentProvider'
 import DialogProvider from './context/DialogProvider'
 import SettingsProvider from './context/SettingsProvider'
+import ToastProvider from './context/ToastProvider'
 import TransactionsProvider from './context/TransactionsProvider'
 import AddFab from './components/AddFab'
 import AppBar from './components/AppBar'
@@ -23,14 +23,6 @@ import OnboardingScreen from './features/onboarding/OnboardingScreen'
 import ConsentScreen from './features/legal/ConsentScreen'
 import LegalScreen from './features/settings/LegalScreen'
 import { hasCurrentConsent } from './lib/legal'
-
-// Design prototypes: only in development, never in the production bundle
-const ProtoHome = import.meta.env.DEV
-  ? lazy(() => import('./prototypes').then((m) => ({ default: m.HomePage })))
-  : null
-const ProtoHistory = import.meta.env.DEV
-  ? lazy(() => import('./prototypes').then((m) => ({ default: m.HistoryPage })))
-  : null
 
 // The consent screen comes first, then the first-use screen; each replaces the
 // whole app (no menu, no other route) until it is done. The first-use screen
@@ -72,26 +64,6 @@ function Shell() {
           <Route path="/settings/recurring" element={<RecurringScreen />} />
           <Route path="/savings" element={<SavingsScreen />} />
           <Route path="/legal/:doc" element={<LegalScreen />} />
-          {import.meta.env.DEV && (
-            <>
-              <Route
-                path="/prototypes/home"
-                element={
-                  <Suspense fallback={null}>
-                    <ProtoHome />
-                  </Suspense>
-                }
-              />
-              <Route
-                path="/prototypes/history"
-                element={
-                  <Suspense fallback={null}>
-                    <ProtoHistory />
-                  </Suspense>
-                }
-              />
-            </>
-          )}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -107,9 +79,11 @@ export default function App() {
       <ConsentProvider>
       <TransactionsProvider>
         <BrowserRouter>
-          <SkipLink />
-          <ScrollToTop />
-          <Shell />
+          <ToastProvider>
+            <SkipLink />
+            <ScrollToTop />
+            <Shell />
+          </ToastProvider>
         </BrowserRouter>
       </TransactionsProvider>
       </ConsentProvider>

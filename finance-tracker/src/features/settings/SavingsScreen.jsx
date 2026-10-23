@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { byNewest, getQuincenaRange, parseDate, todayString } from '../../lib/dates'
 import { formatDate } from '../../lib/format'
 import { MAX_NOTE_LENGTH } from '../../lib/limits'
@@ -9,7 +10,10 @@ import { useToday } from '../../lib/useToday'
 import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
+import CategoryIcon from '../../components/CategoryIcon'
 import CurrencyPills from '../../components/CurrencyPills'
+import EmptyState from '../../components/EmptyState'
+import Money from '../../components/Money'
 
 export default function SavingsScreen() {
   const { locale, t } = useSettings()
@@ -99,23 +103,22 @@ export default function SavingsScreen() {
 
   return (
     <>
+      <Link className="back-link" to="/settings">
+        ‹ {t('settings')}
+      </Link>
       <h1 className="screen-title">{t('savings')}</h1>
       <p className="sub">{t('savingsHint')}</p>
 
       <div className="narrow">
-        <section className="card">
-          <ul className="list">
-            {currencies.map(({ code, labelKey }) => (
-              <li key={code} className="row">
-                <span className="row-name">{t(labelKey)}</span>
-                <span className="row-amount">
-                  {formatMoney(savingsBalance(savings, code), code)}
-                </span>
-              </li>
-            ))}
-          </ul>
+        <section className="summary">
+          {currencies.map(({ code, labelKey }) => (
+            <div className="savings-balance" key={code}>
+              <p className="sub">{t(labelKey)}</p>
+              <Money text={formatMoney(savingsBalance(savings, code), code)} />
+            </div>
+          ))}
           {profile.savingsGoal && (
-            <ul className="list divider">
+            <ul className="list summary-where">
               <li className="row">
                 <span className="row-name">{t('savingsGoalPerQuincena')}</span>
                 <span className="row-amount">
@@ -194,29 +197,32 @@ export default function SavingsScreen() {
         </section>
 
         <section className="card">
-          <p className="label">{t('movements')}</p>
+          <h2 className="section-title">{t('movements')}</h2>
           {sorted.length === 0 ? (
-            <p className="sub empty">{t('noSavingsYet')}</p>
+            <EmptyState actions={false} icon="piggyBank" text={t('noSavingsYet')} />
           ) : (
             <ul className="list">
               {sorted.map((item) => (
-                <li key={item.id} className="row">
-                  <div>
-                    <p className="row-name">
-                      {item.note ||
-                        (item.direction === 'in'
-                          ? t('moveToSavings')
-                          : t('takeFromSavings'))}
-                    </p>
-                    <p className="row-meta">
-                      {formatDate(parseDate(item.date), locale)}
-                    </p>
-                  </div>
-                  <div className="row-side">
-                    <span className="row-amount">
+                <li key={item.id}>
+                  <div className="tx-row">
+                    <CategoryIcon kind={item.direction === 'in' ? 'savings' : 'savingsOut'} />
+                    <span className="tx-text">
+                      <span className="tx-name">
+                        {item.note ||
+                          (item.direction === 'in'
+                            ? t('moveToSavings')
+                            : t('takeFromSavings'))}
+                      </span>
+                      <span className="tx-meta">
+                        {formatDate(parseDate(item.date), locale)}
+                      </span>
+                    </span>
+                    <span className="tx-amount">
                       {item.direction === 'in' ? '+' : '−'}
                       {formatMoney(item.amount, item.currency)}
                     </span>
+                  </div>
+                  <div className="row-actions">
                     <button
                       type="button"
                       className="pill"

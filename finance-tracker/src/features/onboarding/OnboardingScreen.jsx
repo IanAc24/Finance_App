@@ -5,6 +5,7 @@ import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
 import CurrencyPills from '../../components/CurrencyPills'
 import Logo from '../../components/Logo'
+import Money from '../../components/Money'
 import QuincenaSetting from '../../components/QuincenaSetting'
 import { formatMoney, currencies } from '../../lib/money'
 import { categoryLabel } from '../../lib/categories'
@@ -41,8 +42,8 @@ function FreeSummary({ figures, hasIncome, currency }) {
       <p className="label">{t('obFreeLabel')}</p>
       {hasIncome ? (
         <>
-          <p className={negative ? 'balance has-message' : 'balance'}>
-            {formatMoney(figures.free, currency)}
+          <p className={negative ? 'summary-amount is-muted' : 'summary-amount'}>
+            <Money text={formatMoney(figures.free, currency)} />
           </p>
           {negative && <p className="sub warn">{t('obFreeNegative')}</p>}
           <p className="sub">{t('obFreeAverage')}</p>
@@ -636,7 +637,7 @@ export default function OnboardingScreen() {
             )}
             <button
               type="button"
-              className="btn secondary"
+              className="text-link ob-skip-step"
               disabled={busy}
               onClick={skipStep}
             >

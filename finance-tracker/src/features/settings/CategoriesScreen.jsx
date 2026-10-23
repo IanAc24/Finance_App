@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  categoryColor,
   categoryColors,
   categoryLabel,
   findCategoryByName,
@@ -10,6 +9,7 @@ import { MAX_CATEGORY_NAME_LENGTH } from '../../lib/limits'
 import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
+import CategoryIcon from '../../components/CategoryIcon'
 
 function CategoryEditor({ category, onDone }) {
   const { t } = useSettings()
@@ -152,27 +152,23 @@ export default function CategoriesScreen() {
           <ul className="list">
             {categories.map((c) => (
               <li key={c.id}>
-                <div className="row">
-                  <span className="row-name">
-                    <span
-                      className="dot"
-                      aria-hidden="true"
-                      style={{ background: categoryColor(c) }}
-                    />
-                    {categoryLabel(c, t)}
+                <div className="tx-row">
+                  <CategoryIcon category={c} />
+                  <span className="tx-text">
+                    <span className="tx-name">{categoryLabel(c, t)}</span>
+                    {!c.name && <span className="tx-meta">{t('builtIn')}</span>}
                   </span>
-                  {c.name ? (
+                  {c.name && (
                     <button
                       type="button"
                       className="pill"
+                      aria-expanded={editingId === c.id}
                       onClick={() =>
                         setEditingId(editingId === c.id ? null : c.id)
                       }
                     >
                       {editingId === c.id ? t('cancel') : t('edit')}
                     </button>
-                  ) : (
-                    <span className="row-meta">{t('builtIn')}</span>
                   )}
                 </div>
                 {editingId === c.id && (

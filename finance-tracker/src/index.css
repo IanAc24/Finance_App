@@ -987,11 +987,6 @@ main > .field,
   font-weight: 600;
 }
 
-/* El mes viene en minúscula en español ("octubre de 2026") */
-.month-name::first-letter {
-  text-transform: uppercase;
-}
-
 /* Flechas para cambiar de mes */
 .month-btn {
   width: 44px;
@@ -1090,10 +1085,14 @@ main > .field,
 
 /* Enlace para volver a Ajustes */
 .back-link {
-  display: inline-block;
-  padding: 12px 0;
-  font-size: 13px;
-  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -1492,7 +1491,7 @@ dialog.modal::backdrop {
 /* Los saltos de línea del mensaje se respetan (listas de lo que se borra) */
 .modal-message {
   white-space: pre-line;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
@@ -1518,6 +1517,7 @@ dialog.modal::backdrop {
 /* Botones del diálogo: uno al lado del otro, de 44px o más */
 .modal-actions {
   display: flex;
+  align-items: stretch; /* los dos botones miden lo mismo aunque un texto ocupe dos líneas */
   gap: 12px;
   margin-top: 20px;
 }
@@ -1761,7 +1761,8 @@ button.back-link {
   background: none;
   border: 0;
   font: inherit;
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
 }
@@ -1779,7 +1780,7 @@ button.back-link {
 }
 
 /* Subtítulos de la pantalla de consentimiento, con aire arriba */
-.consent h2.label {
+.consent .field-title {
   margin-top: 8px;
 }
 
@@ -2532,5 +2533,612 @@ body:has(dialog[open]) .add-fab {
 @media (hover: hover) {
   .add-fab:hover {
     filter: brightness(1.08);
+  }
+}
+
+/* ==========================================================================
+   Rediseño amable, ronda 2: Agregar, Historial, avisos breves y el resto de
+   las pantallas con las mismas piezas.
+   ========================================================================== */
+
+/* Lo que no vale (un cero) va apagado */
+.is-zero {
+  color: var(--muted);
+}
+
+/* Título pequeño de un bloque de formulario ("Categoría", "Fecha") */
+.field-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Agregar: la tarjeta del monto es suave como el resumen de Inicio, con el
+   tipo y la moneda arriba, el monto grande y el teclado */
+.add-amount {
+  background: var(--accent-soft);
+  border-color: transparent;
+}
+
+.add-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+}
+
+.add-amount .amount-label {
+  margin-top: var(--space-4);
+}
+
+/* Monto que se escribe: cifra grande con el símbolo chico y apagado, igual
+   que las cifras de Inicio. Una sola línea; si es muy largo baja de tamaño */
+.amount-display {
+  font-family: var(--font-display);
+  font-size: clamp(36px, 11vw, 48px);
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
+.amount-display.is-long {
+  font-size: clamp(24px, 7.5vw, 36px);
+}
+
+/* Sobre el fondo suave, las teclas y las pills se elevan con el color de la tarjeta */
+.add-amount .key {
+  background: var(--surface);
+  border-color: transparent;
+}
+
+.add-amount .pill:not(.active) {
+  background: var(--surface);
+}
+
+/* Categorías: cuadrícula de círculos grandes con el nombre debajo (4 por fila
+   en el celular). La elegida lleva anillo y fondo suave */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-2) var(--space-1);
+  margin-top: var(--space-3);
+}
+
+.cat-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 4px 8px;
+  border: 0;
+  border-radius: var(--radius-m);
+  background: transparent;
+  box-shadow: inset 0 0 0 2px transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.25;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--dur-fast), box-shadow var(--dur-fast),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.cat-tile.active {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 2px var(--accent);
+  font-weight: 600;
+}
+
+.cat-tile:active {
+  transform: scale(0.97);
+}
+
+/* El nombre: hasta dos líneas, sin salirse de su casilla */
+.cat-tile-label {
+  display: -webkit-box;
+  max-width: 100%;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+  text-align: center;
+}
+
+/* "Otra": círculo punteado con un + */
+.cat-icon.is-other {
+  --c: var(--muted);
+  --c-soft: transparent;
+  border: 1.5px dashed var(--control-border);
+}
+
+/* Fecha: los últimos 7 días en una tira que se desliza de lado, con hoy a la
+   vista (la tira empieza en el final) y "Otra fecha" al lado */
+.date-strip {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-3) -4px 0;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.date-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.date-tile {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 56px;
+  min-height: 64px;
+  padding: 8px 4px;
+  border: 0;
+  border-radius: var(--radius-m);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 2px transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--dur-fast), box-shadow var(--dur-fast),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.date-tile.active {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.date-tile:active {
+  transform: scale(0.97);
+}
+
+.date-tile-day {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.date-tile.active .date-tile-day {
+  color: var(--text);
+}
+
+.date-tile-number {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+/* "Otra fecha": un poco más ancha, con su nombre en vez de un número */
+.date-tile.is-other {
+  width: auto;
+  min-width: 76px;
+  padding-inline: var(--space-3);
+}
+
+.date-tile-text {
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Un campo que sigue a la tira o a la cuadrícula: con aire arriba */
+.date-strip + .field,
+.cat-grid + .field {
+  margin-top: var(--space-3);
+}
+
+/* Barra de Guardar fuera de las columnas: queda pegada abajo de toda la
+   pantalla. En pantallas anchas no se estira a 1120px */
+main > .save-bar {
+  width: 100%;
+  max-width: 480px;
+  margin-inline: auto;
+}
+
+/* Que un campo con foco no quede detrás de la barra de Guardar */
+html {
+  scroll-padding-bottom: 140px;
+}
+
+/* Avisos breves ("Gasto guardado"): arriba del botón + y de la zona segura en
+   el celular, abajo y centrados en pantallas anchas. La región es aria-live */
+.toast-region {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--space-4) + 56px + var(--space-3) + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-4);
+  pointer-events: none; /* solo el aviso recibe toques, no la franja */
+}
+
+@media (min-width: 900px) {
+  .toast-region {
+    bottom: var(--space-5);
+  }
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 440px;
+  padding: 6px 4px 6px var(--space-3);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-m);
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.toast-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.toast-message {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.toast-action {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.toast-close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+/* Entrada suave: aparece subiendo 8px. Con menos movimiento solo cambia la
+   opacidad */
+@media (prefers-reduced-motion: no-preference) {
+  .toast {
+    animation: toast-in var(--dur) var(--ease-out) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: toast-fade var(--dur) var(--ease-out) both;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes toast-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Historial */
+
+.month-name {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Resumen del mes: una línea por moneda, con ingresos y gastado (nunca se
+   suman colones con dólares) */
+.hist-summary {
+  gap: var(--space-3);
+}
+
+.hist-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-1) var(--space-3);
+}
+
+.hist-cur {
+  flex: 1 1 72px;
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.hist-fig {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 88px; /* las columnas de las dos monedas quedan alineadas */
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.hist-fig .sub {
+  font-family: system-ui, sans-serif;
+  font-weight: 400;
+}
+
+/* Filtros: tipo, método y categoría, cada uno con su nombre */
+.filter-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.filter-panel .field {
+  margin: 0;
+}
+
+/* Un día: título, total del día por moneda y sus filas con líneas finas */
+.day-group .list {
+  margin-top: 0;
+}
+
+.day-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--border);
+}
+
+.day-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.day-total {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 var(--space-3);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.method-list {
+  margin-top: var(--space-3);
+}
+
+/* "Próximo": movimientos con fecha después de hoy, dicho con palabras */
+.tx-upcoming {
+  color: var(--warning);
+  font-weight: 600;
+}
+
+/* Estadísticas, Ajustes y las demás pantallas con las mismas piezas */
+
+/* Etiqueta chica junto a un nombre ("Esta quincena") */
+.tag {
+  display: inline-block;
+  margin-left: var(--space-2);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+/* Flecha al final de una fila que se puede abrir. Gira al abrirla */
+.row-chevron {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  color: var(--muted);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.row-chevron.is-open {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row-chevron {
+    transition: none;
+  }
+}
+
+/* Fila que es un botón entero (Gastos fijos): sin el aspecto del botón del navegador */
+button.tx-row {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button.tx-row:active {
+  opacity: 0.7;
+}
+
+/* Círculo de ícono de las filas de Ajustes: en el color de marca */
+.cat-icon.is-nav {
+  --c: var(--accent);
+  --c-soft: var(--accent-soft);
+}
+
+/* Presupuestos: el límite se escribe con el símbolo de la moneda delante */
+.budget-field {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.budget-symbol {
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+
+.budget-input {
+  width: 108px;
+}
+
+/* Barra suave y estado en palabras bajo la fila del presupuesto */
+.budget-state {
+  padding: 0 0 var(--space-3) 48px;
+}
+
+.budget-state .mini-bar {
+  margin-top: 0;
+}
+
+.budget-state .budget-note {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.budget-state .budget-note.near {
+  color: var(--warning);
+}
+
+.budget-state .budget-note.over {
+  color: var(--danger);
+}
+
+/* Botones chicos bajo una fila (Eliminar en Ahorros), alineados con el texto */
+.row-actions {
+  display: flex;
+  padding: 0 0 var(--space-3) 48px;
+}
+
+/* Ahorros: el saldo de cada moneda en la tarjeta suave */
+.savings-balance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* Pantallas de carga, bloqueo y error: tarjeta de bienvenida con un poco de aire arriba */
+.welcome.status-screen {
+  margin-top: var(--space-5);
+}
+
+/* Bienvenida: "Saltar este paso" es un enlace de texto, no un botón más */
+.text-link.ob-skip-step {
+  flex: 1 1 100%;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 14px;
+  text-align: center;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Textos legales y consentimiento: títulos en la fuente de la app, y una
+   línea fina entre los enlaces a los documentos */
+.legal-text h1,
+.legal-text h2,
+.legal-text h3 {
+  font-family: var(--font-display);
+}
+
+.legal-text {
+  padding: var(--space-5) var(--space-4);
+}
+
+.legal-links li + li {
+  border-top: 1px solid var(--border);
+}
+
+.legal-links a,
+.legal-links button {
+  width: 100%;
+  color: var(--accent);
+}
+
+/* En esta fila el nombre y los datos pueden ocupar dos líneas: el monto y la
+   flecha le quitan ancho y el nombre no debe quedar cortado a la mitad */
+button.tx-row .tx-name,
+button.tx-row .tx-meta {
+  display: -webkit-box;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+
+/* Los grupos de pills de los filtros ya tienen su nombre y su espacio */
+.filter-group .pill-group.wrap {
+  margin-top: 0;
+}
+
+/* En pantallas anchas Guardar no se pega abajo: taparía los campos de la
+   columna derecha. Queda al final del formulario, centrado */
+@media (min-width: 900px) {
+  main > .save-bar {
+    position: static;
+    padding: 0;
+    margin-bottom: 0;
+    background: none;
   }
 }
