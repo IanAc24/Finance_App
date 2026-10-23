@@ -13,8 +13,8 @@ import {
 import { formatDate } from '../../lib/format'
 import { useToday } from '../../lib/useToday'
 import { currencies, formatMoney } from '../../lib/money'
-import { isBackupReminderDue } from '../../lib/backup'
-import { readPref, writePref } from '../../lib/prefs'
+import { isBackupReminderDue, isBackupReminderSnoozed, backupSnoozeUntil } from '../../lib/backup'
+import { BACKUP_SNOOZE_PREF, readPref, writePref } from '../../lib/prefs'
 import { quincenaFigures, rolloverLeftover } from '../../lib/quincena'
 import { manualState, registerPayday } from '../../lib/quincenaSchedule'
 import { isDue, isHandled } from '../../lib/recurring'
@@ -53,6 +53,7 @@ export default function HomeScreen() {
   const { start, end } = getQuincenaRange(today, quincenaSchedule)
   const daysLeft = daysLeftInQuincena(today, quincenaSchedule)
   const [busy, setBusy] = useState(false)
+  const [backupSnoozedUntil, setBackupSnoozedUntil] = useState(() => readPref(BACKUP_SNOOZE_PREF))
   // manual pay days: the date being typed for "another date", or null
   const [otherDate, setOtherDate] = useState(null)
   const [paidError, setPaidError] = useState(null)
@@ -121,6 +122,13 @@ export default function HomeScreen() {
       writePref(rolloverSkipKey(code), previousKey)
       setSkipped((prev) => ({ ...prev, [code]: previousKey }))
     })
+
+  // "Not now" on the backup reminder: hidden for two weeks
+  const snoozeBackupReminder = () => {
+    const until = backupSnoozeUntil(today)
+    writePref(BACKUP_SNOOZE_PREF, until)
+    setBackupSnoozedUntil(until)
+  }
 
   const manual = manualState(quincenaSchedule, today)
 
@@ -404,12 +412,17 @@ export default function HomeScreen() {
         </div>
       </div>
 
-      {isBackupReminderDue(readPref('lastBackup'), transactions, today) && (
+      {!isBackupReminderSnoozed(backupSnoozedUntil, today) &&
+        isBackupReminderDue(readPref('lastBackup'), transactions, today) && (
         <p className="sub backup-line">
           {t('backupReminder')}{' '}
           <Link className="text-link" to="/settings">
             {t('goToBackup')}
           </Link>
+          {' '}
+          <button type="button" className="text-link" onClick={snoozeBackupReminder}>
+            {t('backupSnooze')}
+          </button>
         </p>
       )}
 

@@ -21,7 +21,6 @@ El español es el texto principal. El inglés tiene la misma estructura de secci
 - [URL DEL HISTORIAL DE VERSIONES] (privacidad y términos)
 - [URL PARA ELIMINAR CUENTA] y [UBICACIÓN DEL SERVIDOR]: solo al activar la nube
 - [PLAZO DE REEMBOLSO] (reembolsos)
-- [PENDIENTE: casilla de aceptación en la pantalla de bienvenida] (privacidad)
 - Confirmar con DevTools el nombre exacto de la base IndexedDB (cookies)
 - Revisar la página de Google Play el día de publicar (reembolsos)
 
@@ -74,7 +73,7 @@ Detalle de código: "Borrar todos los datos" limpia la base y las claves `rollov
 - **Cláusula de límite de responsabilidad:** la Ley 7472, art. 42, declara nulas las condiciones generales abusivas en contratos de adhesión, entre ellas las que exoneren o limiten la responsabilidad del predisponente por daños corporales, cumplimiento defectuoso o mora. Los términos lo respetan.
 - **Mayoría de edad = 18:** verificado el Código de la Niñez y la Adolescencia (Ley 7739), art. 2: adolescente es la persona de 12 a menos de 18. No pude confirmar el artículo del Código Civil: SIN VERIFICAR.
 - **Consentimiento de menores:** la Ley 8968 menciona a los "representantes" (art. 5) pero no pone una edad mínima [revisar].
-- La app aún no tiene casilla de aceptación; se recomienda agregar una (cambio de código fuera de este encargo).
+- La app ya pide el consentimiento con una casilla sin marcar antes de la bienvenida y guarda la versión y la fecha en el aparato; el abogado debe confirmar que eso basta como consentimiento escrito (art. 5 de la Ley 8968).
 - Nombre y dirección del responsable: el art. 5.1 h) los exige. Hay que poner datos reales de una de las dos personas, mientras no exista una empresa.
 
 ## Fuentes

@@ -160,11 +160,16 @@ export default function SavingsScreen() {
             <span className="label">{t('note')}</span>
             <input
               type="text"
+              autoComplete="off"
+              aria-describedby="note-hint"
               value={note}
               maxLength={MAX_NOTE_LENGTH}
               onChange={(e) => setNote(e.target.value)}
             />
           </label>
+          <p className="sub note-hint" id="note-hint">
+            {t('noteHint')}
+          </p>
 
           {saveError && <p className="field-note error" role="alert">{t('saveError')}</p>}
 

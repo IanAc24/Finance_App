@@ -34,7 +34,7 @@ There is one personal database: the one the app creates on your device with what
 | Transactions: amount, currency, date, type (income or expense) | To keep your accounts, totals, history and statistics | Needed to save a transaction |
 | Transactions: category, free-text note (max. 60 characters) and payment method (cash, card or SINPE) | To sort and search your transactions | Optional |
 | Your own categories (max. 24 characters), budgets, recurring bills and savings moves | Budgets, reminders for recurring bills and savings balance | Optional |
-| Preferences: language, theme, last currency, category and payment method used, date of the last backup, skipped leftover offers | To remember your choices and to remind you when to make a backup | Saved automatically while you use the app |
+| Preferences: language, theme, last currency, category and payment method used, date of the last backup, skipped leftover offers, backup reminder snooze | To remember your choices and to remind you when to make a backup | Saved automatically while you use the app |
 
 You type all of the above yourself. The app does not ask for or read your ID number, phone, email, location, contacts, bank accounts or cards.
 
@@ -42,7 +42,7 @@ Financial data can show your economic situation. For that reason we treat it wit
 
 ## 4. Legal basis: your consent
 
-Law 8968 asks for your express consent, in writing (electronic is fine). You give it when you accept this policy [PENDING: acceptance checkbox on the welcome screen] and start typing your data.
+Law 8968 asks for your express consent, in writing (electronic is fine). You give it on the first screen of the app, before you type any data: you tick the box "I have read and accept the Privacy policy and the Terms and conditions" (it starts unticked) and tap "Accept and continue". Your device keeps which version you accepted and on what date.
 
 You can withdraw it at any time, in the same way and for free. Withdrawal is not retroactive. To withdraw, delete your data (section 7) or stop using the app.
 
@@ -62,7 +62,7 @@ You can skip each step of the welcome, or the whole setup. Without income or pay
 
 - Data stays on your device until you delete it. We have no copy.
 - To delete your data: Settings > "Clear all data". This removes transactions, budgets, recurring bills, savings, your own categories and your profile, and restores the default schedule.
-- "Clear all data" does not remove the browser preferences (language, theme and similar). To remove them, clear the site data in your browser (see the cookies and storage policy) or uninstall the app.
+- "Clear all data" also removes the saved last-used choices (currency, category and payment method), the date of the last backup, the backup reminder snooze and the data of old versions. It only keeps the language, the theme and the record of your consent (which you withdraw separately in Settings). To remove those, clear the site data in your browser (see the cookies and storage policy) or uninstall the app.
 - If you clear the site data in your browser, or uninstall the app, everything is lost and we cannot recover it. Download a backup first if you want to keep it.
 - A downloaded backup stays on your device until you delete it.
 
@@ -138,4 +138,3 @@ How to delete your account and data once it exists:
 - [URL DEL HISTORIAL DE VERSIONES]
 - [URL PARA ELIMINAR CUENTA] (only when the cloud is turned on)
 - [UBICACIÓN DEL SERVIDOR] (only when the cloud is turned on)
-- [PENDING: acceptance checkbox on the welcome screen]

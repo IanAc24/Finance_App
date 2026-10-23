@@ -1,5 +1,5 @@
 import { categoryColors, findCategoryByName } from './categories'
-import { daysBetween, isValidDate, parseDate } from './dates'
+import { daysBetween, isValidDate, parseDate, todayString } from './dates'
 import { currencies, isValidAmount } from './money'
 import { normalizePaymentMethod } from './payment'
 import { DEFAULT_SCHEDULE, normalizeSchedule } from './quincenaSchedule'
@@ -385,4 +385,22 @@ export function summarizeCounts(counts, t) {
     .filter(([name]) => (counts[name] ?? 0) > 0)
     .map(([name, key]) => `${t(key)}: ${counts[name]}`)
   return parts.length > 0 ? parts.join(' · ') : t('listNothing')
+}
+
+// "Not now" on the backup reminder hides it for this many days
+export const BACKUP_SNOOZE_DAYS = 14
+
+// The date (YYYY-MM-DD) until which the reminder stays hidden
+export function backupSnoozeUntil(today = new Date()) {
+  const until = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  until.setDate(until.getDate() + BACKUP_SNOOZE_DAYS)
+  return todayString(until)
+}
+
+// True while the reminder is snoozed: the saved date is valid and still in
+// the future. On that date the reminder comes back; a missing or damaged value
+// means not snoozed.
+export function isBackupReminderSnoozed(snoozedUntil, today = new Date()) {
+  if (typeof snoozedUntil !== 'string' || !isValidDate(snoozedUntil)) return false
+  return daysBetween(today, parseDate(snoozedUntil)) > 0
 }

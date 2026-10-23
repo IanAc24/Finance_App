@@ -34,7 +34,7 @@ Existe una base de datos de carácter personal: la que la app crea en tu aparato
 | Movimientos: monto, moneda, fecha, tipo (ingreso o gasto) | Llevar tus cuentas, totales, historial y estadísticas | Necesarios para guardar un movimiento |
 | Movimientos: categoría, nota libre (máx. 60 letras) y medio de pago (efectivo, tarjeta o SINPE) | Ordenar y buscar tus movimientos | Opcionales |
 | Categorías propias (máx. 24 letras), presupuestos, gastos fijos y movimientos de ahorro | Presupuestos, recordatorios de gastos fijos y saldo de ahorro | Opcionales |
-| Preferencias: idioma, tema, última moneda, categoría y medio de pago usados, fecha del último respaldo, avisos de sobrante omitidos | Recordar tus elecciones y avisarte cuándo hacer un respaldo | Se guardan solas al usar la app |
+| Preferencias: idioma, tema, última moneda, categoría y medio de pago usados, fecha del último respaldo, avisos de sobrante omitidos, aplazamiento del aviso de respaldo | Recordar tus elecciones y avisarte cuándo hacer un respaldo | Se guardan solas al usar la app |
 
 Todo lo anterior lo escribes tú. La app no pide ni lee tu cédula, tu teléfono, tu correo, tu ubicación, tus contactos, tus cuentas bancarias ni tus tarjetas.
 
@@ -42,7 +42,7 @@ Los datos financieros pueden mostrar tu situación económica. Por eso los trata
 
 ## 4. Base legal: tu consentimiento
 
-La Ley 8968 pide tu consentimiento expreso, por escrito (puede ser electrónico). Lo das cuando aceptas esta política [PENDIENTE: casilla de aceptación en la pantalla de bienvenida] y empiezas a escribir tus datos.
+La Ley 8968 pide tu consentimiento expreso, por escrito (puede ser electrónico). Lo das en la primera pantalla de la app, antes de escribir cualquier dato: marcas la casilla "He leído y acepto la Política de privacidad y los Términos y condiciones" (viene sin marcar) y tocas "Aceptar y continuar". Tu aparato guarda qué versión aceptaste y en qué fecha.
 
 Puedes revocarlo en cualquier momento, de la misma forma y gratis. La revocación no tiene efecto retroactivo. Para revocar, borra tus datos (sección 7) o deja de usar la app.
 
@@ -62,7 +62,7 @@ Puedes saltar cada paso de la bienvenida o toda la configuración. Sin ingreso o
 
 - Los datos se quedan en tu aparato hasta que tú los borres. No tenemos copia.
 - Para borrar tus datos: Ajustes > "Borrar todos los datos". Esto elimina movimientos, presupuestos, gastos fijos, ahorros, categorías propias y perfil, y deja el calendario por defecto.
-- "Borrar todos los datos" no borra las preferencias del navegador (idioma, tema y similares). Para quitarlas, borra los datos del sitio en tu navegador (ver la política de cookies y almacenamiento) o desinstala la app.
+- "Borrar todos los datos" también quita las últimas elecciones guardadas (moneda, categoría y medio de pago), la fecha del último respaldo, el aplazamiento del aviso de respaldo y los datos de versiones antiguas. Solo conserva el idioma, el tema y el registro de tu consentimiento (que retiras aparte en Ajustes). Para quitar esos, borra los datos del sitio en tu navegador (ver la política de cookies y almacenamiento) o desinstala la app.
 - Si borras los datos del sitio en el navegador, o desinstalas la app, se pierde todo, y no podemos recuperarlo. Descarga un respaldo antes si quieres conservarlo.
 - Un respaldo descargado queda en tu aparato hasta que lo borres.
 
@@ -138,4 +138,3 @@ Cómo borrar tu cuenta y tus datos cuando exista:
 - [URL DEL HISTORIAL DE VERSIONES]
 - [URL PARA ELIMINAR CUENTA] (solo cuando se active la nube)
 - [UBICACIÓN DEL SERVIDOR] (solo cuando se active la nube)
-- [PENDIENTE: casilla de aceptación en la pantalla de bienvenida]

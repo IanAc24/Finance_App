@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTransactions } from '../../context/useTransactions'
+import { useConsent } from '../../context/useConsent'
 import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import {
@@ -13,9 +14,10 @@ import QuincenaSetting from '../../components/QuincenaSetting'
 import { downloadCsv, downloadFile, transactionRows } from '../../lib/csv'
 import { byNewest, isValidDate, parseDate, todayString } from '../../lib/dates'
 import { formatDate } from '../../lib/format'
+import { LEGAL_DOCS } from '../../lib/legal'
 import { MAX_PROFILE_NAME_LENGTH } from '../../lib/limits'
 import { cleanName } from '../../lib/onboarding'
-import { readPref, writePref } from '../../lib/prefs'
+import { BACKUP_SNOOZE_PREF, readPref, removePref, writePref } from '../../lib/prefs'
 
 // The date of the last backup made on this device, or null
 function readLastBackup() {
@@ -40,6 +42,8 @@ export default function SettingsScreen() {
     saveProfileName,
     startOnboarding,
   } = useTransactions()
+
+  const { consent, withdraw } = useConsent()
 
   const [busy, setBusy] = useState(false)
   const [lastBackup, setLastBackup] = useState(readLastBackup)
@@ -98,6 +102,7 @@ export default function SettingsScreen() {
     const today = todayString()
     saveBackupFile(`i-am-poor-for-now-backup-${today}.json`)
     writePref('lastBackup', today)
+    removePref(BACKUP_SNOOZE_PREF)
     setLastBackup(today)
   }
 
@@ -180,12 +185,27 @@ export default function SettingsScreen() {
       confirmLabel: t('clearConfirm'),
       danger: true,
       // what is about to be erased can be saved to a file first
-      checkbox: { label: t('restoreMakeBackup'), defaultChecked: true },
+      checkbox: { label: t('clearMakeBackup'), defaultChecked: false },
     })
     if (!confirmed) return
     run(async () => {
       if (checked) saveBackupFile(`i-am-poor-for-now-before-clear-${todayString()}.json`)
       await clearAllData()
+    })
+  }
+
+  // Withdrawing the consent erases the data like "Clear all" and then shows
+  // the consent screen again
+  const handleWithdraw = async () => {
+    const { confirmed } = await confirm({
+      message: t('withdrawIntro'),
+      confirmLabel: t('withdrawConfirm'),
+      danger: true,
+    })
+    if (!confirmed) return
+    run(async () => {
+      await clearAllData()
+      withdraw()
     })
   }
 
@@ -360,6 +380,35 @@ export default function SettingsScreen() {
                 ? `${t('lastBackup')} ${formatDate(parseDate(lastBackup), locale)}`
                 : t('noBackupYet')}
             </p>
+          </section>
+
+          <section className="card">
+            <p className="label">{t('legalSection')}</p>
+            {consent && (
+              <p className="sub">
+                {t('legalAccepted')
+                  .replace('{v}', consent.version)
+                  .replace(
+                    '{date}',
+                    formatDate(new Date(consent.acceptedAt), locale),
+                  )}
+              </p>
+            )}
+            <div className="actions">
+              {LEGAL_DOCS.map(({ id, titleKey }) => (
+                <Link key={id} className="btn secondary" to={`/legal/${id}`}>
+                  {t(titleKey)}
+                </Link>
+              ))}
+              <button
+                type="button"
+                className="btn danger"
+                disabled={busy}
+                onClick={handleWithdraw}
+              >
+                {t('withdrawConsent')}
+              </button>
+            </div>
           </section>
         </div>
       </div>

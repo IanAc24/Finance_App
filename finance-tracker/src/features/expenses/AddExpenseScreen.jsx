@@ -353,11 +353,16 @@ export default function AddExpenseScreen() {
               <span className="label">{t('note')}</span>
               <input
                 type="text"
+                autoComplete="off"
+                aria-describedby="note-hint"
                 value={note}
                 maxLength={MAX_NOTE_LENGTH}
                 onChange={(e) => setNote(e.target.value)}
               />
             </label>
+            <p className="sub note-hint" id="note-hint">
+              {t('noteHint')}
+            </p>
             {suggestions.length > 0 && (
               <div className="pill-group wrap suggestions">
                 {suggestions.map((s) => (

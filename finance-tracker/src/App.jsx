@@ -1,5 +1,7 @@
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
+import { useConsent } from './context/useConsent'
 import { useTransactions } from './context/useTransactions'
+import ConsentProvider from './context/ConsentProvider'
 import DialogProvider from './context/DialogProvider'
 import SettingsProvider from './context/SettingsProvider'
 import TransactionsProvider from './context/TransactionsProvider'
@@ -15,11 +17,24 @@ import BudgetsScreen from './features/settings/BudgetsScreen'
 import RecurringScreen from './features/settings/RecurringScreen'
 import SavingsScreen from './features/settings/SavingsScreen'
 import OnboardingScreen from './features/onboarding/OnboardingScreen'
+import ConsentScreen from './features/legal/ConsentScreen'
+import LegalScreen from './features/settings/LegalScreen'
+import { hasCurrentConsent } from './lib/legal'
 
-// The first-use screen replaces the whole app (no menu, no other route)
-// until it is done or skipped; it is also what "Repeat initial setup" opens
+// The consent screen comes first, then the first-use screen; each replaces the
+// whole app (no menu, no other route) until it is done. The first-use screen
+// can be skipped and is also what "Repeat initial setup" opens
 function Shell() {
   const { showOnboarding } = useTransactions()
+  const { consent } = useConsent()
+
+  if (!hasCurrentConsent(consent)) {
+    return (
+      <main id="main" tabIndex={-1}>
+        <ConsentScreen />
+      </main>
+    )
+  }
 
   if (showOnboarding) {
     return (
@@ -45,6 +60,7 @@ function Shell() {
           <Route path="/settings/budgets" element={<BudgetsScreen />} />
           <Route path="/settings/recurring" element={<RecurringScreen />} />
           <Route path="/savings" element={<SavingsScreen />} />
+          <Route path="/legal/:doc" element={<LegalScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
@@ -56,12 +72,14 @@ export default function App() {
   return (
     <SettingsProvider>
       <DialogProvider>
+      <ConsentProvider>
       <TransactionsProvider>
         <BrowserRouter>
           <SkipLink />
           <Shell />
         </BrowserRouter>
       </TransactionsProvider>
+      </ConsentProvider>
       </DialogProvider>
     </SettingsProvider>
   )

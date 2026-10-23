@@ -5,7 +5,9 @@ import {
   MAX_RECORDS,
   buildBackup,
   inspectBackup,
+  backupSnoozeUntil,
   isBackupDue,
+  isBackupReminderSnoozed,
   isBackupReminderDue,
   summarizeCounts,
 } from './backup'
@@ -685,5 +687,37 @@ describe('empty profile in a backup', () => {
       expect(result).not.toHaveProperty('profile')
     }
     expect(parseBackup(file({ profile: { savingsGoal: 5000 } }), builtIn).profile.savingsGoal).toBe(5000)
+  })
+})
+
+describe('backup reminder snooze', () => {
+  const today = new Date(2026, 9, 28)
+
+  it('snoozes until 14 days from today, across month and year ends', () => {
+    expect(backupSnoozeUntil(today)).toBe('2026-11-11')
+    expect(backupSnoozeUntil(new Date(2026, 11, 25))).toBe('2027-01-08')
+  })
+
+  it('is snoozed while the saved date is in the future', () => {
+    expect(isBackupReminderSnoozed('2026-11-11', today)).toBe(true)
+    expect(isBackupReminderSnoozed('2026-10-29', today)).toBe(true)
+  })
+
+  it('is not snoozed on the saved date or after it', () => {
+    expect(isBackupReminderSnoozed('2026-10-28', today)).toBe(false)
+    expect(isBackupReminderSnoozed('2026-10-01', today)).toBe(false)
+  })
+
+  it('reads nothing or garbage as not snoozed', () => {
+    expect(isBackupReminderSnoozed(null, today)).toBe(false)
+    expect(isBackupReminderSnoozed('', today)).toBe(false)
+    expect(isBackupReminderSnoozed('soon', today)).toBe(false)
+    expect(isBackupReminderSnoozed('2026-13-40', today)).toBe(false)
+  })
+
+  it('a snooze made today ends exactly 14 days later', () => {
+    const until = backupSnoozeUntil(today)
+    expect(isBackupReminderSnoozed(until, new Date(2026, 10, 10))).toBe(true)
+    expect(isBackupReminderSnoozed(until, new Date(2026, 10, 11))).toBe(false)
   })
 })

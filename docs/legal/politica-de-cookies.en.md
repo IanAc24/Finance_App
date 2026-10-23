@@ -40,6 +40,7 @@ In the browser, the app stores the following. On Android it will store equivalen
 | `lastPaymentMethod` | Last payment method used | To suggest it when adding a transaction |
 | `lastCategoryId` | Last expense category used | To suggest it when adding an expense |
 | `lastBackup` | Date of the last backup downloaded | To tell you when it is time for a backup |
+| `backupReminderSnoozedUntil` | Date until which you asked not to see the backup reminder ("Not now", 14 days) | Not to show you the reminder again before that date |
 | `rolloverSkipped.CRC` and `rolloverSkipped.USD` | The quincena in which you skipped the offer to move the leftover to savings | Not to offer it again in that quincena |
 | `finance-data` (old versions only) | Data from old versions of the app, already copied into the database | To bring your old data into the new version |
 | `finance-data-imported` | A mark saying that copy was already done | So it is not copied twice |
@@ -52,7 +53,7 @@ Everything in section 3 is needed to give you the service you ask for: saving yo
 
 ## 5. How to delete them
 
-- Your data: Settings > "Clear all data". This empties the database, but not the preferences in section 3.
+- Your data: Settings > "Clear all data". This empties the database and removes the preferences in section 3, except the language, the theme and the record of your consent.
 - Everything (data and preferences), in the browser: open the site settings and choose to clear the site data (in Chrome: padlock next to the address > Site settings > Clear data). Clearing "cookies and site data" from history also works.
 - On Android: uninstall the app, or go to the phone's Settings > Apps > the app > Storage > Clear data.
 - Important: this also deletes your financial data. Download a backup first if you want to keep it.

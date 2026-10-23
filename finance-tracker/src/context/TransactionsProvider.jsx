@@ -31,7 +31,7 @@ import { customColorAt, findCategoryByName } from '../lib/categories'
 import { quincenaKey, todayString } from '../lib/dates'
 import { currencies } from '../lib/money'
 import { EMPTY_PROFILE, isOnboarded } from '../lib/onboarding'
-import { removePref } from '../lib/prefs'
+import { ERASED_PREFS, removePref } from '../lib/prefs'
 import { DEFAULT_SCHEDULE } from '../lib/quincenaSchedule'
 import { rolloverSkipKey } from '../lib/savings'
 import { sampleTransactions } from '../lib/sample'
@@ -255,6 +255,8 @@ export default function TransactionsProvider({ children }) {
     await clearAll()
     // forget the skipped leftover offers kept on this device
     currencies.forEach(({ code }) => removePref(rolloverSkipKey(code)))
+    // and the last-used choices, the backup dates and the old-version data
+    ERASED_PREFS.forEach((key) => removePref(key))
     setTransactions([])
     setCategories(builtInCategories)
     setBudgets([])

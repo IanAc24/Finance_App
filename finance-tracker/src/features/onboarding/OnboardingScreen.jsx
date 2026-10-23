@@ -288,8 +288,10 @@ export default function OnboardingScreen() {
       expenses.length > 0
     if (typed) {
       const { confirmed } = await confirm({
-        message: t('obSkipAllConfirm'),
-        confirmLabel: repeatingOnboarding ? t('cancel') : t('obSkipAll'),
+        message: repeatingOnboarding ? t('obRepeatLeaveConfirm') : t('obSkipAllConfirm'),
+        confirmLabel: repeatingOnboarding ? t('obRepeatLeave') : t('obSkipAll'),
+        // the dialog's own Cancel button must not read "Cancel" twice
+        cancelLabel: repeatingOnboarding ? t('obRepeatKeep') : undefined,
         danger: true,
       })
       if (!confirmed) return

@@ -40,6 +40,7 @@ En el navegador, la app guarda lo siguiente. En Android guardará cosas equivale
 | `lastPaymentMethod` | Último medio de pago usado | Proponerlo al agregar un movimiento |
 | `lastCategoryId` | Última categoría de gasto usada | Proponerla al agregar un gasto |
 | `lastBackup` | Fecha del último respaldo descargado | Avisarte cuándo toca hacer un respaldo |
+| `backupReminderSnoozedUntil` | Fecha hasta la que pediste no ver el aviso de respaldo ("Ahora no", 14 días) | No mostrarte el aviso de nuevo antes de esa fecha |
 | `rolloverSkipped.CRC` y `rolloverSkipped.USD` | Quincena en la que omitiste la oferta de pasar el sobrante a ahorros | No volver a ofrecértelo en esa quincena |
 | `finance-data` (solo versiones antiguas) | Datos de versiones viejas de la app, que ya se copiaron a la base de datos | Poder pasar tus datos antiguos a la versión nueva |
 | `finance-data-imported` | Marca que dice que esa copia ya se hizo | Que no se copie dos veces |
@@ -52,7 +53,7 @@ Todo lo de la sección 3 es necesario para darte el servicio que pides: guardar 
 
 ## 5. Cómo borrarlos
 
-- Tus datos: Ajustes > "Borrar todos los datos". Esto vacía la base de datos, pero no las preferencias de la sección 3.
+- Tus datos: Ajustes > "Borrar todos los datos". Esto vacía la base de datos y quita las preferencias de la sección 3, salvo el idioma, el tema y el registro de tu consentimiento.
 - Todo (datos y preferencias), en el navegador: abre la configuración del sitio y elige borrar los datos del sitio (en Chrome: candado junto a la dirección > Configuración del sitio > Borrar datos). También sirve borrar "cookies y datos de sitios" en el historial.
 - En Android: desinstala la app, o ve a Ajustes del teléfono > Apps > la app > Almacenamiento > Borrar datos.
 - Importante: borrar esto elimina también tus datos financieros. Descarga antes un respaldo si quieres conservarlos.
