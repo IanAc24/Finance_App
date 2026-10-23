@@ -7,6 +7,7 @@ import SettingsProvider from './context/SettingsProvider'
 import TransactionsProvider from './context/TransactionsProvider'
 import AppBar from './components/AppBar'
 import SkipLink from './components/SkipLink'
+import ScrollToTop from './components/ScrollToTop'
 import HomeScreen from './features/expenses/HomeScreen'
 import AddExpenseScreen from './features/expenses/AddExpenseScreen'
 import StatisticsScreen from './features/expenses/StatisticsScreen'
@@ -76,6 +77,7 @@ export default function App() {
       <TransactionsProvider>
         <BrowserRouter>
           <SkipLink />
+          <ScrollToTop />
           <Shell />
         </BrowserRouter>
       </TransactionsProvider>

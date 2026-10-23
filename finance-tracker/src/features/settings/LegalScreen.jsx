@@ -11,11 +11,11 @@ export default function LegalScreen() {
   if (!isLegalDoc(doc)) return <Navigate to="/settings" replace />
 
   return (
-    <>
+    <div className="legal-page">
       <Link className="back-link" to="/settings">
         ‹ {t('settings')}
       </Link>
       <LegalText doc={doc} />
-    </>
+    </div>
   )
 }

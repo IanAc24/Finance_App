@@ -229,7 +229,7 @@ export default function HistoryScreen() {
                     </div>
                     <div>
                       <p className="label">{t('spent')}</p>
-                      <p className="stat spending">
+                      <p className={s.spent > 0 ? 'stat spending' : 'stat zero'}>
                         {s.spent > 0 ? '−' : ''}
                         {formatMoney(s.spent, s.code)}
                       </p>
@@ -254,7 +254,10 @@ export default function HistoryScreen() {
                   <span>{t(m.labelKey)}</span>
                   <span className="sub day-totals">
                     {currencies.map((c) => (
-                      <span className="spending" key={c.code}>
+                      <span
+                        className={m[c.code].spent > 0 ? 'spending' : undefined}
+                        key={c.code}
+                      >
                         {formatMoney(m[c.code].spent, c.code)}
                       </span>
                     ))}

@@ -394,12 +394,16 @@ export default function SettingsScreen() {
                   )}
               </p>
             )}
-            <div className="actions">
+            <ul className="legal-links">
               {LEGAL_DOCS.map(({ id, titleKey }) => (
-                <Link key={id} className="btn secondary" to={`/legal/${id}`}>
-                  {t(titleKey)}
-                </Link>
+                <li key={id}>
+                  <Link className="text-link" to={`/legal/${id}`}>
+                    {t(titleKey)}
+                  </Link>
+                </li>
               ))}
+            </ul>
+            <div className="actions">
               <button
                 type="button"
                 className="btn danger"

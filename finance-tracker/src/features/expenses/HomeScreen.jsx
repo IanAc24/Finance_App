@@ -297,7 +297,7 @@ export default function HomeScreen() {
           </div>
           <div>
             <p className="label">{t('spent')}</p>
-            <p className="stat spending">
+            <p className={spent > 0 ? 'stat spending' : 'stat zero'}>
               {spent > 0 ? '−' : ''}
               {formatMoney(spent, code)}
             </p>

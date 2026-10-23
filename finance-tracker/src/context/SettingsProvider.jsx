@@ -27,6 +27,14 @@ export default function SettingsProvider({ children }) {
   useEffect(() => {
     writePref('theme', theme)
     document.documentElement.dataset.theme = theme
+    // status bar colour follows the page background of the active theme
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (meta) {
+      const bg = getComputedStyle(document.documentElement)
+        .getPropertyValue('--bg')
+        .trim()
+      if (bg) meta.setAttribute('content', bg)
+    }
   }, [theme])
 
   const t = (key) => translations[lang][key] ?? key
