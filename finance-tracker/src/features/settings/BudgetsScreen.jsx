@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { categoryColor, categoryLabel } from '../../lib/categories'
 import { getQuincenaRange, parseDate } from '../../lib/dates'
 import { currencies, formatMoney, parseAmount, sum } from '../../lib/money'
@@ -10,6 +9,7 @@ import { useSettings } from '../../context/useSettings'
 import { useToast } from '../../context/useToast'
 import { useTransactions } from '../../context/useTransactions'
 import CategoryIcon from '../../components/CategoryIcon'
+import SubHeader from '../../components/SubHeader'
 import CurrencyPills from '../../components/CurrencyPills'
 
 function BudgetForm({ currency }) {
@@ -195,10 +195,7 @@ export default function BudgetsScreen() {
 
   return (
     <>
-      <Link className="back-link" to="/settings">
-        ‹ {t('settings')}
-      </Link>
-      <h1 className="screen-title">{t('budgets')}</h1>
+      <SubHeader to="/settings" backLabel={t('settings')} title={t('budgets')} />
       <p className="sub">{t('budgetHint')}</p>
 
       <div className="narrow">

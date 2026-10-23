@@ -37,6 +37,7 @@ export default function HistoryScreen() {
   const [method, setMethod] = useState('all')
   const [searchOpen, setSearchOpen] = useState(false)
   const [sheet, setSheet] = useState(null) // 'month' | 'filters' | null
+  const [methodsOpen, setMethodsOpen] = useState(false)
   const searchInput = useRef(null)
   const filters = { query, type, categoryId, method }
   const filtering = hasFilters(filters)
@@ -93,8 +94,12 @@ export default function HistoryScreen() {
   // filters so the three methods can always be compared, and it only shows
   // while the month on screen is the one of today (it would mislead in others)
   const quincena = getQuincenaRange(today, quincenaSchedule)
-  const methodTotals = totalsByMethod(transactions, quincena)
-  const showMethods = !filtering && isSameMonth(month, today)
+  // only the methods that were used: a method at ₡0 / $0.00 says nothing, and
+  // with a single method used the comparison has nothing to compare
+  const methodTotals = totalsByMethod(transactions, quincena).filter((m) =>
+    currencies.some((c) => m[c.code].spent > 0),
+  )
+  const showMethods = !filtering && isSameMonth(month, today) && methodTotals.length > 1
 
   const summaries = currencies
     .map((c) => ({ ...c, ...getTotals(list, c.code) }))
@@ -129,7 +134,20 @@ export default function HistoryScreen() {
   return (
     <>
       <div className="narrow hist">
-        <h1 className="hist-title">{t('history')}</h1>
+        <div className="hist-headrow">
+          <h1 className="hist-title">{t('history')}</h1>
+          {showMethods && (
+            <button
+              type="button"
+              className="calc-toggle"
+              aria-expanded={methodsOpen}
+              aria-controls="hist-methods"
+              onClick={() => setMethodsOpen((open) => !open)}
+            >
+              {t('spentByMethod')}
+            </button>
+          )}
+        </div>
 
         <div className="hist-chips">
           <div className="hist-chip-row" role="group" aria-label={t('type')}>
@@ -209,7 +227,9 @@ export default function HistoryScreen() {
           <div className="hist-sum">
             {summaries.map((s) => (
               <p key={s.code}>
-                <span>{t(s.labelKey)}</span>
+                <span>
+                  {filtering ? t('allMonths') : monthName(month, locale)} · {t(s.labelKey)}
+                </span>
                 {s.income > 0 && <Figure amount={s.income} code={s.code} kind="income" />}
                 <Figure amount={s.spent} code={s.code} kind="spent" />
               </p>
@@ -217,8 +237,8 @@ export default function HistoryScreen() {
           </div>
         )}
 
-        {showMethods && (
-          <section className="card">
+        {showMethods && methodsOpen && (
+          <section className="card" id="hist-methods">
             <h2 className="section-title">{t('spentByMethod')}</h2>
             <p className="sub">
               {t('thisQuincena')} · {formatDate(quincena.start, locale, { year: false })} –{' '}
@@ -229,14 +249,16 @@ export default function HistoryScreen() {
                 <li className="row" key={m.code}>
                   <span>{t(m.labelKey)}</span>
                   <span className="day-total">
-                    {currencies.map((c) => (
-                      <Figure
-                        amount={m[c.code].spent}
-                        code={c.code}
-                        kind="spent"
-                        key={c.code}
-                      />
-                    ))}
+                    {currencies
+                      .filter((c) => m[c.code].spent > 0)
+                      .map((c) => (
+                        <Figure
+                          amount={m[c.code].spent}
+                          code={c.code}
+                          kind="spent"
+                          key={c.code}
+                        />
+                      ))}
                   </span>
                 </li>
               ))}

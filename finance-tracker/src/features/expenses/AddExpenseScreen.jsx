@@ -26,7 +26,7 @@ import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useToast } from '../../context/useToast'
 import { useTransactions } from '../../context/useTransactions'
-import CategoryIcon, { Icon } from '../../components/CategoryIcon'
+import { Icon } from '../../components/CategoryIcon'
 import CategoryRow from '../../components/CategoryRow'
 import DateStrip from '../../components/DateStrip'
 import Keypad from '../../components/Keypad'
@@ -176,7 +176,6 @@ export default function AddExpenseScreen() {
   const amount = parseFloat(amountText) || 0
   const typed = formatTyping(amountText, currency) || '0'
   const { symbol } = currencies.find((c) => c.code === currency)
-  const category = categories.find((c) => c.id === categoryId)
   const isCustom = type === 'expense' && categoryId === null
   const dateValid = isValidDate(date)
   const isFarFuture =
@@ -362,16 +361,18 @@ export default function AddExpenseScreen() {
 
   return (
     <>
-      {editing && (
-        <Link className="back-link" to={backTo}>
-          ‹ {backLabel(backTo, t)}
-        </Link>
-      )}
-      <h1 className={editing ? 'screen-title' : 'sr-only'}>{title}</h1>
+      <h1 className="sr-only">{title}</h1>
 
       <div className="add-screen" onFocus={handleFocus}>
         <div className="add-left">
           <div className="add-toprow">
+            {/* editing: the way back shares the row of the controls, so the
+                screen has no header of its own */}
+            {editing && (
+              <Link className="back-link is-icon" to={backTo} aria-label={backLabel(backTo, t)}>
+                <Icon name="chevronLeft" size={24} />
+              </Link>
+            )}
             <div className="seg" role="group" aria-label={t('type')}>
               {['expense', 'income'].map((tp) => (
                 <button
@@ -411,8 +412,9 @@ export default function AddExpenseScreen() {
               {typed}
             </p>
             <div className="add-card-row">
-              {/* the chosen category, or the field to name a new one */}
-              {isCustom ? (
+              {/* the field to name a new category; a chosen one is already
+                  marked in the row of categories below, so it is not repeated */}
+              {isCustom && (
                 <label className="add-chip is-input">
                   <span className="sr-only">{t('categoryName')}</span>
                   <input
@@ -424,23 +426,22 @@ export default function AddExpenseScreen() {
                     onChange={(e) => setCustomName(e.target.value)}
                   />
                 </label>
-              ) : (
-                <p className="add-chip">
-                  <CategoryIcon
-                    category={type === 'expense' ? category : undefined}
-                    kind={type === 'income' ? 'income' : undefined}
-                    size={28}
-                  />
-                  <span>
-                    {type === 'income'
-                      ? t('typeIncome')
-                      : category
-                        ? categoryLabel(category, t)
-                        : t('category.uncategorized')}
-                  </span>
-                </p>
               )}
               <PaymentToggles value={paymentMethod} onChange={setPaymentMethod} />
+              {/* more options (send part of an income to savings): an icon in
+                  the card, so it does not take a row of its own */}
+              <button
+                type="button"
+                className="add-more"
+                aria-haspopup="dialog"
+                aria-label={t('moreOptions')}
+                title={t('moreOptions')}
+                onClick={() => setSheet('options')}
+              >
+                <Icon name="sliders" size={20} />
+                <span className="add-more-label">{t('moreOptions')}</span>
+                {toSavings > 0 && <span className="add-more-dot" aria-hidden="true" />}
+              </button>
             </div>
           </section>
 
@@ -505,16 +506,6 @@ export default function AddExpenseScreen() {
         </div>
 
         <div className="add-right">
-          <button
-            type="button"
-            className="add-more"
-            aria-haspopup="dialog"
-            onClick={() => setSheet('options')}
-          >
-            <span>{t('moreOptions')}</span>
-            {toSavings > 0 && <span className="add-more-dot" aria-hidden="true" />}
-          </button>
-
           {amount === 0 && (
             <p className="sr-only" id="save-hint">
               {t('typeAmountFirst')}

@@ -1,4 +1,4 @@
-import { categoryColor, categoryLabel } from '../lib/categories'
+import { categoryFill, categoryLabel } from '../lib/categories'
 import { sum } from '../lib/money'
 import { shareText } from '../lib/moneyDisplay'
 import { useSettings } from '../context/useSettings'
@@ -21,7 +21,7 @@ export default function SpendBar({ totals }) {
         {totals.map(({ category, total }) => (
           <span
             key={category.id}
-            style={{ flexGrow: (total / all) * 100, background: categoryColor(category) }}
+            style={{ flexGrow: (total / all) * 100, background: categoryFill(category) }}
           >
             {(total / all) * 100 >= LABEL_MIN_SHARE && shareText(total, all)}
           </span>
@@ -30,7 +30,7 @@ export default function SpendBar({ totals }) {
       <ul className="spend-legend" aria-label={t('legendLabel')}>
         {totals.map(({ category, total }) => (
           <li key={category.id}>
-            <span className="spend-dot" style={{ background: categoryColor(category) }} />
+            <span className="spend-dot" style={{ background: categoryFill(category) }} />
             <span>{categoryLabel(category, t)}</span>
             <span className="spend-pct">{shareText(total, all)}</span>
           </li>

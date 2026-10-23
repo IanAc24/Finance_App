@@ -13,7 +13,7 @@ import {
 import { longDate } from '../../lib/days'
 import { formatDate } from '../../lib/format'
 import { useToday } from '../../lib/useToday'
-import { currencies, formatMoney } from '../../lib/money'
+import { currencies, formatMoney, sum } from '../../lib/money'
 import { isBackupReminderDue, isBackupReminderSnoozed, backupSnoozeUntil } from '../../lib/backup'
 import { BACKUP_SNOOZE_PREF, readPref, writePref } from '../../lib/prefs'
 import { quincenaFigures, rolloverLeftover } from '../../lib/quincena'
@@ -64,6 +64,8 @@ export default function HomeScreen() {
   // manual pay days: the date being typed for "another date", or null
   const [otherDate, setOtherDate] = useState(null)
   const [paidError, setPaidError] = useState(null)
+  // the currencies whose "how it is calculated" block is open
+  const [calcOpen, setCalcOpen] = useState({})
   // the quincena each currency's rollover offer was skipped for
   const [skipped, setSkipped] = useState(() =>
     Object.fromEntries(currencies.map((c) => [c.code, readPref(rolloverSkipKey(c.code))])),
@@ -228,15 +230,15 @@ export default function HomeScreen() {
       perDay,
       perDayFull,
       reserve,
+      available,
     },
     compact,
   ) => {
     const expenses = current.filter(
       (tx) => tx.currency === code && tx.type === 'expense',
     )
-    const pct =
-      income > 0 ? Math.min(Math.round((spent / income) * 100), 100) : 0
     const categoryTotals = getCategoryTotals(expenses, categories)
+    const isOpen = calcOpen[code] === true
     const daysText = manual.overdue
       ? t('waitingPay')
       : daysLeft === 1
@@ -265,6 +267,7 @@ export default function HomeScreen() {
         {categoryTotals.length > 0 ? (
           <CategoryBars
             totals={categoryTotals}
+            showShare={false}
             currency={code}
             budgets={budgets.filter((b) => b.currency === code)}
             limit={compact ? 3 : undefined}
@@ -293,20 +296,74 @@ export default function HomeScreen() {
                 {message}
               </p>
             )}
-            {status === 'ok' && reserve > 0 && (
-              <p className="sub" data-testid="goal-note">
-                {perDay === 0
-                  ? t('goalUsesAll')
-                  : t('goalReserveNote')
-                      .replace('{reserve}', formatMoney(perDayFull - perDay, code))
-                      .replace('{limit}', formatMoney(perDayFull, code))}
-              </p>
-            )}
-            <p className="summary-sentence">{sentence}</p>
-            {pending > 0 && (
-              <p className="sub">
-                {t('pendingNote').replace('{amount}', formatMoney(pending, code))}
-              </p>
+            <div className="summary-context">
+              <p className="summary-sentence">{sentence}</p>
+              <button
+                type="button"
+                className="calc-toggle"
+                aria-expanded={isOpen}
+                aria-controls={`calc-${code}`}
+                onClick={() => setCalcOpen((prev) => ({ ...prev, [code]: !prev[code] }))}
+              >
+                {t('howCalculated')}
+              </button>
+            </div>
+            {isOpen && (
+              <div className="calc-block" id={`calc-${code}`}>
+                <ul className="calc-list">
+                  <li>
+                    <span>{t('leftThisQuincena')}</span>
+                    <span className="nowrap">{formatMoney(left, code)}</span>
+                  </li>
+                  {laterIncome > 0 && (
+                    <li>
+                      <span>{t('calcLaterIncome')}</span>
+                      <span className="nowrap">−{formatMoney(laterIncome, code)}</span>
+                    </li>
+                  )}
+                  {pending > 0 && (
+                    <li>
+                      <span>{t('pendingBills')}</span>
+                      <span className="nowrap">−{formatMoney(pending, code)}</span>
+                    </li>
+                  )}
+                  {reserve > 0 && (
+                    <li>
+                      <span>{t('calcReserve')}</span>
+                      <span className="nowrap">−{formatMoney(reserve, code)}</span>
+                    </li>
+                  )}
+                  <li className="is-total">
+                    <span>{t('calcAvailable')}</span>
+                    <span className="nowrap">
+                      {formatMoney(Math.max(sum([available, -reserve]), 0), code)}
+                    </span>
+                  </li>
+                  <li>
+                    <span>{t('calcDivided').replace('{days}', daysText)}</span>
+                    <span className="nowrap">{formatMoney(perDay, code)}</span>
+                  </li>
+                </ul>
+                {status === 'ok' && reserve > 0 && (
+                  <p className="sub" data-testid="goal-note">
+                    {perDay === 0
+                      ? t('goalUsesAll')
+                      : t('goalReserveNote')
+                          .replace('{reserve}', formatMoney(perDayFull - perDay, code))
+                          .replace('{limit}', formatMoney(perDayFull, code))}
+                  </p>
+                )}
+                {later > 0 && (
+                  <p className="sub">
+                    {t('includesLater')} {formatMoney(later, code)}
+                  </p>
+                )}
+                {laterIncome > 0 && (
+                  <p className="sub">
+                    {t('includesLaterIncome')} {formatMoney(laterIncome, code)}
+                  </p>
+                )}
+              </div>
             )}
           </>
         ) : (
@@ -317,6 +374,16 @@ export default function HomeScreen() {
             {pending > 0 && (
               <p className="sub">
                 {t('pendingBills')} {formatMoney(pending, code)}
+              </p>
+            )}
+            {later > 0 && (
+              <p className="sub">
+                {t('includesLater')} {formatMoney(later, code)}
+              </p>
+            )}
+            {laterIncome > 0 && (
+              <p className="sub">
+                {t('includesLaterIncome')} {formatMoney(laterIncome, code)}
               </p>
             )}
           </>
@@ -354,27 +421,6 @@ export default function HomeScreen() {
               </div>
             )}
           </div>
-        )}
-
-        {income > 0 && (
-          <div className="summary-share">
-            <div className="progress" aria-hidden="true">
-              <div className="progress-fill" style={{ width: `${pct}%` }} />
-            </div>
-            <p className="sub">
-              {pct}% {t('ofIncomeSpent')}
-            </p>
-          </div>
-        )}
-        {later > 0 && (
-          <p className="sub">
-            {t('includesLater')} {formatMoney(later, code)}
-          </p>
-        )}
-        {laterIncome > 0 && (
-          <p className="sub">
-            {t('includesLaterIncome')} {formatMoney(laterIncome, code)}
-          </p>
         )}
 
         {/* the quincena's spending by category in one bar; the rows with

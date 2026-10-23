@@ -1,7 +1,9 @@
+import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import {
   categoryColor,
   categoryColors,
+  categoryFill,
   categoryLabel,
   customColorAt,
   findCategoryByName,
@@ -31,6 +33,23 @@ describe('categoryColor', () => {
   it('returns the CSS variable of the color', () => {
     expect(categoryColor({ color: 'orange' })).toBe('var(--cat-orange)')
     expect(categoryColor({ color: 'sand' })).toBe('var(--cat-sand)')
+  })
+})
+
+describe('categoryFill', () => {
+  it('returns the soft segment variable of the color', () => {
+    expect(categoryFill({ color: 'orange' })).toBe('var(--seg-orange)')
+  })
+
+  it('has a --seg-* value in both themes for every category color', () => {
+    const css = readFileSync(new URL('../index.css', import.meta.url), 'utf8')
+    const at = css.indexOf(":root[data-theme='light'] {")
+    const dark = css.slice(0, at)
+    const light = css.slice(at)
+    for (const color of categoryColors) {
+      expect(dark).toContain(`--seg-${color}:`)
+      expect(light).toContain(`--seg-${color}:`)
+    }
   })
 })
 

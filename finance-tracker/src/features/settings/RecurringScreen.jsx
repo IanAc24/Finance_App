@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { categoryLabel } from '../../lib/categories'
 import { deleteMessage, itemName, signedAmount } from '../../lib/describe'
 import { MAX_NOTE_LENGTH } from '../../lib/limits'
@@ -9,6 +8,7 @@ import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
 import CurrencyPills from '../../components/CurrencyPills'
+import SubHeader from '../../components/SubHeader'
 import EmptyState from '../../components/EmptyState'
 import RecurringRow from '../../components/RecurringRow'
 
@@ -207,10 +207,7 @@ export default function RecurringScreen() {
 
   return (
     <>
-      <Link className="back-link" to="/settings">
-        ‹ {t('settings')}
-      </Link>
-      <h1 className="screen-title">{t('recurring')}</h1>
+      <SubHeader to="/settings" backLabel={t('settings')} title={t('recurring')} />
       <p className="sub">{t('recurringHint')}</p>
 
       <div className="narrow">

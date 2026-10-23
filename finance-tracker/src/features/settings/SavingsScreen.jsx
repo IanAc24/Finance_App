@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { byNewest, getQuincenaRange, parseDate, todayString } from '../../lib/dates'
 import { dateWithYear, deleteMessage, signedAmount } from '../../lib/describe'
 import { formatDate } from '../../lib/format'
@@ -12,6 +11,7 @@ import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
 import CategoryIcon from '../../components/CategoryIcon'
+import SubHeader from '../../components/SubHeader'
 import CurrencyPills from '../../components/CurrencyPills'
 import EmptyState from '../../components/EmptyState'
 import Money from '../../components/Money'
@@ -127,10 +127,7 @@ export default function SavingsScreen() {
 
   return (
     <>
-      <Link className="back-link" to="/settings">
-        ‹ {t('settings')}
-      </Link>
-      <h1 className="screen-title">{t('savings')}</h1>
+      <SubHeader to="/settings" backLabel={t('settings')} title={t('savings')} />
       <p className="sub">{t('savingsHint')}</p>
 
       <div className="narrow">

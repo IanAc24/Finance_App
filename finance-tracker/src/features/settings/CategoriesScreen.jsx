@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import {
   categoryColors,
   categoryLabel,
@@ -10,6 +9,7 @@ import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
 import CategoryIcon from '../../components/CategoryIcon'
+import SubHeader from '../../components/SubHeader'
 
 function CategoryEditor({ category, onDone }) {
   const { t } = useSettings()
@@ -199,10 +199,7 @@ export default function CategoriesScreen() {
 
   return (
     <>
-      <Link className="back-link" to="/settings">
-        ‹ {t('settings')}
-      </Link>
-      <h1 className="screen-title">{t('categories')}</h1>
+      <SubHeader to="/settings" backLabel={t('settings')} title={t('categories')} />
 
       <div className="narrow">
         <section className="card">

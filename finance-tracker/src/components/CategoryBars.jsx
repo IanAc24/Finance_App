@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { categoryColor, categoryLabel } from '../lib/categories'
+import { categoryFill, categoryLabel } from '../lib/categories'
 import { formatMoney, sum } from '../lib/money'
 import { budgetPercent, shareText } from '../lib/moneyDisplay'
 import { pickCategoryRows } from '../lib/stats'
@@ -14,6 +14,8 @@ import CategoryIcon from './CategoryIcon'
 // fills against the budget (amber from 80%, red when exceeded, always with a
 // text that says it too).
 // Every row has a thin bar with its share of the spending (or its budget).
+// showShare is optional (true): false drops the "% of spending" line when the
+// shares are already on screen, in the legend of the bar.
 // limit is optional: it collapses the list to that many rows (rows near or
 // over their budget are always kept) with a button to show all of them.
 export default function CategoryBars({
@@ -22,6 +24,7 @@ export default function CategoryBars({
   budgets = [],
   className = 'list',
   limit,
+  showShare = true,
 }) {
   const { t } = useSettings()
   const [showAll, setShowAll] = useState(false)
@@ -40,7 +43,7 @@ export default function CategoryBars({
           const budget = budgets.find((b) => b.categoryId === category.id)
           const ratio = budget ? total / budget.amount : 0
           const barWidth = budget ? Math.min(ratio, 1) * 100 : (total / all) * 100
-          let barColor = categoryColor(category)
+          let barColor = categoryFill(category)
           if (budget && ratio >= 1) barColor = 'var(--danger)'
           else if (budget && ratio >= 0.8) barColor = 'var(--warning)'
           const share = `${shareText(total, all)} ${t('ofSpending')}`
@@ -51,7 +54,7 @@ export default function CategoryBars({
                 <CategoryIcon category={category} />
                 <span className="tx-text">
                   <span className="tx-name">{categoryLabel(category, t)}</span>
-                  <span className="tx-meta">{share}</span>
+                  {showShare && <span className="tx-meta">{share}</span>}
                 </span>
                 <span className="tx-amount cat-amount">
                   <span>{formatMoney(total, currency)}</span>
