@@ -368,6 +368,9 @@ main {
 @media (min-width: 900px) {
   .app-bar .icon-link {
     display: grid;
+    /* baja hasta la línea de las letras del nombre (que se apoya en el pie
+       de las barras del logo); no cambia el alto de la barra */
+    translate: 0 var(--gear-drop, 15px);
   }
 }
 
