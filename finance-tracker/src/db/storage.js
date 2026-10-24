@@ -7,6 +7,8 @@ import {
 } from '../lib/categories'
 import { isValidDate, todayString } from '../lib/dates'
 import { EMPTY_PROFILE, cleanCurrency, cleanName } from '../lib/onboarding'
+import { normalizeGoal } from '../lib/goals'
+import { sourceFor } from '../lib/income'
 import { normalizePaymentMethod } from '../lib/payment'
 import { DEFAULT_SCHEDULE, normalizeSchedule } from '../lib/quincenaSchedule'
 import { MAX_CENTS, isValidAmount } from '../lib/money'
@@ -38,6 +40,18 @@ function toTransaction(row) {
     note: row.note,
     date: row.date,
     paymentMethod: normalizePaymentMethod(row.payment_method),
+    source: sourceFor({ type: row.type, source: row.source }),
+  }
+}
+
+function toGoal(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    target: row.target_cents / 100,
+    currency: row.currency,
+    createdAt: row.created_at,
+    achievedAt: row.achieved_at ?? null,
   }
 }
 
@@ -126,8 +140,8 @@ async function persistOrUndo(undo) {
 }
 
 const INSERT_TRANSACTION = `INSERT INTO transactions
-  (amount_cents, currency, type, category_id, note, date, payment_method)
-  VALUES (?, ?, ?, ?, ?, ?, ?)`
+  (amount_cents, currency, type, category_id, note, date, payment_method, source)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
 
 function transactionParams(tx) {
   return [
@@ -138,20 +152,50 @@ function transactionParams(tx) {
     tx.note ?? '',
     tx.date,
     normalizePaymentMethod(tx.paymentMethod),
+    sourceFor(tx),
   ]
 }
 
-const INSERT_SAVINGS = `INSERT INTO savings
-  (amount_cents, currency, direction, note, date)
-  VALUES (?, ?, ?, ?, ?)`
+// OR REPLACE only ever replaces the row with the same id: a move saved twice
+// with the id its caller made (a retry) stays one row. Without an id (NULL)
+// the database picks the next one, as always.
+const INSERT_SAVINGS = `INSERT OR REPLACE INTO savings
+  (id, amount_cents, currency, direction, note, date)
+  VALUES (?, ?, ?, ?, ?, ?)`
+
+// A move id made by the caller, or null for "pick one"
+function moveId(move) {
+  if (move.id === undefined || move.id === null) return null
+  if (!Number.isSafeInteger(move.id) || move.id <= 0) {
+    throw new Error(`Invalid savings move id: ${move.id}`)
+  }
+  return move.id
+}
 
 function savingsParams(move) {
   return [
+    moveId(move),
     toCents(move.amount),
     move.currency,
     move.direction,
     move.note ?? '',
     move.date,
+  ]
+}
+
+const INSERT_GOAL = `INSERT OR REPLACE INTO goals
+  (id, name, target_cents, currency, created_at, achieved_at)
+  VALUES (?, ?, ?, ?, ?, ?)`
+
+function goalParams(goal) {
+  const clean = normalizeGoal(goal)
+  return [
+    moveId(goal),
+    clean.name,
+    toCents(clean.target),
+    clean.currency,
+    clean.createdAt,
+    clean.achievedAt,
   ]
 }
 
@@ -287,8 +331,8 @@ async function importLegacyData(db) {
       await db.run(
         `INSERT INTO transactions
           (id, amount_cents, currency, type, category_id, note, date,
-            payment_method)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            payment_method, source)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [tx.id, ...transactionParams({ ...tx, categoryId })],
         false,
       )
@@ -340,8 +384,10 @@ async function readAll(db) {
   const recurring = await db.query('SELECT * FROM recurring ORDER BY id')
   const savings = await db.query('SELECT * FROM savings ORDER BY id')
   const profile = await db.query('SELECT * FROM profile WHERE id = 1')
+  const goals = await db.query('SELECT * FROM goals ORDER BY id')
   return {
     profile: toProfile(profile.values[0]),
+    goals: goals.values.map(toGoal),
     transactions: transactions.values.map(toTransaction),
     categories: categories.values.map(toCategory),
     budgets: budgets.values.map(toBudget),
@@ -419,6 +465,7 @@ export function restoreAll(data) {
       await db.run('DELETE FROM budgets', [], false)
       await db.run('DELETE FROM recurring', [], false)
       await db.run('DELETE FROM savings', [], false)
+      await db.run('DELETE FROM goals', [], false)
       await db.run('DELETE FROM transactions', [], false)
       await db.run('DELETE FROM categories WHERE key IS NULL', [], false)
       for (const { id, name, color } of data.categories) {
@@ -432,8 +479,8 @@ export function restoreAll(data) {
         await db.run(
           `INSERT INTO transactions
             (id, amount_cents, currency, type, category_id, note, date,
-              payment_method)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+              payment_method, source)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [tx.id, ...transactionParams(tx)],
           false,
         )
@@ -458,12 +505,13 @@ export function restoreAll(data) {
       }
       for (const move of data.savings ?? []) {
         await db.run(
-          `INSERT INTO savings
-            (id, amount_cents, currency, direction, note, date)
-            VALUES (?, ?, ?, ?, ?, ?)`,
-          [move.id, ...savingsParams(move)],
+          INSERT_SAVINGS,
+          savingsParams(move),
           false,
         )
+      }
+      for (const goal of data.goals ?? []) {
+        await db.run(INSERT_GOAL, goalParams(goal), false)
       }
       // a backup without the setting is 15/30
       await writeSchedule(db, data.quincenaSchedule ?? DEFAULT_SCHEDULE)
@@ -493,6 +541,7 @@ export function insertTransaction(tx) {
       ...tx,
       note: tx.note ?? '',
       paymentMethod: normalizePaymentMethod(tx.paymentMethod),
+      source: sourceFor(tx),
       id,
     }
   })
@@ -513,6 +562,7 @@ export function insertTransactions(list) {
           ...tx,
           note: tx.note ?? '',
           paymentMethod: normalizePaymentMethod(tx.paymentMethod),
+          source: sourceFor(tx),
           id: result.changes.lastId,
         })
       }
@@ -533,7 +583,7 @@ export function updateTransaction(id, tx) {
     await db.run(
       `UPDATE transactions SET
         amount_cents = ?, currency = ?, type = ?, category_id = ?, note = ?,
-        date = ?, payment_method = ?
+        date = ?, payment_method = ?, source = ?
         WHERE id = ?`,
       [...transactionParams(tx), id],
     )
@@ -620,6 +670,7 @@ export function clearAll() {
       await db.run('DELETE FROM budgets', [], false)
       await db.run('DELETE FROM recurring', [], false)
       await db.run('DELETE FROM savings', [], false)
+      await db.run('DELETE FROM goals', [], false)
       await db.run('DELETE FROM transactions', [], false)
       await db.run('DELETE FROM categories WHERE key IS NULL', [], false)
       // back to 15/30 and to a person who has not seen the welcome
@@ -738,6 +789,7 @@ export function confirmRecurring(id, period, tx) {
         ...tx,
         note: tx.note ?? '',
         paymentMethod: normalizePaymentMethod(tx.paymentMethod),
+        source: sourceFor(tx),
         id: result.changes.lastId,
       }
     })
@@ -752,14 +804,95 @@ export function confirmRecurring(id, period, tx) {
   })
 }
 
-export function insertSavingsMove(move) {
+// What saving this move would overwrite (a retry with the same id) and the
+// goals about to be marked as reached, to put back if the copy to IndexedDB
+// fails
+async function snapshotBeforeMove(db, move, goalIds) {
+  const id = moveId(move)
+  const previous =
+    id === null
+      ? null
+      : ((await db.query('SELECT * FROM savings WHERE id = ?', [id])).values[0] ??
+        null)
+  const goals = []
+  for (const goalId of goalIds) {
+    const row = (
+      await db.query('SELECT id, achieved_at FROM goals WHERE id = ?', [goalId])
+    ).values[0]
+    if (row) goals.push(row)
+  }
+  return { previous, goals }
+}
+
+// Writes the move and marks the goals it reached in the SAME transaction (the
+// caller opened it). Only a deposit reaches goals, and only goals not
+// achieved yet are touched. Returns the move id and the goals really marked.
+async function writeMove(db, move, options) {
+  const result = await db.run(INSERT_SAVINGS, savingsParams(move), false)
+  const achievedGoalIds = []
+  if (move.direction === 'in') {
+    const achievedAt = options.achievedAt ?? todayString()
+    for (const goalId of options.achieveGoalIds ?? []) {
+      const marked = await db.run(
+        'UPDATE goals SET achieved_at = ? WHERE id = ? AND achieved_at IS NULL',
+        [achievedAt, goalId],
+        false,
+      )
+      if (marked.changes.changes > 0) achievedGoalIds.push(goalId)
+    }
+  }
+  return { id: result.changes.lastId, achievedGoalIds }
+}
+
+async function undoMove(db, id, snapshot) {
+  if (snapshot.previous) {
+    const p = snapshot.previous
+    await db.run(INSERT_SAVINGS, [
+      p.id,
+      p.amount_cents,
+      p.currency,
+      p.direction,
+      p.note,
+      p.date,
+    ])
+  } else {
+    await db.run('DELETE FROM savings WHERE id = ?', [id])
+  }
+  for (const goal of snapshot.goals) {
+    await db.run('UPDATE goals SET achieved_at = ? WHERE id = ?', [
+      goal.achieved_at,
+      goal.id,
+    ])
+  }
+}
+
+// Saves a savings move (and marks the goals it reached, see writeMove) in one
+// transaction. `move.id`, when given, is the id the caller made once for this
+// action: saving again with it overwrites the same row instead of adding one.
+//   options: { achieveGoalIds, achievedAt, awaitServer }
+// Returns { move, status: 'confirmed', achievedGoalIds }; there is no server
+// here, so it is confirmed once the SQL and the copy to IndexedDB succeed.
+export function saveSavingsMove(move, options = {}) {
   return enqueue(async () => {
     const db = await getDb()
-    const result = await db.run(INSERT_SAVINGS, savingsParams(move))
-    const id = result.changes.lastId
-    await persistOrUndo(() => db.run('DELETE FROM savings WHERE id = ?', [id]))
-    return { ...move, note: move.note ?? '', id }
+    const snapshot = await snapshotBeforeMove(
+      db,
+      move,
+      options.achieveGoalIds ?? [],
+    )
+    const written = await inTransaction(db, () => writeMove(db, move, options))
+    await persistOrUndo(() => undoMove(db, written.id, snapshot))
+    return {
+      move: { ...move, note: move.note ?? '', id: written.id },
+      status: 'confirmed',
+      achievedGoalIds: written.achievedGoalIds,
+    }
   })
+}
+
+// Same as saveSavingsMove, returning only the saved move
+export async function insertSavingsMove(move, options = {}) {
+  return (await saveSavingsMove(move, options)).move
 }
 
 export function deleteSavingsMove(id) {
@@ -770,38 +903,119 @@ export function deleteSavingsMove(id) {
   })
 }
 
-// Adds an income and the part of it sent to savings in one transaction
-export function insertIncomeWithSavings(tx, move) {
+// Adds an income and the part of it sent to savings in one transaction (the
+// goals the deposit reached are marked in it too, see saveSavingsMove).
+// Returns { transaction, move, status, achievedGoalIds }.
+export function insertIncomeWithSavings(tx, move, options = {}) {
   return enqueue(async () => {
     const db = await getDb()
+    const snapshot = await snapshotBeforeMove(
+      db,
+      move,
+      options.achieveGoalIds ?? [],
+    )
     const saved = await inTransaction(db, async () => {
       const txResult = await db.run(
         INSERT_TRANSACTION,
         transactionParams(tx),
         false,
       )
-      const moveResult = await db.run(
-        INSERT_SAVINGS,
-        savingsParams(move),
-        false,
-      )
+      const written = await writeMove(db, move, options)
       return {
         transaction: {
           ...tx,
           note: tx.note ?? '',
           paymentMethod: normalizePaymentMethod(tx.paymentMethod),
+          source: sourceFor(tx),
           id: txResult.changes.lastId,
         },
-        move: { ...move, note: move.note ?? '', id: moveResult.changes.lastId },
+        move: { ...move, note: move.note ?? '', id: written.id },
+        status: 'confirmed',
+        achievedGoalIds: written.achievedGoalIds,
       }
     })
     await persistOrUndo(async () => {
       await db.run('DELETE FROM transactions WHERE id = ?', [
         saved.transaction.id,
       ])
-      await db.run('DELETE FROM savings WHERE id = ?', [saved.move.id])
+      await undoMove(db, saved.move.id, snapshot)
     })
     return saved
+  })
+}
+
+// --- Savings goals ---------------------------------------------------------
+// Each returns { goal, status } like the cloud version; status is always
+// 'confirmed' here (see saveSavingsMove).
+
+// `goal.id`, when given, is the id the caller made once (a retry overwrites)
+export function insertGoal(goal) {
+  return enqueue(async () => {
+    const db = await getDb()
+    const params = goalParams(goal)
+    const clean = normalizeGoal(goal)
+    const previous =
+      params[0] === null
+        ? null
+        : ((await db.query('SELECT * FROM goals WHERE id = ?', [params[0]]))
+            .values[0] ?? null)
+    const result = await db.run(INSERT_GOAL, params)
+    const id = result.changes.lastId
+    await persistOrUndo(async () => {
+      if (previous) {
+        await db.run(INSERT_GOAL, [
+          previous.id,
+          previous.name,
+          previous.target_cents,
+          previous.currency,
+          previous.created_at,
+          previous.achieved_at,
+        ])
+      } else {
+        await db.run('DELETE FROM goals WHERE id = ?', [id])
+      }
+    })
+    return { goal: { ...clean, id }, status: 'confirmed' }
+  })
+}
+
+// Replaces the whole goal (name, target, currency and the two dates)
+export function updateGoal(id, goal) {
+  return enqueue(async () => {
+    const db = await getDb()
+    const clean = normalizeGoal({ ...goal, id: undefined })
+    const sql = `UPDATE goals SET name = ?, target_cents = ?, currency = ?,
+      created_at = ?, achieved_at = ? WHERE id = ?`
+    const before = (await db.query('SELECT * FROM goals WHERE id = ?', [id]))
+      .values[0]
+    if (!before) throw new Error(`Goal not found: ${id}`)
+    await db.run(sql, [
+      clean.name,
+      toCents(clean.target),
+      clean.currency,
+      clean.createdAt,
+      clean.achievedAt,
+      id,
+    ])
+    await persistOrUndo(() =>
+      db.run(sql, [
+        before.name,
+        before.target_cents,
+        before.currency,
+        before.created_at,
+        before.achieved_at,
+        id,
+      ]),
+    )
+    return { goal: { ...clean, id }, status: 'confirmed' }
+  })
+}
+
+export function deleteGoal(id) {
+  return enqueue(async () => {
+    const db = await getDb()
+    await db.run('DELETE FROM goals WHERE id = ?', [id])
+    await persist()
   })
 }
 

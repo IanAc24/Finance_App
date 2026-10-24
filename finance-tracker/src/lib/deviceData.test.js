@@ -29,7 +29,7 @@ beforeEach(() => {
 describe('hasData and countState', () => {
   it('a new account (only built-in categories) has nothing', () => {
     expect(hasData(empty)).toBe(false)
-    expect(countState(empty)).toEqual({ transactions: 0, budgets: 0, recurring: 0, savings: 0, categories: 0 })
+    expect(countState(empty)).toEqual({ transactions: 0, budgets: 0, recurring: 0, savings: 0, goals: 0, categories: 0 })
   })
 
   it('counts transactions, custom categories and a finished welcome as data', () => {

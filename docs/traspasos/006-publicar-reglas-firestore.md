@@ -36,7 +36,7 @@ Resultado esperado: 36 pasan, 3 fallan (las de "paths outside the allowlist"). C
 1. https://console.firebase.google.com → proyecto `iampoorfornow` → Firestore Database → Reglas.
 2. Reemplazar todo por el contenido de `finance-tracker/firestore.rules`. Claude Code puede copiarlo al portapapeles:
    `Get-Content -Raw finance-tracker/firestore.rules | Set-Clipboard` (PowerShell).
-3. Comprobar que empieza por `rules_version = '2';` y que la lista dice `['transactions', 'categories', 'budgets', 'recurring', 'savings', 'meta']`.
+3. Comprobar que empieza por `rules_version = '2';` y que la lista dice `['transactions', 'categories', 'budgets', 'recurring', 'savings', 'goals', 'meta']` (`goals` se agregó el 24/10 para las metas de ahorro: si se publica sin esa palabra, las metas no se guardan en la nube).
 4. Publicar y esperar un minuto.
 
 **Forma B, la línea de comandos (si Furyan prefiere dejarlo en el repo):**

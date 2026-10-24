@@ -302,6 +302,7 @@ export const translations = {
     listBudgets: 'Presupuestos',
     listRecurring: 'Gastos fijos',
     listSavings: 'Ahorros',
+    listGoals: 'Metas de ahorro',
     listCategories: 'Categorías propias',
     listNothing: 'Nada',
     restoreReplaces:
@@ -749,6 +750,7 @@ export const translations = {
     listBudgets: 'Budgets',
     listRecurring: 'Recurring',
     listSavings: 'Savings moves',
+    listGoals: 'Savings goals',
     listCategories: 'Custom categories',
     listNothing: 'Nothing',
     restoreReplaces: 'This replaces all your current data with the backup.',

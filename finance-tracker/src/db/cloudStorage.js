@@ -12,8 +12,11 @@ import {
 import { categories as builtInCategories } from './mockData'
 import { getCloudDb } from '../lib/firebase'
 import { customColorAt, findCategoryByName } from '../lib/categories'
-import { todayString } from '../lib/dates'
+import { isValidDate, todayString } from '../lib/dates'
+import { normalizeGoal } from '../lib/goals'
+import { sourceFor } from '../lib/income'
 import { newId } from '../lib/ids'
+import { MAX_GOAL_NAME_LENGTH } from '../lib/limits'
 import { MAX_CENTS } from '../lib/money'
 import { EMPTY_PROFILE, cleanCurrency, cleanName } from '../lib/onboarding'
 import { normalizePaymentMethod } from '../lib/payment'
@@ -25,13 +28,16 @@ import { DEFAULT_SCHEDULE, normalizeSchedule } from '../lib/quincenaSchedule'
 // without internet and writes are queued until it is back.
 //
 //   users/{uid}/transactions/{id}   amountCents, currency, type, categoryId,
-//                                   note, date, paymentMethod
+//                                   note, date, paymentMethod, source
+//                                   (source: only incomes, absent = none)
 //   users/{uid}/categories/{id}     name, color (custom ones; the built-in
 //                                   ones are fixed in mockData.js)
 //   users/{uid}/budgets/{cat_cur}   categoryId, currency, amountCents
 //   users/{uid}/recurring/{id}      amountCents, currency, type, categoryId,
 //                                   note, schedule, lastPeriod
 //   users/{uid}/savings/{id}        amountCents, currency, direction, note, date
+//   users/{uid}/goals/{id}          name, targetCents, currency, createdAt,
+//                                   achievedAt (null until reached)
 //   users/{uid}/meta/profile        name, incomeCents, currency,
 //                                   savingsGoalCents, onboardedAt
 //   users/{uid}/meta/schedule       entries (the quincena schedule)
@@ -64,6 +70,11 @@ const budgetId = (categoryId, currency) => `${categoryId}_${currency}`
 // already in the browser copy, so the app goes on and Firebase sends it later.
 export const WRITE_WAIT_MS = 1000
 
+// The longer wait of a save that must be confirmed by Google ({ awaitServer:
+// true }): after this long without an answer the save is reported as
+// 'pending' (it stays queued in the browser and syncs when it can)
+export const CONFIRM_WAIT_MS = 8000
+
 const errorListeners = new Set()
 
 // Called with the error when Firebase rejects a write after the app went on
@@ -73,20 +84,23 @@ export function onCloudWriteError(listener) {
   return () => errorListeners.delete(listener)
 }
 
-function commitBatch(batch) {
+// Resolves 'confirmed' when Firebase answered ok, 'pending' when it had not
+// answered after waitMs (the write is queued and goes on in the background),
+// and rejects when Firebase refuses it in time
+function commitBatch(batch, waitMs = WRITE_WAIT_MS) {
   const sent = batch.commit()
   return new Promise((resolve, reject) => {
     let waiting = true
     const timer = setTimeout(() => {
       waiting = false
-      resolve()
-    }, WRITE_WAIT_MS)
+      resolve('pending')
+    }, waitMs)
     sent.then(
       () => {
         if (!waiting) return
         waiting = false
         clearTimeout(timer)
-        resolve()
+        resolve('confirmed')
       },
       (error) => {
         if (waiting) {
@@ -122,7 +136,16 @@ function newWriter() {
     set: (target, data) => current().set(target, data),
     update: (target, data) => current().update(target, data),
     delete: (target) => current().delete(target),
-    commit: () => Promise.all(batches.map(commitBatch)),
+    // 'confirmed' only if every batch was; { awaitServer: true } waits longer
+    commit: async ({ awaitServer = false } = {}) => {
+      const waitMs = awaitServer ? CONFIRM_WAIT_MS : WRITE_WAIT_MS
+      const results = await Promise.all(
+        batches.map((batch) => commitBatch(batch, waitMs)),
+      )
+      return results.every((status) => status === 'confirmed')
+        ? 'confirmed'
+        : 'pending'
+    },
   }
 }
 
@@ -183,6 +206,8 @@ function transactionData(tx) {
     note: tx.note ?? '',
     date: tx.date,
     paymentMethod: normalizePaymentMethod(tx.paymentMethod),
+    // only an income has a source; without one the field is left out
+    ...(sourceFor(tx) && { source: sourceFor(tx) }),
   }
 }
 
@@ -191,6 +216,7 @@ function savedTransaction(tx, id) {
     ...tx,
     note: tx.note ?? '',
     paymentMethod: normalizePaymentMethod(tx.paymentMethod),
+    source: sourceFor(tx),
     id,
   }
 }
@@ -213,6 +239,17 @@ function savingsData(move) {
     direction: move.direction,
     note: move.note ?? '',
     date: move.date,
+  }
+}
+
+function goalData(goal) {
+  const clean = normalizeGoal(goal)
+  return {
+    name: clean.name,
+    targetCents: toCents(clean.target),
+    currency: clean.currency,
+    createdAt: clean.createdAt,
+    achievedAt: clean.achievedAt,
   }
 }
 
@@ -258,6 +295,7 @@ function toTransaction(snapshot) {
     note: data.note ?? '',
     date: data.date,
     paymentMethod: normalizePaymentMethod(data.paymentMethod),
+    source: sourceFor({ type: data.type, source: data.source }),
   }
 }
 
@@ -291,6 +329,29 @@ function toSavingsMove(snapshot) {
   }
 }
 
+// A goal document that is not valid (written by hand in the console, for
+// example) is left out instead of breaking the screens
+function toGoal(snapshot) {
+  const data = snapshot.data()
+  if (!isCents(data.targetCents)) return null
+  if (typeof data.name !== 'string') return null
+  const name = data.name.trim().slice(0, MAX_GOAL_NAME_LENGTH).trim()
+  if (name === '') return null
+  if (data.currency !== 'CRC' && data.currency !== 'USD') return null
+  if (typeof data.createdAt !== 'string' || !isValidDate(data.createdAt)) return null
+  return {
+    id: Number(snapshot.id),
+    name,
+    target: data.targetCents / 100,
+    currency: data.currency,
+    createdAt: data.createdAt,
+    achievedAt:
+      typeof data.achievedAt === 'string' && isValidDate(data.achievedAt)
+        ? data.achievedAt
+        : null,
+  }
+}
+
 function toBudget(snapshot) {
   const data = snapshot.data()
   if (!isCents(data.amountCents)) return null
@@ -306,13 +367,14 @@ const isBuiltIn = (id) => builtInCategories.some((c) => c.id === id)
 const rows = (snapshot, convert) => snapshot.docs.map(convert).filter(Boolean)
 
 async function readAll(fresh) {
-  const [transactions, categories, budgets, recurring, savings, profile, schedule] =
+  const [transactions, categories, budgets, recurring, savings, goals, profile, schedule] =
     await Promise.all([
       readList(listOf('transactions'), fresh),
       readList(listOf('categories'), fresh),
       readList(listOf('budgets'), fresh),
       readList(listOf('recurring'), fresh),
       readList(listOf('savings'), fresh),
+      readList(listOf('goals'), fresh),
       readItem(metaOf('profile'), fresh),
       readItem(metaOf('schedule'), fresh),
     ])
@@ -330,6 +392,7 @@ async function readAll(fresh) {
     ),
     recurring: rows(recurring, toRecurring).sort(byId),
     savings: rows(savings, toSavingsMove).sort(byId),
+    goals: rows(goals, toGoal).sort(byId),
     quincenaSchedule: normalizeSchedule(
       schedule.exists() ? schedule.data().entries : DEFAULT_SCHEDULE,
     ),
@@ -366,6 +429,9 @@ function writeState(writer, state, profile) {
   for (const move of state.savings ?? []) {
     writer.set(itemOf('savings', move.id), savingsData(move))
   }
+  for (const goal of state.goals ?? []) {
+    writer.set(itemOf('goals', goal.id), goalData(goal))
+  }
   writer.set(metaOf('schedule'), {
     entries: normalizeSchedule(state.quincenaSchedule ?? DEFAULT_SCHEDULE),
   })
@@ -382,6 +448,7 @@ function deleteEverything(writer, current, keep = new Set()) {
   for (const b of current.budgets) remove('budgets', budgetId(b.categoryId, b.currency))
   for (const item of current.recurring) remove('recurring', item.id)
   for (const move of current.savings) remove('savings', move.id)
+  for (const goal of current.goals) remove('goals', goal.id)
 }
 
 // --- The operations (same names and results as storage.js) -----------------
@@ -399,6 +466,7 @@ export async function restoreAll(data) {
     ...data.budgets.map((b) => `budgets/${budgetId(b.categoryId, b.currency)}`),
     ...data.recurring.map((item) => `recurring/${item.id}`),
     ...(data.savings ?? []).map((move) => `savings/${move.id}`),
+    ...(data.goals ?? []).map((goal) => `goals/${goal.id}`),
   ])
   const writer = newWriter()
   deleteEverything(writer, current, keep)
@@ -552,12 +620,47 @@ export async function confirmRecurring(id, period, tx) {
   return savedTransaction(tx, txId)
 }
 
-export async function insertSavingsMove(move) {
-  const id = newId()
+// The id of a savings move or a goal: the one its caller made for this
+// action (lib/ids.js), or a new one. Because the document is named by the id,
+// saving the same action again (a retry) overwrites it instead of adding a
+// second one.
+function idOf(item, label) {
+  if (item.id === undefined || item.id === null) return newId()
+  if (!Number.isSafeInteger(item.id) || item.id <= 0) {
+    throw new Error(`Invalid ${label} id: ${item.id}`)
+  }
+  return item.id
+}
+
+// Marks the goals a deposit reached, in the same batch as the deposit
+function markReached(writer, move, options) {
+  if (move.direction !== 'in') return []
+  const achievedAt = options.achievedAt ?? todayString()
+  const ids = options.achieveGoalIds ?? []
+  for (const goalId of ids) {
+    writer.update(itemOf('goals', goalId), { achievedAt })
+  }
+  return ids
+}
+
+// Saves a savings move and the goals it reached in ONE batch.
+//   options: { achieveGoalIds, achievedAt, awaitServer }
+// Returns { move, status, achievedGoalIds }. status is 'confirmed' once Google
+// answered ok, or 'pending' when it had not answered after WRITE_WAIT_MS
+// (CONFIRM_WAIT_MS with awaitServer: true): the write stays queued and syncs
+// later. A refusal in time rejects.
+export async function saveSavingsMove(move, options = {}) {
+  const id = idOf(move, 'savings move')
   const writer = newWriter()
   writer.set(itemOf('savings', id), savingsData(move))
-  await writer.commit()
-  return { ...move, note: move.note ?? '', id }
+  const achievedGoalIds = markReached(writer, move, options)
+  const status = await writer.commit(options)
+  return { move: { ...move, note: move.note ?? '', id }, status, achievedGoalIds }
+}
+
+// Same as saveSavingsMove, returning only the saved move
+export async function insertSavingsMove(move, options = {}) {
+  return (await saveSavingsMove(move, options)).move
 }
 
 export async function deleteSavingsMove(id) {
@@ -566,19 +669,51 @@ export async function deleteSavingsMove(id) {
   await writer.commit()
 }
 
-// Adds an income and the part of it sent to savings, both or neither
-export async function insertIncomeWithSavings(tx, move) {
+// Adds an income and the part of it sent to savings, both or neither (and the
+// goals the deposit reached, see saveSavingsMove).
+// Returns { transaction, move, status, achievedGoalIds }.
+export async function insertIncomeWithSavings(tx, move, options = {}) {
   const txId = newId()
-  const moveId = newId()
+  const moveId = idOf(move, 'savings move')
   const writer = newWriter()
   writer.set(itemOf('transactions', txId), transactionData(tx))
   writer.set(itemOf('savings', moveId), savingsData(move))
-  await writer.commit()
+  const achievedGoalIds = markReached(writer, move, options)
+  const status = await writer.commit(options)
   return {
     transaction: savedTransaction(tx, txId),
     move: { ...move, note: move.note ?? '', id: moveId },
+    status,
+    achievedGoalIds,
   }
 }
+
+// --- Savings goals ---------------------------------------------------------
+// Each returns { goal, status } (status as in saveSavingsMove; the optional
+// { awaitServer: true } waits for Google longer).
+
+export async function insertGoal(goal, options = {}) {
+  const id = idOf(goal, 'goal')
+  const writer = newWriter()
+  writer.set(itemOf('goals', id), goalData(goal))
+  const status = await writer.commit(options)
+  return { goal: { ...normalizeGoal({ ...goal, id: undefined }), id }, status }
+}
+
+// Replaces the whole goal (name, target, currency and the two dates)
+export async function updateGoal(id, goal, options = {}) {
+  const writer = newWriter()
+  writer.update(itemOf('goals', id), goalData(goal))
+  const status = await writer.commit(options)
+  return { goal: { ...normalizeGoal({ ...goal, id: undefined }), id }, status }
+}
+
+export async function deleteGoal(id) {
+  const writer = newWriter()
+  writer.delete(itemOf('goals', id))
+  await writer.commit()
+}
+
 
 export async function saveQuincenaSchedule(schedule) {
   const entries = normalizeSchedule(schedule)

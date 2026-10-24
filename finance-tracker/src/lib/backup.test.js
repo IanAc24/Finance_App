@@ -24,9 +24,9 @@ const now = new Date('2026-10-12T15:30:00Z')
 const state = {
   categories: [...builtIn, { id: 7, name: 'Mascotas', color: 'cyan' }],
   transactions: [
-    { id: 1, amount: 250000, currency: 'CRC', type: 'income', categoryId: null, note: 'Pay', date: '2026-10-01', paymentMethod: 'sinpe' },
-    { id: 2, amount: 8500.5, currency: 'CRC', type: 'expense', categoryId: 1, note: 'Lunch', date: '2026-10-02', paymentMethod: 'cash' },
-    { id: 3, amount: 9.99, currency: 'USD', type: 'expense', categoryId: 7, note: '', date: '2026-10-06', paymentMethod: 'card' },
+    { id: 1, amount: 250000, currency: 'CRC', type: 'income', categoryId: null, note: 'Pay', date: '2026-10-01', paymentMethod: 'sinpe', source: 'salary' },
+    { id: 2, amount: 8500.5, currency: 'CRC', type: 'expense', categoryId: 1, note: 'Lunch', date: '2026-10-02', paymentMethod: 'cash', source: null },
+    { id: 3, amount: 9.99, currency: 'USD', type: 'expense', categoryId: 7, note: '', date: '2026-10-06', paymentMethod: 'card', source: null },
   ],
   budgets: [
     { categoryId: 1, currency: 'CRC', amount: 50000 },
@@ -39,6 +39,10 @@ const state = {
   savings: [
     { id: 1, amount: 20000, currency: 'CRC', direction: 'in', note: 'Trip', date: '2026-10-01' },
     { id: 2, amount: 5.5, currency: 'USD', direction: 'out', note: '', date: '2026-10-05' },
+  ],
+  goals: [
+    { id: 1, name: 'Trip', target: 500000, currency: 'CRC', createdAt: '2026-09-01', achievedAt: null },
+    { id: 2, name: 'Laptop', target: 800, currency: 'USD', createdAt: '2026-09-02', achievedAt: '2026-10-05' },
   ],
 }
 
@@ -85,6 +89,7 @@ describe('inspectBackup data', () => {
       budgets: state.budgets,
       recurring: state.recurring,
       savings: state.savings,
+      goals: state.goals,
       quincenaSchedule: DEFAULT_SCHEDULE,
     })
   })
@@ -123,6 +128,7 @@ describe('inspectBackup data', () => {
           'budgets',
           'recurring',
           'savings',
+          'goals',
         ])
       }
     })
@@ -233,6 +239,7 @@ describe('inspectBackup data', () => {
       categories: garbage,
       transactions: [...garbage, { id: 1, date: ['2026-10-12'] }],
       budgets: garbage,
+      goals: garbage,
       recurring: garbage,
       savings: garbage,
     })
@@ -242,6 +249,7 @@ describe('inspectBackup data', () => {
       budgets: [],
       recurring: [],
       savings: [],
+      goals: [],
       quincenaSchedule: DEFAULT_SCHEDULE,
     })
   })
@@ -290,7 +298,7 @@ describe('inspectBackup data', () => {
     })
     expect(result.transactions.map((x) => x.note)).toEqual(['', '', 'Lunch', 'Lunch', 'Lunch'])
     expect(result.transactions.map((x) => x.categoryId)).toEqual([1, 1, null, 7, null])
-    expect(Object.keys(result.transactions[0])).toHaveLength(8)
+    expect(Object.keys(result.transactions[0])).toHaveLength(9)
   })
 
   it('drops budgets that are invalid or point to an unknown category', () => {
@@ -574,6 +582,7 @@ describe('inspectBackup', () => {
       budgets: 1,
       recurring: 2,
       savings: 2,
+      goals: 2,
     })
     expect(result.dropped).toEqual({
       categories: 0,
@@ -581,6 +590,7 @@ describe('inspectBackup', () => {
       budgets: 1,
       recurring: 0,
       savings: 0,
+      goals: 0,
     })
     expect(result.droppedTotal).toBe(5)
   })
@@ -719,5 +729,107 @@ describe('backup reminder snooze', () => {
     const until = backupSnoozeUntil(today)
     expect(isBackupReminderSnoozed(until, new Date(2026, 10, 10))).toBe(true)
     expect(isBackupReminderSnoozed(until, new Date(2026, 10, 11))).toBe(false)
+  })
+})
+
+describe('income source and savings goals in a backup', () => {
+  // A backup as the app made it before income sources and goals existed
+  const oldBackup = JSON.stringify({
+    app: 'quincena',
+    version: 1,
+    exportedAt: '2026-09-01T10:00:00.000Z',
+    categories: [{ id: 7, name: 'Mascotas', color: 'cyan' }],
+    transactions: [
+      { id: 1, amount: 250000, currency: 'CRC', type: 'income', categoryId: null, note: 'Pay', date: '2026-08-01', paymentMethod: 'sinpe' },
+      { id: 2, amount: 8500, currency: 'CRC', type: 'expense', categoryId: 1, note: 'Lunch', date: '2026-08-02', paymentMethod: 'cash' },
+    ],
+    budgets: [],
+    recurring: [],
+    savings: [{ id: 1, amount: 20000, currency: 'CRC', direction: 'in', note: '', date: '2026-08-03' }],
+    quincenaSchedule: DEFAULT_SCHEDULE,
+  })
+
+  it('restores an old backup with no source (null) and no goals (empty)', () => {
+    const result = inspectBackup(oldBackup, builtIn)
+    expect(result.ok).toBe(true)
+    expect(result.data.transactions.map((tx) => tx.source)).toEqual([null, null])
+    expect(result.data.goals).toEqual([])
+    expect(result.counts.goals).toBe(0)
+    expect(result.dropped.goals).toBe(0)
+    expect(result.data.transactions).toHaveLength(2)
+    expect(result.data.savings).toHaveLength(1)
+  })
+
+  it('writes goals and sources and reads them back unchanged', () => {
+    const backup = buildBackup(state, now)
+    expect(backup.goals).toEqual(state.goals)
+    expect(backup.transactions[0].source).toBe('salary')
+    const result = inspectBackup(JSON.stringify(backup), builtIn)
+    expect(result.data.goals).toEqual(state.goals)
+    expect(result.data.transactions).toEqual(state.transactions)
+    expect(result.counts.goals).toBe(2)
+  })
+
+  it('makes a backup without goals when the state has none', () => {
+    const { goals, ...noGoals } = state
+    expect(goals).toHaveLength(2)
+    expect(buildBackup(noGoals, now).goals).toEqual([])
+  })
+
+  it('drops an unknown source to null, and any source on an expense', () => {
+    const result = parse({
+      transactions: [
+        { ...validTx, id: 1, type: 'income', categoryId: null, source: 'lottery' },
+        { ...validTx, id: 2, type: 'income', categoryId: null, source: 'gift' },
+        { ...validTx, id: 3, source: 'salary' },
+        { ...validTx, id: 4, type: 'income', categoryId: null, source: 7 },
+      ],
+    })
+    expect(result.transactions.map((tx) => tx.source)).toEqual([null, 'gift', null, null])
+  })
+
+  it('cleans goals: cuts the name, drops invalid ones and repeated ids', () => {
+    const good = { id: 1, name: 'Trip', target: 100, currency: 'USD', createdAt: '2026-01-01', achievedAt: null }
+    const result = parse({
+      goals: [
+        good,
+        { ...good, id: 1, name: 'Repeated id' },
+        { ...good, id: 2, name: `  ${'x'.repeat(60)}  ` },
+        { ...good, id: 3, name: '   ' },
+        { ...good, id: 4, target: 0 },
+        { ...good, id: 5, target: 1_000_000_001 },
+        { ...good, id: 6, currency: 'EUR' },
+        { ...good, id: 7, createdAt: '2026-02-31' },
+        { ...good, id: 8, createdAt: undefined },
+        { ...good, id: 0 },
+        { ...good, id: 9, achievedAt: 'yesterday' },
+        { ...good, id: 10, achievedAt: '2026-05-05' },
+        'nope',
+        null,
+      ],
+    })
+    expect(result.goals.map((g) => g.id)).toEqual([1, 2, 9, 10])
+    expect(result.goals[0].name).toBe('Trip')
+    expect(result.goals[1].name).toBe('x'.repeat(40))
+    expect(result.goals[2].achievedAt).toBeNull()
+    expect(result.goals[3].achievedAt).toBe('2026-05-05')
+  })
+
+  it('counts dropped goals, and refuses a goals field that is not a list', () => {
+    const inspected = inspectBackup(file({ goals: [state.goals[0], 'bad'] }), builtIn)
+    expect(inspected.counts.goals).toBe(1)
+    expect(inspected.dropped.goals).toBe(1)
+    expect(parse({ goals: 'x' })).toBeNull()
+    expect(parse({ goals: {} })).toBeNull()
+  })
+
+  it('refuses too many goals', () => {
+    const many = { goals: new Array(MAX_RECORDS + 1).fill(0) }
+    expect(inspectBackup(file(many), builtIn)).toEqual({ ok: false, reason: 'tooBig' })
+  })
+
+  it('names the goals in the summary', () => {
+    const t = (key) => `<${key}>`
+    expect(summarizeCounts({ goals: 2 }, t)).toBe('<listGoals>: 2')
   })
 })

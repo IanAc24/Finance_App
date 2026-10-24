@@ -71,7 +71,7 @@ describe('transactionRows', () => {
 
   it('starts with the header row', () => {
     expect(transactionRows([], categories, t)).toEqual([
-      ['date', 'type', 'amount', 'currency', 'category', 'note', 'payment method'],
+      ['date', 'type', 'amount', 'currency', 'category', 'note', 'payment method', 'income source'],
     ])
   })
 
@@ -93,6 +93,7 @@ describe('transactionRows', () => {
       'T:category.food',
       'Lunch',
       'T:payCash',
+      '',
     ])
   })
 
@@ -127,7 +128,30 @@ describe('transactionRows', () => {
       '',
       'Freelance',
       'T:payCash',
+      '',
     ])
+  })
+
+  it('writes the income source in the last column, only for incomes', () => {
+    const base = {
+      id: 7,
+      amount: 100,
+      currency: 'CRC',
+      type: 'income',
+      categoryId: null,
+      note: '',
+      date: '2026-10-05',
+    }
+    const row = (changes, lang) =>
+      transactionRows([{ ...base, ...changes }], categories, t, lang)[1][7]
+    expect(row({ source: 'salary' })).toBe('salary')
+    expect(row({ source: 'freelance' }, 'es')).toBe('independiente')
+    expect(row({ source: 'gift' }, 'es')).toBe('regalo')
+    expect(row({ source: null })).toBe('')
+    expect(row({})).toBe('')
+    expect(row({ source: 'lottery' })).toBe('')
+    // an expense never has one, even if the object carries a value
+    expect(row({ type: 'expense', categoryId: 1, source: 'salary' })).toBe('')
   })
 
   it('writes the payment method as a translated label in the last column', () => {
@@ -210,7 +234,7 @@ describe('Spanish CSV', () => {
   it('has Spanish headers and words for the type', () => {
     const rows = transactionRows(list, categories, t, 'es')
     expect(rows[0]).toEqual([
-      'fecha', 'tipo', 'monto', 'moneda', 'categoría', 'nota', 'método de pago',
+      'fecha', 'tipo', 'monto', 'moneda', 'categoría', 'nota', 'método de pago', 'fuente del ingreso',
     ])
     expect(rows.map((row) => row[1]).slice(1)).toEqual(['gasto', 'ingreso', 'gasto'])
   })
@@ -230,9 +254,9 @@ describe('Spanish CSV', () => {
     const csv = toCsv(transactionRows(list, categories, t, 'es'), csvSeparator('es'))
     expect(csv.startsWith('\ufeff')).toBe(true)
     const lines = csv.slice(1).split('\r\n')
-    expect(lines[0]).toBe('fecha;tipo;monto;moneda;categoría;nota;método de pago')
-    expect(lines[1]).toBe('2026-10-02;gasto;8500,5;CRC;T:category.food;"Almuerzo; con café";T:payCash')
-    expect(lines[3]).toBe("2026-10-06;gasto;9,99;USD;T:category.food;'=CMD();T:payCash")
+    expect(lines[0]).toBe('fecha;tipo;monto;moneda;categoría;nota;método de pago;fuente del ingreso')
+    expect(lines[1]).toBe('2026-10-02;gasto;8500,5;CRC;T:category.food;"Almuerzo; con café";T:payCash;')
+    expect(lines[3]).toBe("2026-10-06;gasto;9,99;USD;T:category.food;'=CMD();T:payCash;")
   })
 
   it('picks the separator by language', () => {

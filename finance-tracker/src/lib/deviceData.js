@@ -16,6 +16,7 @@ export function countState(state) {
     budgets: state.budgets.length,
     recurring: state.recurring.length,
     savings: state.savings.length,
+    goals: (state.goals ?? []).length,
     categories: state.categories.filter((c) => c.name).length,
   }
 }
