@@ -30,6 +30,7 @@ Then open the address Vite prints, usually http://localhost:5173. More in the [a
 - [Code and docs audit](docs/auditoria-codigo-y-documentos.md)
 - [Data and dark patterns audit](docs/auditoria-datos-y-patrones.md)
 - [Encryption research](docs/investigacion-cifrado.md)
+- [QA guide](docs/qa/guia-qa.md): how to run every test suite (including against the real Firebase), what was found, and how to reuse it in another project
 - [Legal drafts](docs/legal/): privacy policy, terms and conditions, refund policy and cookie policy. Drafts only, pending review by a Costa Rican lawyer
 
 ## Team
