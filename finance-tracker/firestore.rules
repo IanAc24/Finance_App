@@ -1,0 +1,22 @@
+rules_version = '2';
+
+// Each account reads and writes only its own data, under users/{uid}/, and
+// only in the collections the app uses (see src/db/cloudStorage.js).
+// Publish in the Firebase console: Firestore Database > Rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    match /users/{uid}/{list}/{item} {
+      allow read, write: if isOwner(uid)
+        && list in ['transactions', 'categories', 'budgets', 'recurring', 'savings', 'meta'];
+    }
+
+    // anything else, for anyone: no
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

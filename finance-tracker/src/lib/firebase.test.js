@@ -13,6 +13,12 @@ vi.mock('firebase/auth', () => ({
   signOut: vi.fn(async () => {}),
 }))
 
+vi.mock('firebase/firestore', () => ({
+  initializeFirestore: vi.fn((app, settings) => ({ app, settings })),
+  persistentLocalCache: vi.fn((options) => ({ kind: 'persistent', options })),
+  persistentMultipleTabManager: vi.fn(() => ({ kind: 'tabs' })),
+}))
+
 const VARIABLES = {
   VITE_FIREBASE_API_KEY: 'test-key',
   VITE_FIREBASE_AUTH_DOMAIN: 'test.example.com',
@@ -75,6 +81,30 @@ describe('isSignUpAllowed', () => {
     const { module } = await load()
     expect(module.isSignUpAllowed({ VITE_ALLOW_SIGNUP: '0' })).toBe(false)
     expect(module.isSignUpAllowed({ VITE_ALLOW_SIGNUP: ' 0 ' })).toBe(false)
+  })
+})
+
+describe('isCloudData', () => {
+  it('keeps each account in the cloud unless VITE_DATA_BACKEND is "local"', async () => {
+    const { module } = await load()
+    expect(module.isCloudData({})).toBe(true)
+    expect(module.isCloudData({ VITE_DATA_BACKEND: 'cloud' })).toBe(true)
+    expect(module.isCloudData({ VITE_DATA_BACKEND: 'local' })).toBe(false)
+    expect(module.isCloudData({ VITE_DATA_BACKEND: ' local ' })).toBe(false)
+  })
+})
+
+describe('getCloudDb', () => {
+  it('starts Firestore once, on the same app, with a copy in the browser for every tab', async () => {
+    const { module, firebaseApp } = await load()
+    const firestore = await import('firebase/firestore')
+    const db = module.getCloudDb()
+    expect(module.getCloudDb()).toBe(db)
+    expect(firestore.initializeFirestore).toHaveBeenCalledTimes(1)
+    expect(firestore.persistentMultipleTabManager).toHaveBeenCalled()
+    expect(db.settings.localCache.kind).toBe('persistent')
+    module.signOut()
+    expect(firebaseApp.initializeApp).toHaveBeenCalledTimes(1)
   })
 })
 
