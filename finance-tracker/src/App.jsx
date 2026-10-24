@@ -24,6 +24,7 @@ import SavingsScreen from './features/settings/SavingsScreen'
 import OnboardingScreen from './features/onboarding/OnboardingScreen'
 import ConsentScreen from './features/legal/ConsentScreen'
 import LegalScreen from './features/settings/LegalScreen'
+import AccountBar from './features/auth/AccountBar'
 import AuthGate, { PublicOnly } from './features/auth/AuthGate'
 import LoginScreen from './features/auth/LoginScreen'
 import ResetPasswordScreen from './features/auth/ResetPasswordScreen'
@@ -40,17 +41,23 @@ function Shell() {
 
   if (!hasCurrentConsent(consent)) {
     return (
-      <main id="main" tabIndex={-1}>
-        <ConsentScreen />
-      </main>
+      <>
+        <AccountBar />
+        <main id="main" tabIndex={-1}>
+          <ConsentScreen />
+        </main>
+      </>
     )
   }
 
   if (showOnboarding) {
     return (
-      <main id="main" tabIndex={-1}>
-        <OnboardingScreen />
-      </main>
+      <>
+        <AccountBar />
+        <main id="main" tabIndex={-1}>
+          <OnboardingScreen />
+        </main>
+      </>
     )
   }
 
