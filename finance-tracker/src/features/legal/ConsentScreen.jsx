@@ -5,6 +5,7 @@ import { useTransactions } from '../../context/useTransactions'
 import LanguageSwitch from '../../components/LanguageSwitch'
 import LegalText from '../../components/LegalText'
 import Logo from '../../components/Logo'
+import { isCloudData } from '../../lib/firebase'
 import { LEGAL_DOCS } from '../../lib/legal'
 import { isOnboarded } from '../../lib/onboarding'
 
@@ -82,14 +83,19 @@ export default function ConsentScreen() {
           {hasData ? t('consentTitleUpdate') : t('consentTitle')}
         </h1>
         <p className="sub">{t('consentPurpose')}</p>
-        {hasData && <p className="sub">{t('consentExisting')}</p>}
+        {hasData && (
+          <p className="sub">
+            {isCloudData() ? t('consentExistingCloud') : t('consentExisting')}
+          </p>
+        )}
 
         <h2 className="field-title">{t('consentStoresTitle')}</h2>
         <p>{t('consentStores')}</p>
-        <p>{t('consentLocal')}</p>
+        {/* where the data really is: the account in the cloud, or this device */}
+        <p>{isCloudData() ? t('consentCloud') : t('consentLocal')}</p>
 
         <h2 className="field-title">{t('consentRightsTitle')}</h2>
-        <p>{t('consentRights')}</p>
+        <p>{isCloudData() ? t('consentRightsCloud') : t('consentRights')}</p>
 
         <h2 className="field-title">{t('consentDocsTitle')}</h2>
         <ul className="legal-links" ref={list}>

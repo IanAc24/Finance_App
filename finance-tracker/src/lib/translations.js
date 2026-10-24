@@ -413,6 +413,11 @@ export const translations = {
       'Tus movimientos, presupuestos, ahorros, días de pago y, si quieres, tu nombre. Sirven para llevar tus cuentas y calcular cuánto puedes gastar.',
     consentLocal:
       'Todo se queda solo en este aparato. Hoy no se envía nada a ningún lado. No hay anuncios, ni seguimiento, ni cookies. El navegador solo guarda la base de datos de la app y unas pocas preferencias (idioma, tema y tus últimas elecciones).',
+    consentCloud:
+      'Tus datos se guardan en tu cuenta, en los servidores de Google Firebase (Estados Unidos), para que los veas desde cualquier aparato. Solo tu cuenta puede leerlos. No hay anuncios, ni seguimiento, ni cookies. El navegador guarda además una copia para funcionar sin internet y unas pocas preferencias (idioma, tema y tus últimas elecciones).',
+    consentRightsCloud:
+      'Puedes ver, corregir, exportar (respaldo o CSV) o borrar todo cuando quieras desde Ajustes. Ahí mismo puedes retirar este consentimiento; eso borra los datos de tu cuenta.',
+    consentExistingCloud: 'Tus datos siguen como están en tu cuenta: no se borra ni se cambia nada.',
     consentRightsTitle: 'Tus derechos',
     consentRights:
       'Puedes ver, corregir, exportar (respaldo o CSV) o borrar todo cuando quieras desde Ajustes. Ahí mismo puedes retirar este consentimiento; eso borra los datos de este aparato.',
@@ -941,6 +946,11 @@ export const translations = {
       'Your transactions, budgets, savings, pay days and, if you want, your name. They are used to keep your accounts and work out how much you can spend.',
     consentLocal:
       'Everything stays only on this device. Today nothing is sent anywhere. There are no ads, no tracking and no cookies. The browser only keeps the app database and a few preferences (language, theme and your last choices).',
+    consentCloud:
+      'Your data is saved in your account, on Google Firebase servers (United States), so you can see it from any device. Only your account can read it. There are no ads, no tracking and no cookies. The browser also keeps a copy to work without internet and a few preferences (language, theme and your last choices).',
+    consentRightsCloud:
+      'You can see, correct, export (backup or CSV) or delete everything whenever you want from Settings. You can also withdraw this consent there; that deletes the data in your account.',
+    consentExistingCloud: 'Your data stays as it is in your account: nothing is deleted or changed.',
     consentRightsTitle: 'Your rights',
     consentRights:
       'You can see, correct, export (backup or CSV) or delete everything whenever you want from Settings. You can also withdraw this consent there; that deletes the data on this device.',
