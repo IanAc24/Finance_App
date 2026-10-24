@@ -4,6 +4,7 @@ import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
 import CurrencyPills from '../../components/CurrencyPills'
+import LanguageSwitch from '../../components/LanguageSwitch'
 import Logo from '../../components/Logo'
 import Money from '../../components/Money'
 import QuincenaSetting from '../../components/QuincenaSetting'
@@ -326,6 +327,7 @@ export default function OnboardingScreen() {
 
   return (
     <div className="onboarding">
+      {step === 0 && <LanguageSwitch />}
       <div className="ob-brand">
         <Logo className="ob-logo" />
       </div>

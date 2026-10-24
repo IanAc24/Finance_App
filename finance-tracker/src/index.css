@@ -1471,6 +1471,19 @@ dialog.modal::backdrop {
   padding-bottom: 24px;
 }
 
+/* Selector Español | English arriba de la pantalla de consentimiento y del
+   primer paso de la bienvenida: centrado, compacto, pills de 44px; cabe en 320px */
+.lang-switch {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.lang-switch .pill {
+  min-width: 44px;
+  padding: 10px 16px;
+}
+
 /* Logo centrado arriba de la barra */
 .ob-brand {
   display: flex;
