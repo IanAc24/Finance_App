@@ -18,4 +18,13 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  // browser tests (Playwright) run in Node and use fixtures that are not React hooks
+  {
+    files: ['e2e/**/*.js', 'playwright.config.js', 'qa-firebase/**/*.js', 'vitest.firebase.config.js'],
+    languageOptions: { globals: globals.node },
+    rules: {
+      'react-hooks/rules-of-hooks': 'off',
+      'no-empty-pattern': 'off',
+    },
+  },
 ])

@@ -24,6 +24,21 @@ describe('splitMoney', () => {
     expect(join(splitMoney(text))).toBe(text)
   })
 
+  it('keeps a plus sign apart from the symbol', () => {
+    expect(splitMoney('+₡31.000')).toEqual({
+      sign: '+',
+      symbol: '₡',
+      whole: '31.000',
+      decimals: '',
+    })
+    expect(splitMoney('+$1,234.50')).toEqual({
+      sign: '+',
+      symbol: '$',
+      whole: '1,234',
+      decimals: '.50',
+    })
+  })
+
   it('splits colones into sign, symbol and number with no decimals', () => {
     expect(splitMoney('−₡31.000')).toEqual({
       sign: '−',

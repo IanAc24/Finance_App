@@ -6,7 +6,10 @@ import { Icon } from './CategoryIcon'
 // browser traps the focus, Escape closes it and the page behind is inert.
 // A click on the dim area closes it too. Used for the date and the extra
 // options of Add, and for the month and the filters of History.
-export default function Sheet({ open, onClose, title, children }) {
+//   keep: keep the content mounted while it closes, so a closing animation
+//   (the sheet-soft class) fades the sheet with its content instead of an empty box
+//   className: extra classes for the dialog
+export default function Sheet({ open, onClose, title, children, keep = false, className = '' }) {
   const { t } = useSettings()
   const ref = useRef(null)
 
@@ -20,14 +23,14 @@ export default function Sheet({ open, onClose, title, children }) {
   return (
     <dialog
       ref={ref}
-      className="sheet"
+      className={className ? `sheet ${className}` : 'sheet'}
       aria-label={title}
       onClose={onClose}
       onClick={(event) => {
         if (event.target === ref.current) onClose()
       }}
     >
-      {open && (
+      {(open || keep) && (
         <div className="sheet-body">
           <div className="sheet-head">
             <h2>{title}</h2>

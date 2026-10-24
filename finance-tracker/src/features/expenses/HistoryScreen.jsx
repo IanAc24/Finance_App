@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTransactions } from '../../context/useTransactions'
 import { categoryLabel } from '../../lib/categories'
 import { downloadCsv, transactionRows } from '../../lib/csv'
@@ -165,7 +165,6 @@ export default function HistoryScreen() {
             {[
               ['all', t('filterAll')],
               ['expense', t('filterExpenses')],
-              ['income', t('filterIncome')],
             ].map(([value, label]) => (
               <button
                 key={value}
@@ -177,6 +176,11 @@ export default function HistoryScreen() {
                 {label}
               </button>
             ))}
+            {/* income has a screen of its own, with periods, sources and totals */}
+            <Link className="chip" to="/income">
+              <span>{t('filterIncome')}</span>
+              <Icon name="chevronRight" size={16} />
+            </Link>
             <button
               type="button"
               className="chip"

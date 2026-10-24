@@ -1,12 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useSettings } from '../context/useSettings'
-import { isSettingsPath } from '../lib/pageTitle'
 import { Icon } from './CategoryIcon'
 
 // The bottom tab bar of phones (the CSS hides it from 900px, where the top bar
 // has the same links): Inicio, Historial, a round "+" in the middle,
-// Estadísticas and Ajustes. The tab of the screen on view is teal, in bold and
-// carries aria-current. Settings is also active on the screens opened from it.
+// Ahorros and Estadísticas. Settings is the gear of the top bar and Income is
+// reached from Home and from History. The tab of the screen on view is teal,
+// in bold and carries aria-current.
 export default function TabBar() {
   const { t } = useSettings()
   const { pathname } = useLocation()
@@ -14,8 +14,8 @@ export default function TabBar() {
     ['/', 'house', t('home'), pathname === '/'],
     ['/history', 'history', t('history'), pathname === '/history'],
     ['/add?type=expense', 'plus', t('add'), pathname === '/add'],
+    ['/savings', 'piggyBank', t('savings'), pathname.startsWith('/savings')],
     ['/stats', 'chart', t('statistics'), pathname === '/stats'],
-    ['/settings', 'settings', t('settings'), isSettingsPath(pathname)],
   ]
 
   return (

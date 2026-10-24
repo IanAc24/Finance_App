@@ -148,6 +148,29 @@ export const migrations = [
       false,
     )
   },
+  // v9: where an income came from, and savings goals. `source` is only for
+  // incomes (expenses and older rows keep NULL). Goals keep their target in
+  // whole cents; achieved_at is the day the savings balance first reached it
+  // (NULL until then) and is never cleared by a later withdrawal.
+  async (db) => {
+    await db.execute(
+      `ALTER TABLE transactions ADD COLUMN source TEXT
+        CHECK (source IS NULL OR source IN ('salary', 'freelance', 'gift', 'other'));
+
+      CREATE TABLE goals (
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL CHECK (length(name) BETWEEN 1 AND 40),
+        target_cents INTEGER NOT NULL
+          CHECK (target_cents > 0 AND target_cents <= 100000000000),
+        currency TEXT NOT NULL CHECK (currency IN ('CRC', 'USD')),
+        created_at TEXT NOT NULL
+          CHECK (created_at GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
+        achieved_at TEXT
+          CHECK (achieved_at IS NULL OR achieved_at GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]')
+      );`,
+      false,
+    )
+  },
 ]
 
 export async function runMigrations(db, list = migrations) {

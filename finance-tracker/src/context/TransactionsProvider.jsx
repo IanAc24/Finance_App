@@ -6,23 +6,26 @@ import {
   completeOnboarding as storeOnboarding,
   confirmRecurring as saveConfirmedRecurring,
   deleteCategory as removeCategory,
+  deleteGoal as removeGoal,
   deleteRecurring as removeRecurring,
   deleteSavingsMove as removeSavingsMove,
   deleteTransaction as removeTransaction,
   insertCategory,
+  insertGoal,
   insertIncomeWithSavings,
   insertRecurring,
-  insertSavingsMove,
   insertTransaction,
   insertTransactions,
   loadAll,
   restoreAll,
+  saveSavingsMove as storeSavingsMove,
   saveProfileName as storeProfileName,
   saveQuincenaSchedule as storeQuincenaSchedule,
   skipOnboarding as storeSkipOnboarding,
   setBudget as saveBudget,
   skipRecurring as saveSkippedRecurring,
   updateCategory as replaceCategory,
+  updateGoal as replaceGoal,
   updateRecurring as replaceRecurring,
   updateTransaction as replaceTransaction,
   onWriteError,
@@ -46,6 +49,7 @@ import { currencies } from '../lib/money'
 import { EMPTY_PROFILE, isOnboarded } from '../lib/onboarding'
 import { ERASED_PREFS, removePref } from '../lib/prefs'
 import { DEFAULT_SCHEDULE } from '../lib/quincenaSchedule'
+import { planSavingsMove } from '../lib/goals'
 import { rolloverSkipKey } from '../lib/savings'
 import { sampleTransactions } from '../lib/sample'
 import StatusScreen from '../components/StatusScreen'
@@ -63,6 +67,7 @@ export default function TransactionsProvider({ children }) {
   const [budgets, setBudgets] = useState([])
   const [recurring, setRecurring] = useState([])
   const [savings, setSavings] = useState([])
+  const [goals, setGoals] = useState([])
   const [quincenaSchedule, setQuincenaSchedule] = useState(DEFAULT_SCHEDULE)
   const [profile, setProfile] = useState(EMPTY_PROFILE)
   // true while the welcome is being done again from Settings (not saved: if
@@ -84,6 +89,7 @@ export default function TransactionsProvider({ children }) {
     setBudgets(state.budgets)
     setRecurring(state.recurring)
     setSavings(state.savings)
+    setGoals(state.goals ?? [])
     setQuincenaSchedule(state.quincenaSchedule)
     setProfile(state.profile)
   }
@@ -302,10 +308,75 @@ export default function TransactionsProvider({ children }) {
     return saved
   }
 
-  const addSavingsMove = async (move) => {
-    const saved = await insertSavingsMove(move)
-    setSavings((current) => [...current, saved])
-    return saved
+  // Saves a savings move. The caller makes `move.id` ONCE per user action
+  // (newId() from lib/ids) so that a retry rewrites the same record instead
+  // of adding a second one. Before writing:
+  //  - a withdrawal larger than the balance of its currency throws an Error
+  //    with code 'insufficientSavings' and nothing is written;
+  //  - a deposit marks, in the same write, the goals it reaches (achievedAt =
+  //    today). A withdrawal that later drops the balance below a target does
+  //    NOT clear achievedAt: a goal reached once stays reached.
+  // options.awaitServer: wait for Google (up to 8 s) before answering.
+  // Returns { move, status, achievedGoalIds }: status is 'confirmed' once the
+  // server (or, locally, the database) accepted it, 'pending' if the server
+  // has not answered yet (the save is queued and will sync); play the success
+  // animation only on 'confirmed'. achievedGoalIds are the goals newly
+  // reached, to celebrate. Rejects when the save fails.
+  const saveSavingsMove = async (move, options = {}) => {
+    const plan = planSavingsMove(move, savings, goals)
+    if (!plan.ok) {
+      throw Object.assign(new Error('Not enough in savings'), { code: plan.code })
+    }
+    const achievedAt = todayString()
+    const result = await storeSavingsMove(move, {
+      awaitServer: options.awaitServer,
+      achieveGoalIds: plan.achieveGoalIds,
+      achievedAt,
+    })
+    setSavings((current) => [
+      ...current.filter((item) => item.id !== result.move.id),
+      result.move,
+    ])
+    if (result.achievedGoalIds.length > 0) {
+      setGoals((current) =>
+        current.map((goal) =>
+          result.achievedGoalIds.includes(goal.id) ? { ...goal, achievedAt } : goal,
+        ),
+      )
+    }
+    return result
+  }
+
+  // Same, returning only the saved move (what the screens used before)
+  const addSavingsMove = async (move) => (await saveSavingsMove(move)).move
+
+  // Savings goals: { name, target, currency } (createdAt defaults to today,
+  // achievedAt to null). Each returns { goal, status } like saveSavingsMove.
+  // A goal id made by the caller once makes a retry safe. updateGoal merges
+  // the changes into the goal: raising a reached goal's target does not clear
+  // achievedAt unless the caller passes achievedAt: null.
+  const addGoal = async (goal, options = {}) => {
+    const result = await insertGoal(goal, options)
+    setGoals((current) => [
+      ...current.filter((item) => item.id !== result.goal.id),
+      result.goal,
+    ])
+    return result
+  }
+
+  const updateGoal = async (id, changes, options = {}) => {
+    const existing = goals.find((item) => item.id === id)
+    if (!existing) throw new Error(`Goal not found: ${id}`)
+    const result = await replaceGoal(id, { ...existing, ...changes }, options)
+    setGoals((current) =>
+      current.map((item) => (item.id === id ? result.goal : item)),
+    )
+    return result
+  }
+
+  const deleteGoal = async (id) => {
+    await removeGoal(id)
+    setGoals((current) => current.filter((item) => item.id !== id))
   }
 
   const deleteSavingsMove = async (id) => {
@@ -313,11 +384,29 @@ export default function TransactionsProvider({ children }) {
     setSavings((current) => current.filter((item) => item.id !== id))
   }
 
-  // an income and the part of it sent to savings, saved together
-  const addIncomeWithSavings = async (tx, move) => {
-    const saved = await insertIncomeWithSavings(tx, move)
+  // an income and the part of it sent to savings, saved together (and the
+  // goals that deposit reaches are marked in the same write). Returns the
+  // saved income; a goal newly reached shows as achievedAt set in `goals`.
+  const addIncomeWithSavings = async (tx, move, options = {}) => {
+    const plan = planSavingsMove(move, savings, goals)
+    const achievedAt = todayString()
+    const saved = await insertIncomeWithSavings(tx, move, {
+      awaitServer: options.awaitServer,
+      achieveGoalIds: plan.ok ? plan.achieveGoalIds : [],
+      achievedAt,
+    })
     setTransactions((current) => [...current, saved.transaction])
-    setSavings((current) => [...current, saved.move])
+    setSavings((current) => [
+      ...current.filter((item) => item.id !== saved.move.id),
+      saved.move,
+    ])
+    if (saved.achievedGoalIds.length > 0) {
+      setGoals((current) =>
+        current.map((goal) =>
+          saved.achievedGoalIds.includes(goal.id) ? { ...goal, achievedAt } : goal,
+        ),
+      )
+    }
     return saved.transaction
   }
 
@@ -337,6 +426,7 @@ export default function TransactionsProvider({ children }) {
     setBudgets([])
     setRecurring([])
     setSavings([])
+    setGoals([])
     // back to 15/30 and to the welcome, like a new install
     setQuincenaSchedule(DEFAULT_SCHEDULE)
     setProfile(EMPTY_PROFILE)
@@ -420,7 +510,12 @@ export default function TransactionsProvider({ children }) {
         confirmRecurring,
         savings,
         addSavingsMove,
+        saveSavingsMove,
         deleteSavingsMove,
+        goals,
+        addGoal,
+        updateGoal,
+        deleteGoal,
         quincenaSchedule,
         saveQuincenaSchedule,
         profile,

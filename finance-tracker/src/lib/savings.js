@@ -59,3 +59,22 @@ export function previousQuincenaRange(today = new Date(), schedule = DEFAULT_SCH
     schedule,
   )
 }
+
+// The same balance in whole cents (no rounding noise), for checks and
+// reports. Savings moves are transfers: they are never income or expense.
+export function savingsBalanceCents(moves, code) {
+  let cents = 0
+  for (const move of moves) {
+    if (move.currency !== code) continue
+    const amount = Math.round(move.amount * 100)
+    cents += move.direction === 'in' ? amount : move.direction === 'out' ? -amount : 0
+  }
+  return cents
+}
+
+// True when taking `amount` out of savings in one currency leaves a balance
+// of zero or more. A deposit is always allowed. Used before writing, so a
+// withdrawal larger than the balance never reaches the database.
+export function canWithdraw(moves, code, amount) {
+  return Math.round(amount * 100) <= savingsBalanceCents(moves, code)
+}

@@ -19,6 +19,10 @@ const tableNames = async () =>
 // Builds a database as an older version of the app left it
 const migrateTo = (n) => runMigrations(db, migrations.slice(0, n))
 
+// v9 added transactions.source: older rows read it as NULL, nothing else moved
+const expectedAfterV9 = (table, before) =>
+  table === 'transactions' ? before.map((row) => ({ ...row, source: null })) : before
+
 const insertTx = (categoryId = 1, amountCents = 500) =>
   db.run(
     `INSERT INTO transactions
@@ -31,8 +35,8 @@ describe('runMigrations on a new database', () => {
   it('ends at the latest version with every table and the date index', async () => {
     await runMigrations(db)
 
-    expect(migrations).toHaveLength(8)
-    expect(await version()).toBe(8)
+    expect(migrations).toHaveLength(9)
+    expect(await version()).toBe(9)
     const tables = await tableNames()
     for (const table of ['categories', 'transactions', 'budgets', 'recurring', 'savings']) {
       expect(tables).toContain(table)
@@ -69,7 +73,7 @@ describe('runMigrations on a new database', () => {
 
     await expect(runMigrations(db)).resolves.toBeUndefined()
 
-    expect(await version()).toBe(8)
+    expect(await version()).toBe(9)
     expect(await rows('SELECT * FROM categories ORDER BY id')).toEqual(before)
   })
 })
@@ -85,7 +89,7 @@ describe('upgrading from an earlier version', () => {
 
     await runMigrations(db)
 
-    expect(await version()).toBe(8)
+    expect(await version()).toBe(9)
     expect(await tableNames()).toEqual(
       expect.arrayContaining(['budgets', 'recurring', 'savings']),
     )
@@ -111,7 +115,7 @@ describe('upgrading from an earlier version', () => {
 
     await runMigrations(db)
 
-    expect(await version()).toBe(8)
+    expect(await version()).toBe(9)
     expect(await tableNames()).toEqual(
       expect.arrayContaining(['recurring', 'savings']),
     )
@@ -135,7 +139,7 @@ describe('upgrading from an earlier version', () => {
 
     await runMigrations(db)
 
-    expect(await version()).toBe(8)
+    expect(await version()).toBe(9)
     expect(await tableNames()).toContain('savings')
     expect(await rows('SELECT * FROM savings')).toEqual([])
     expect(await rows('SELECT amount_cents FROM transactions')).toEqual([
@@ -192,7 +196,7 @@ describe('upgrading from version 4 (payment method, v5)', () => {
 
     await runMigrations(db)
 
-    expect(await version()).toBe(8)
+    expect(await version()).toBe(9)
     const transactions = await rows(
       'SELECT id, amount_cents, currency, type, category_id, note, date, payment_method FROM transactions ORDER BY id',
     )
@@ -258,7 +262,7 @@ describe('upgrading from version 4 (payment method, v5)', () => {
     await runMigrations(db)
     await db.run("UPDATE transactions SET payment_method = 'card' WHERE id = 1")
     await runMigrations(db)
-    expect(await version()).toBe(8)
+    expect(await version()).toBe(9)
     expect(await rows('SELECT payment_method FROM transactions WHERE id = 1')).toEqual([
       { payment_method: 'card' },
     ])
@@ -284,9 +288,9 @@ describe('upgrading from version 5 (configurable quincena, v6)', () => {
 
     await runMigrations(db)
 
-    expect(await version()).toBe(8)
+    expect(await version()).toBe(9)
     for (const table of tables) {
-      expect(await rows(`SELECT * FROM ${table} ORDER BY 1`)).toEqual(before[table])
+      expect(await rows(`SELECT * FROM ${table} ORDER BY 1`)).toEqual(expectedAfterV9(table, before[table]))
     }
   })
 
@@ -346,7 +350,7 @@ describe('upgrading from version 6 (profile and first-use screen, v7)', () => {
 
     await runMigrations(db)
 
-    expect(await version()).toBe(8)
+    expect(await version()).toBe(9)
     const [profile] = await profileRows()
     expect(profile.id).toBe(1)
     expect(profile.onboarded_at).toMatch(/^\d{4}-\d{2}-\d{2}$/)
@@ -369,7 +373,7 @@ describe('upgrading from version 6 (profile and first-use screen, v7)', () => {
     }
     await runMigrations(db)
     for (const table of tables) {
-      expect(await rows(`SELECT * FROM ${table} ORDER BY 1`)).toEqual(before[table])
+      expect(await rows(`SELECT * FROM ${table} ORDER BY 1`)).toEqual(expectedAfterV9(table, before[table]))
     }
   })
 
@@ -604,9 +608,9 @@ describe('upgrading from version 7 (manual pay days, v8)', () => {
 
     await runMigrations(db)
 
-    expect(await version()).toBe(8)
+    expect(await version()).toBe(9)
     for (const table of tables) {
-      expect(await rows(`SELECT * FROM ${table} ORDER BY 1`)).toEqual(before[table])
+      expect(await rows(`SELECT * FROM ${table} ORDER BY 1`)).toEqual(expectedAfterV9(table, before[table]))
     }
     expect(await config()).toHaveLength(3)
     expect(await rows('SELECT * FROM quincena_manual')).toEqual([])
@@ -630,5 +634,127 @@ describe('upgrading from version 7 (manual pay days, v8)', () => {
     await db.run("INSERT INTO quincena_manual VALUES ('2026-10-11')")
     await runMigrations(db)
     expect(await rows('SELECT * FROM quincena_manual')).toHaveLength(1)
+  })
+})
+
+describe('upgrading from version 8 (income source and savings goals, v9)', () => {
+  const tables = [
+    'categories', 'transactions', 'budgets', 'recurring', 'savings', 'quincena_config',
+    'profile', 'quincena_manual',
+  ]
+
+  // A database as version 8 of the app left it, with real rows everywhere
+  async function fillVersion8() {
+    await fillVersion6()
+    await runMigrations(db, migrations.slice(0, 8))
+    await db.run(
+      `INSERT INTO transactions
+        (amount_cents, currency, type, category_id, note, date, payment_method)
+        VALUES (250000, 'CRC', 'income', NULL, 'Pay', '2026-10-01', 'sinpe'),
+               (1500, 'USD', 'income', NULL, 'Gig', '2026-10-02', 'card')`,
+    )
+    await db.run("INSERT INTO quincena_manual VALUES ('2026-10-11')")
+  }
+
+  it('adds the source column (null for every old row) and an empty goals table', async () => {
+    await fillVersion8()
+    const before = {}
+    for (const table of tables) {
+      before[table] = await rows(`SELECT * FROM ${table} ORDER BY 1`)
+    }
+    expect(await version()).toBe(8)
+    expect(before.transactions.length).toBeGreaterThan(2)
+    expect(before.savings.length).toBeGreaterThan(0)
+
+    await runMigrations(db)
+
+    expect(await version()).toBe(9)
+    for (const table of tables) {
+      expect(await rows(`SELECT * FROM ${table} ORDER BY 1`)).toEqual(
+        expectedAfterV9(table, before[table]),
+      )
+    }
+    const after = await rows('SELECT * FROM transactions ORDER BY id')
+    expect(after.every((row) => row.source === null)).toBe(true)
+    // the old columns keep their values
+    expect(after.find((row) => row.note === 'Pay')).toMatchObject({
+      amount_cents: 250000,
+      type: 'income',
+      payment_method: 'sinpe',
+    })
+    expect(await rows('SELECT * FROM goals')).toEqual([])
+  })
+
+  it('accepts the four sources and null, and rejects anything else', async () => {
+    await runMigrations(db)
+    const add = (source) =>
+      db.run(
+        `INSERT INTO transactions
+          (amount_cents, currency, type, category_id, note, date, source)
+          VALUES (100, 'CRC', 'income', NULL, '', '2026-10-01', ?)`,
+        [source],
+      )
+    for (const source of ['salary', 'freelance', 'gift', 'other', null]) {
+      await expect(add(source)).resolves.toBeDefined()
+    }
+    await expect(add('lottery')).rejects.toThrow()
+    await expect(add('')).rejects.toThrow()
+    expect(await rows('SELECT source FROM transactions ORDER BY id')).toHaveLength(5)
+  })
+
+  it('checks the goals: name 1..40, target 1..1e11 cents, currency, dates', async () => {
+    await runMigrations(db)
+    const add = (changes = {}) => {
+      const goal = {
+        id: 1, name: 'Trip', target: 100, currency: 'CRC', created: '2026-10-01', achieved: null,
+        ...changes,
+      }
+      return db.run(
+        `INSERT INTO goals (id, name, target_cents, currency, created_at, achieved_at)
+          VALUES (?, ?, ?, ?, ?, ?)`,
+        [goal.id, goal.name, goal.target, goal.currency, goal.created, goal.achieved],
+      )
+    }
+    await expect(add()).resolves.toBeDefined()
+    await expect(add({ id: 2, name: 'x'.repeat(40) })).resolves.toBeDefined()
+    await expect(add({ id: 3, target: 100000000000 })).resolves.toBeDefined()
+    await expect(add({ id: 4, achieved: '2026-10-05' })).resolves.toBeDefined()
+    await expect(add({ id: 1 })).rejects.toThrow()
+    await expect(add({ id: 5, name: '' })).rejects.toThrow()
+    await expect(add({ id: 6, name: null })).rejects.toThrow()
+    await expect(add({ id: 7, name: 'x'.repeat(41) })).rejects.toThrow()
+    await expect(add({ id: 8, target: 0 })).rejects.toThrow()
+    await expect(add({ id: 9, target: 100000000001 })).rejects.toThrow()
+    await expect(add({ id: 10, currency: 'EUR' })).rejects.toThrow()
+    await expect(add({ id: 11, created: 'ayer' })).rejects.toThrow()
+    await expect(add({ id: 12, created: null })).rejects.toThrow()
+    await expect(add({ id: 13, achieved: 'ayer' })).rejects.toThrow()
+    expect(await rows('SELECT id FROM goals ORDER BY id')).toEqual([
+      { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 },
+    ])
+  })
+
+  it('does not run again on a database that is already at version 9', async () => {
+    await runMigrations(db)
+    await db.run(
+      `INSERT INTO goals (id, name, target_cents, currency, created_at)
+        VALUES (1, 'Trip', 100, 'CRC', '2026-10-01')`,
+    )
+    await runMigrations(db)
+    expect(await rows('SELECT * FROM goals')).toHaveLength(1)
+    expect(await version()).toBe(9)
+  })
+
+  it('keeps the new rows reading right after a failed v9 (rolled back, still at 8)', async () => {
+    await fillVersion8()
+    const failing = async (database) => {
+      await migrations[8](database)
+      throw new Error('boom')
+    }
+    await expect(runMigrations(db, [...migrations.slice(0, 8), failing])).rejects.toThrow('boom')
+    expect(await version()).toBe(8)
+    expect(await tableNames()).not.toContain('goals')
+    const columns = (await rows('PRAGMA table_info(transactions)')).map((c) => c.name)
+    expect(columns).not.toContain('source')
   })
 })

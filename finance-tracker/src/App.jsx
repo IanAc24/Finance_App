@@ -1,3 +1,4 @@
+import { Suspense, lazy } from 'react'
 import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom'
 import { useConsent } from './context/useConsent'
 import { useTransactions } from './context/useTransactions'
@@ -21,7 +22,9 @@ import CategoriesScreen from './features/settings/CategoriesScreen'
 import BudgetsScreen from './features/settings/BudgetsScreen'
 import RecurringScreen from './features/settings/RecurringScreen'
 import ReportScreen from './features/report/ReportScreen'
-import SavingsScreen from './features/settings/SavingsScreen'
+import SavingsScreen from './features/savings/SavingsScreen'
+import YearRecap from './features/savings/YearRecap'
+import IncomeSkeleton from './features/income/IncomeSkeleton'
 import OnboardingScreen from './features/onboarding/OnboardingScreen'
 import ConsentScreen from './features/legal/ConsentScreen'
 import LegalScreen from './features/settings/LegalScreen'
@@ -32,6 +35,9 @@ import ResetPasswordScreen from './features/auth/ResetPasswordScreen'
 import SignUpScreen from './features/auth/SignUpScreen'
 import { isSignUpAllowed } from './lib/firebase'
 import { hasCurrentConsent } from './lib/legal'
+
+// The Income screen loads on demand; its skeleton shows meanwhile
+const IncomeScreen = lazy(() => import('./features/income/IncomeScreen'))
 
 // The consent screen comes first, then the first-use screen; each replaces the
 // whole app (no menu, no other route) until it is done. The first-use screen
@@ -77,7 +83,16 @@ function Shell() {
           <Route path="/settings/categories" element={<CategoriesScreen />} />
           <Route path="/settings/budgets" element={<BudgetsScreen />} />
           <Route path="/settings/recurring" element={<RecurringScreen />} />
+          <Route
+            path="/income"
+            element={
+              <Suspense fallback={<IncomeSkeleton />}>
+                <IncomeScreen />
+              </Suspense>
+            }
+          />
           <Route path="/savings" element={<SavingsScreen />} />
+          <Route path="/savings/recap/:year" element={<YearRecap />} />
           <Route path="/report" element={<ReportScreen />} />
           <Route path="/legal/:doc" element={<LegalScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />

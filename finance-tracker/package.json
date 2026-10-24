@@ -8,7 +8,14 @@
     "build": "vite build",
     "lint": "eslint .",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "qa:firebase:rules": "node qa-firebase/run.js rules",
+    "qa:firebase:e2e": "node qa-firebase/run.js e2e",
+    "qa:firebase": "node qa-firebase/run.js all",
+    "qa:firebase:cleanup": "node qa-firebase/run.js cleanup",
+    "qa:firebase:accounts": "node qa-firebase/create-accounts.js"
   },
   "dependencies": {
     "@capacitor-community/sqlite": "^8.1.1",
@@ -24,6 +31,7 @@
   "devDependencies": {
     "@capacitor/cli": "^8.5.3",
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
     "@vitejs/plugin-react": "^6.1.1",
     "eslint": "^10.10.0",
     "eslint-plugin-react-hooks": "^7.1.1",

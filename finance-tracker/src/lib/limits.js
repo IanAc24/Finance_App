@@ -2,3 +2,4 @@
 export const MAX_NOTE_LENGTH = 60
 export const MAX_CATEGORY_NAME_LENGTH = 24
 export const MAX_PROFILE_NAME_LENGTH = 30
+export const MAX_GOAL_NAME_LENGTH = 40

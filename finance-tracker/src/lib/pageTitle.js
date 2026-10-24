@@ -14,6 +14,8 @@ export function pageTitleKey(pathname) {
   if (pathname === '/settings/budgets') return 'budgets'
   if (pathname === '/settings/recurring') return 'recurring'
   if (pathname === '/savings') return 'savings'
+  if (pathname.startsWith('/savings/recap/')) return 'svRecapOpen'
+  if (pathname === '/income') return 'income'
   if (pathname === '/report') return 'report'
   if (pathname.startsWith('/legal/')) {
     const doc = LEGAL_DOCS.find((d) => `/legal/${d.id}` === pathname)
@@ -23,11 +25,11 @@ export function pageTitleKey(pathname) {
 }
 
 // Screens that belong to Settings: the gear is the active tab on all of them
+// (Savings is a tab of its own now)
 export function isSettingsPath(pathname) {
   return (
     pathname === '/settings' ||
     pathname.startsWith('/settings/') ||
-    pathname === '/savings' ||
     pathname.startsWith('/legal/')
   )
 }

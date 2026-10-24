@@ -9,6 +9,7 @@ describe('ERASED_PREFS', () => {
         'lastCurrency',
         'lastPaymentMethod',
         'lastCategoryId',
+        'lastIncomeSource',
         'lastBackup',
         BACKUP_SNOOZE_PREF,
         'finance-data',

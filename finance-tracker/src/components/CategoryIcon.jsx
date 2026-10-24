@@ -70,6 +70,34 @@ const paths = {
       <circle cx="6" cy="5" r="3" />
     </>
   ),
+  briefcase: (
+    <>
+      <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      <rect width="20" height="14" x="2" y="6" rx="2" />
+    </>
+  ),
+  laptop: (
+    <>
+      <path d="M18 5a2 2 0 0 1 2 2v8.526a2 2 0 0 0 .212.897l1.068 2.127a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45l1.068-2.127A2 2 0 0 0 4 15.526V7a2 2 0 0 1 2-2z" />
+      <path d="M20.054 15.987H3.946" />
+    </>
+  ),
+  gift: (
+    <>
+      <rect x="3" y="8" width="18" height="4" rx="1" />
+      <path d="M12 8v13" />
+      <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7" />
+      <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5" />
+    </>
+  ),
+  coins: (
+    <>
+      <circle cx="8" cy="8" r="6" />
+      <path d="M18.09 10.37A6 6 0 1 1 10.34 18" />
+      <path d="M7 6h1v4" />
+      <path d="m16.71 13.88.7.71-2.82 2.82" />
+    </>
+  ),
   piggyBank: (
     <>
       <path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z" />
@@ -184,6 +212,15 @@ const paths = {
       <path d="m18 9-6 6" />
     </>
   ),
+  trash: (
+    <>
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+      <path d="M10 11v6" />
+      <path d="M14 11v6" />
+    </>
+  ),
   chevronDown: <path d="m6 9 6 6 6-6" />,
   chevronLeft: <path d="m15 18-6-6 6-6" />,
   sliders: (
@@ -261,17 +298,32 @@ function firstLetter(name) {
 // Round icon with a soft background and the colour of the category.
 //   category: a category object, or undefined (uncategorized)
 //   kind: 'income' | 'savings' | 'savingsOut' to show those icons instead
+//   source: an income source ('salary', 'freelance', 'gift', 'other'); with
+//     kind 'income' it picks that source's icon and colour
 //   size: 36 (rows) or 44 (bigger spots)
 // Custom categories (they have a name) show the first letter of the name, or
 // a tag when it does not start with a letter. The icon is decorative: the text
 // next to it always names the category.
-export default function CategoryIcon({ category, kind, size = 36 }) {
+// Icon and colour of each income source (no source: the plain income icon)
+const SOURCE_LOOK = {
+  salary: ['briefcase', 'var(--income)', 'var(--accent-soft)'],
+  freelance: ['laptop', 'var(--cat-blue)', 'var(--cat-blue-soft)'],
+  gift: ['gift', 'var(--cat-fuchsia)', 'var(--cat-fuchsia-soft)'],
+  other: ['coins', 'var(--cat-slate)', 'var(--cat-slate-soft)'],
+}
+
+export default function CategoryIcon({ category, kind, source, size = 36 }) {
   const inner = size > 36 ? 24 : 20
   let color = 'var(--cat-slate)'
   let soft = 'var(--cat-slate-soft)'
   let content = <Icon name="circleDashed" size={inner} />
 
-  if (kind === 'income') {
+  if (kind === 'income' && SOURCE_LOOK[source]) {
+    const [icon, sourceColor, sourceSoft] = SOURCE_LOOK[source]
+    color = sourceColor
+    soft = sourceSoft
+    content = <Icon name={icon} size={inner} />
+  } else if (kind === 'income') {
     color = 'var(--income)'
     soft = 'var(--accent-soft)'
     content = <Icon name="handCoins" size={inner} />

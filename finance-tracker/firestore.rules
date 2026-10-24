@@ -11,7 +11,7 @@ service cloud.firestore {
 
     match /users/{uid}/{list}/{item} {
       allow read, write: if isOwner(uid)
-        && list in ['transactions', 'categories', 'budgets', 'recurring', 'savings', 'meta'];
+        && list in ['transactions', 'categories', 'budgets', 'recurring', 'savings', 'goals', 'meta'];
     }
 
     // anything else, for anyone: no

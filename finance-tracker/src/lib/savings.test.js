@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  canWithdraw,
   leftInRange,
   previousQuincenaRange,
   rolloverSkipKey,
   savingsBalance,
+  savingsBalanceCents,
   savingsInRange,
 } from './savings'
 
@@ -198,5 +200,41 @@ describe('previousQuincenaRange', () => {
       [2026, 2, 16],
       [2026, 2, 28],
     ])
+  })
+})
+
+describe('savingsBalanceCents', () => {
+  const move = (amount, direction = 'in', currency = 'CRC') => ({ amount, direction, currency })
+
+  it('is the balance in whole cents, per currency', () => {
+    const moves = [move(0.1), move(0.2), move(0.05, 'out'), move(7, 'in', 'USD')]
+    expect(savingsBalanceCents(moves, 'CRC')).toBe(25)
+    expect(savingsBalanceCents(moves, 'USD')).toBe(700)
+    expect(savingsBalanceCents([], 'CRC')).toBe(0)
+  })
+})
+
+describe('canWithdraw', () => {
+  const moves = [
+    { amount: 1000, direction: 'in', currency: 'CRC' },
+    { amount: 300, direction: 'out', currency: 'CRC' },
+    { amount: 50, direction: 'in', currency: 'USD' },
+  ]
+
+  it('allows taking out up to the balance of that currency, not more', () => {
+    expect(canWithdraw(moves, 'CRC', 700)).toBe(true)
+    expect(canWithdraw(moves, 'CRC', 700.01)).toBe(false)
+    expect(canWithdraw(moves, 'USD', 50)).toBe(true)
+    expect(canWithdraw(moves, 'USD', 50.01)).toBe(false)
+  })
+
+  it('does not let one currency cover another', () => {
+    expect(canWithdraw(moves, 'USD', 100)).toBe(false)
+    expect(canWithdraw([], 'CRC', 1)).toBe(false)
+  })
+
+  it('has no rounding noise at the edge', () => {
+    const tenths = Array.from({ length: 3 }, () => ({ amount: 0.1, direction: 'in', currency: 'CRC' }))
+    expect(canWithdraw(tenths, 'CRC', 0.3)).toBe(true)
   })
 })

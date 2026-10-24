@@ -1,10 +1,15 @@
 import { categoryColors, findCategoryByName } from './categories'
 import { daysBetween, isValidDate, parseDate, todayString } from './dates'
+import { sourceFor } from './income'
 import { currencies, isValidAmount } from './money'
 import { normalizePaymentMethod } from './payment'
 import { DEFAULT_SCHEDULE, normalizeSchedule } from './quincenaSchedule'
 import { schedules } from './recurring'
-import { MAX_CATEGORY_NAME_LENGTH, MAX_NOTE_LENGTH } from './limits'
+import {
+  MAX_CATEGORY_NAME_LENGTH,
+  MAX_GOAL_NAME_LENGTH,
+  MAX_NOTE_LENGTH,
+} from './limits'
 import { cleanCurrency, cleanName } from './onboarding'
 
 const currencyCodes = currencies.map((c) => c.code)
@@ -19,6 +24,7 @@ export function buildBackup(
     budgets,
     recurring,
     savings = [],
+    goals = [],
     quincenaSchedule = DEFAULT_SCHEDULE,
     profile,
   },
@@ -35,6 +41,7 @@ export function buildBackup(
     budgets,
     recurring,
     savings,
+    goals,
     quincenaSchedule,
     // the day it was welcomed is not carried: a restore marks it done itself
     ...(profile && {
@@ -122,6 +129,9 @@ function cleanTransaction(tx, knownIds) {
     ...entry,
     date: tx.date,
     paymentMethod: normalizePaymentMethod(tx.paymentMethod),
+    // optional: older backups have none; an unknown value, or a source on an
+    // expense, reads as none
+    source: sourceFor(tx),
   }
 }
 
@@ -164,6 +174,31 @@ function cleanSavingsMove(move) {
     direction: move.direction,
     note: cleanNote(move.note),
     date: move.date,
+  }
+}
+
+// A savings goal; an optional list (older backups have none). The name is
+// cut to MAX_GOAL_NAME_LENGTH; a goal without a valid target, currency or
+// creation day is left out. achievedAt is kept only when it is a valid day.
+function cleanGoal(goal) {
+  if (!isObject(goal)) return null
+  if (!isValidId(goal.id)) return null
+  if (typeof goal.name !== 'string') return null
+  const name = goal.name.trim().slice(0, MAX_GOAL_NAME_LENGTH).trim()
+  if (name === '') return null
+  if (!isValidAmount(goal.target)) return null
+  if (!currencyCodes.includes(goal.currency)) return null
+  if (typeof goal.createdAt !== 'string' || !isValidDate(goal.createdAt)) return null
+  return {
+    id: goal.id,
+    name,
+    target: toCents(goal.target),
+    currency: goal.currency,
+    createdAt: goal.createdAt,
+    achievedAt:
+      typeof goal.achievedAt === 'string' && isValidDate(goal.achievedAt)
+        ? goal.achievedAt
+        : null,
   }
 }
 
@@ -219,19 +254,21 @@ function countTrimmed(source, result) {
   return total
 }
 
-const LISTS = ['categories', 'transactions', 'budgets', 'recurring', 'savings']
+const LISTS = ['categories', 'transactions', 'budgets', 'recurring', 'savings', 'goals']
 
 // Checks and cleans the text of a backup file and says what happened to it:
 //   { ok: false, reason }  reason: 'format' (not a backup of this app),
 //                          'newer' (made by a newer version), 'tooBig'
 //                          (the text or a list is over the limits)
 //   { ok: true, data, counts, dropped, droppedTotal, trimmed }
-// data is { transactions, categories, budgets, recurring, savings } ready to
+// data is { transactions, categories, budgets, recurring, savings, goals } ready to
 // restore; counts is how many records of each list will be restored, and
 // dropped how many were left out (invalid, repeated, or a category whose
 // name already exists). trimmed is how many restored records had a note or a
 // category name cut to the length the forms allow. It never throws.
-// Older backups have no savings: they read as an empty list. Backups made
+// Older backups have no savings or goals: they read as empty lists. A
+// transaction may carry an income `source` (salary, freelance, gift, other);
+// without one, or with an unknown value, it is null. Backups made
 // before the quincena could be configured have no quincenaSchedule: they read
 // as 15/30. data also carries quincenaSchedule (not counted in `counts`).
 // A backup may carry a profile (name, currency, income, savings goal); without
@@ -263,12 +300,16 @@ export function inspectBackup(text, builtInCategories) {
     if (data.savings !== undefined && !Array.isArray(data.savings)) {
       return { ok: false, reason: 'format' }
     }
+    if (data.goals !== undefined && !Array.isArray(data.goals)) {
+      return { ok: false, reason: 'format' }
+    }
     const source = {
       categories: data.categories,
       transactions: data.transactions,
       budgets: data.budgets,
       recurring: data.recurring,
       savings: data.savings ?? [],
+      goals: data.goals ?? [],
     }
     if (LISTS.some((name) => source[name].length > MAX_RECORDS)) {
       return { ok: false, reason: 'tooBig' }
@@ -319,6 +360,7 @@ export function inspectBackup(text, builtInCategories) {
         clean(source.savings, cleanSavingsMove),
         (move) => move.id,
       ),
+      goals: keepFirst(clean(source.goals, cleanGoal), (goal) => goal.id),
       // an older backup has no schedule, and a damaged one reads the same: 15/30
       quincenaSchedule: normalizeSchedule(data.quincenaSchedule),
     }
@@ -380,6 +422,7 @@ export function summarizeCounts(counts, t) {
     ['budgets', 'listBudgets'],
     ['recurring', 'listRecurring'],
     ['savings', 'listSavings'],
+    ['goals', 'listGoals'],
     ['categories', 'listCategories'],
   ]
   const parts = labels
