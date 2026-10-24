@@ -25,10 +25,23 @@ import {
   updateCategory as replaceCategory,
   updateRecurring as replaceRecurring,
   updateTransaction as replaceTransaction,
-} from '../db/storage'
+  onWriteError,
+  readDeviceData,
+  setDataUser,
+  uploadDeviceData,
+} from '../db/dataStore'
 import { acquireTabLock } from '../db/tabLock'
+import { summarizeCounts } from '../lib/backup'
 import { customColorAt, findCategoryByName } from '../lib/categories'
 import { quincenaKey, todayString } from '../lib/dates'
+import {
+  canOfferDeviceData,
+  countState,
+  hasData,
+  markDeviceDataDeclined,
+  markDeviceDataTaken,
+} from '../lib/deviceData'
+import { isCloudData } from '../lib/firebase'
 import { currencies } from '../lib/money'
 import { EMPTY_PROFILE, isOnboarded } from '../lib/onboarding'
 import { ERASED_PREFS, removePref } from '../lib/prefs'
@@ -36,6 +49,8 @@ import { DEFAULT_SCHEDULE } from '../lib/quincenaSchedule'
 import { rolloverSkipKey } from '../lib/savings'
 import { sampleTransactions } from '../lib/sample'
 import StatusScreen from '../components/StatusScreen'
+import { useAuth } from './useAuth'
+import { useDialog } from './useDialog'
 import { useSettings } from './useSettings'
 
 // If the database has not opened by then (for example the SQLite file cannot
@@ -58,6 +73,9 @@ export default function TransactionsProvider({ children }) {
   const [error, setError] = useState(false)
   const [blocked, setBlocked] = useState(false)
   const { lang, t } = useSettings()
+  const { user } = useAuth()
+  const { alert, confirm } = useDialog()
+  const uid = user?.uid ?? null
 
   // puts a whole state read from the database on screen
   const applyState = (state) => {
@@ -70,45 +88,102 @@ export default function TransactionsProvider({ children }) {
     setProfile(state.profile)
   }
 
+  // In the cloud, an account with nothing of its own is offered the data
+  // saved on this device before accounts existed (see lib/deviceData)
+  const offerDeviceData = async (accountState) => {
+    if (!isCloudData() || !canOfferDeviceData(uid, accountState)) return null
+    const device = await readDeviceData()
+    if (!hasData(device)) return null
+    return device
+  }
+
   useEffect(() => {
     let ignore = false
     let finished = false
-    const timer = setTimeout(() => {
+    const finish = (show) => {
       if (ignore || finished) return
       finished = true
-      setError('timeout')
-      setLoading(false)
-    }, LOAD_TIMEOUT_MS)
-    acquireTabLock()
-      .then((hasLock) => {
-        if (!hasLock) {
-          if (ignore || finished) return null
-          finished = true
+      clearTimeout(timer)
+      show()
+    }
+    const timer = setTimeout(
+      () =>
+        finish(() => {
+          setError('timeout')
+          setLoading(false)
+        }),
+      LOAD_TIMEOUT_MS,
+    )
+    const run = async () => {
+      setDataUser(uid)
+      const hasLock = await acquireTabLock()
+      if (!hasLock) {
+        finish(() => {
           setBlocked(true)
           setLoading(false)
-          return null
+        })
+        return
+      }
+      let data = await loadAll()
+      if (ignore || finished) return
+      const device = await offerDeviceData(data)
+      if (device && !ignore && !finished) {
+        // the person may take a while to answer: no time limit meanwhile
+        clearTimeout(timer)
+        const { confirmed } = await confirm({
+          message: [
+            t('deviceDataIntro'),
+            '',
+            summarizeCounts(countState(device), t),
+            '',
+            t('deviceDataHint'),
+          ].join('\n'),
+          confirmLabel: t('deviceDataTake'),
+        })
+        if (ignore) return
+        if (confirmed) {
+          data = await uploadDeviceData(device)
+          markDeviceDataTaken(uid)
+        } else {
+          markDeviceDataDeclined(uid)
         }
-        return loadAll()
-      })
-      .then((data) => {
-        if (ignore || finished || !data) return
-        finished = true
+      }
+      finish(() => {
         applyState(data)
         setLoading(false)
       })
-      .catch((err) => {
-        console.error(err)
-        if (ignore || finished) return
-        finished = true
+    }
+    run().catch((err) => {
+      console.error(err)
+      finish(() => {
         setError('failed')
         setLoading(false)
       })
-      .finally(() => clearTimeout(timer))
+    })
     return () => {
       ignore = true
       clearTimeout(timer)
     }
+    // runs once per account: AuthGate mounts a new provider for each one
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // A save that Firebase rejected after the app went on: say so and show
+  // what is really saved
+  useEffect(
+    () =>
+      onWriteError(async (err) => {
+        console.warn('cloud write', err?.code ?? 'unknown')
+        try {
+          applyState(await loadAll())
+        } catch (loadError) {
+          console.error(loadError)
+        }
+        await alert(t('saveError'))
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  )
 
   const addTransaction = async (tx) => {
     const saved = await insertTransaction(tx)

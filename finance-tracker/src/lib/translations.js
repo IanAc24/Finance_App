@@ -374,6 +374,10 @@ export const translations = {
     authPasswordHint: 'Al menos 8 caracteres.',
     authHaveAccount: 'Ya tengo cuenta',
     authNoAccount: '¿No tienes cuenta?',
+    deviceDataIntro: 'Este aparato tiene datos guardados de antes de usar cuentas:',
+    deviceDataHint:
+      'Si los pasas, quedan en tu cuenta y solo tú los ves. Si no, tu cuenta empieza vacía y los datos se quedan en este aparato.',
+    deviceDataTake: 'Pasarlos a mi cuenta',
     authBadConfig:
       'La app no pudo conectarse con Firebase: los valores de .env.local no son válidos o este sitio no está autorizado.',
     authMethodDisabled:
@@ -802,6 +806,10 @@ export const translations = {
     authPasswordHint: 'At least 8 characters.',
     authHaveAccount: 'I already have an account',
     authNoAccount: 'No account yet?',
+    deviceDataIntro: 'This device has data saved from before accounts were used:',
+    deviceDataHint:
+      'If you move it, it stays in your account and only you see it. If not, your account starts empty and the data stays on this device.',
+    deviceDataTake: 'Move it to my account',
     authBadConfig:
       'The app could not connect to Firebase: the values in .env.local are not valid or this site is not authorized.',
     authMethodDisabled:
