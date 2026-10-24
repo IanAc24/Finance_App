@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isSettingsPath, pageTitleKey } from './pageTitle'
+import { isSettingsPath, pageTitleKey, tabTitle } from './pageTitle'
 
 describe('pageTitleKey', () => {
   it('names every screen of the app', () => {
@@ -39,5 +39,16 @@ describe('isSettingsPath', () => {
     for (const path of ['/', '/add', '/stats', '/history', '/edit/3', '/income', '/savings']) {
       expect(isSettingsPath(path)).toBe(false)
     }
+  })
+})
+
+describe('tabTitle', () => {
+  it('puts the screen first and the app name after', () => {
+    expect(tabTitle('Entra a tu cuenta', 'I AM POOR FOR NOW')).toBe('Entra a tu cuenta · I AM POOR FOR NOW')
+  })
+
+  it('is just the app name without a screen', () => {
+    expect(tabTitle('', 'I AM POOR FOR NOW')).toBe('I AM POOR FOR NOW')
+    expect(tabTitle(null, 'I AM POOR FOR NOW')).toBe('I AM POOR FOR NOW')
   })
 })

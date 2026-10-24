@@ -33,3 +33,9 @@ export function isSettingsPath(pathname) {
     pathname.startsWith('/legal/')
   )
 }
+
+// The text of the browser tab: 'Historial · I AM POOR FOR NOW', or just the
+// app name when there is no screen name
+export function tabTitle(screen, appName) {
+  return screen ? `${screen} · ${appName}` : appName
+}
