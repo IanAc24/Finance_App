@@ -49,12 +49,15 @@ export default function LoginScreen() {
         <Link className="text-link" to="/recuperar">
           {t('authForgot')}
         </Link>
-        {isSignUpAllowed() && (
-          <Link className="text-link" to="/registro">
+      </p>
+      {isSignUpAllowed() && (
+        <div className="auth-signup">
+          <p className="sub">{t('authNoAccount')}</p>
+          <Link className="btn secondary" to="/registro">
             {t('authSignUpTitle')}
           </Link>
-        )}
-      </p>
+        </div>
+      )}
     </AuthLayout>
   )
 }

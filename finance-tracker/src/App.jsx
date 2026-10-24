@@ -76,8 +76,8 @@ export default function App() {
                   </PublicOnly>
                 }
               />
-              {/* without VITE_ALLOW_SIGNUP="1" the page does not exist:
-                  /registro falls into the protected part like any other */}
+              {/* on unless VITE_ALLOW_SIGNUP is "0"; then the page does not
+                  exist and /registro falls into the protected part */}
               {isSignUpAllowed() && (
                 <Route
                   path="/registro"

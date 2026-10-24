@@ -338,6 +338,7 @@ export const translations = {
     authConfirmPassword: 'Repite la contraseña',
     authPasswordHint: 'Al menos 8 caracteres.',
     authHaveAccount: 'Ya tengo cuenta',
+    authNoAccount: '¿No tienes cuenta?',
   },
   en: {
     titleMain: 'I AM POOR',
@@ -675,5 +676,6 @@ export const translations = {
     authConfirmPassword: 'Repeat the password',
     authPasswordHint: 'At least 8 characters.',
     authHaveAccount: 'I already have an account',
+    authNoAccount: 'No account yet?',
   },
 }

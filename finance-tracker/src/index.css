@@ -1714,3 +1714,21 @@ dialog.modal::backdrop {
   margin-top: 6px;
   overflow-wrap: anywhere;
 }
+
+/* Login: "¿No tienes cuenta?" con el botón para crear una, separado del formulario */
+.auth-signup {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+.auth-signup .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+}

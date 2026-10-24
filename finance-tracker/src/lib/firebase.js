@@ -35,9 +35,10 @@ export function isFirebaseConfigured(env = import.meta.env) {
   return readFirebaseConfig(env) !== null
 }
 
-// Creating accounts from the app is only on when VITE_ALLOW_SIGNUP is "1"
+// Anyone without an account can create one from the app. VITE_ALLOW_SIGNUP
+// set to "0" turns that off (accounts are then made in the Firebase console).
 export function isSignUpAllowed(env = import.meta.env) {
-  return env.VITE_ALLOW_SIGNUP === '1'
+  return env.VITE_ALLOW_SIGNUP?.trim() !== '0'
 }
 
 // Firebase starts the first time it is needed, not when the file is loaded

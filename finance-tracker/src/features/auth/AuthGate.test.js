@@ -149,13 +149,19 @@ describe('ResetPasswordScreen', () => {
 })
 
 describe('sign-up switch (VITE_ALLOW_SIGNUP)', () => {
-  it('shows the "create an account" link only when it is "1"', () => {
+  it('shows "create an account" to anyone without an account by default', () => {
+    vi.stubEnv('VITE_ALLOW_SIGNUP', '')
+    const html = render('unauthenticated', h(LoginScreen))
+    expect(html).toContain('href="/registro"')
+    expect(html).toContain('[authNoAccount]')
+    vi.unstubAllEnvs()
+  })
+
+  it('hides it only when VITE_ALLOW_SIGNUP is "0"', () => {
     vi.stubEnv('VITE_ALLOW_SIGNUP', '0')
-    const off = render('unauthenticated', h(LoginScreen))
-    expect(off).not.toContain('href="/registro"')
-    vi.stubEnv('VITE_ALLOW_SIGNUP', '1')
-    const on = render('unauthenticated', h(LoginScreen))
-    expect(on).toContain('href="/registro"')
+    const html = render('unauthenticated', h(LoginScreen))
+    expect(html).not.toContain('href="/registro"')
+    expect(html).not.toContain('[authNoAccount]')
     vi.unstubAllEnvs()
   })
 

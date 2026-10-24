@@ -7,7 +7,8 @@ import AuthLayout from './AuthLayout'
 import { EmailField, FormMessage, PasswordField } from './AuthFields'
 import { useAuthForm } from './useAuthForm'
 
-// Only reachable when VITE_ALLOW_SIGNUP is "1" (see App). Firebase signs
+// Open to anyone without an account, unless VITE_ALLOW_SIGNUP is "0" (see
+// App). Firebase signs
 // the new account in right away, so PublicOnly then opens the app.
 export default function SignUpScreen() {
   const { t } = useSettings()

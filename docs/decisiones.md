@@ -17,6 +17,7 @@
 | 19/10 | El `appId` de Android es **`cr.iampoorfornow`** (sin nombre de persona) | Furyan (opción propuesta por Claude) |
 | 19/10 | Sesiones de Claude = investigación, propuestas, preguntas y fichas. Claude Code = construir con calidad a partir de las fichas | Furyan |
 | 20/10 | Proyecto Firebase `iampoorfornow` creado: plan Spark; Authentication con Google habilitado; Firestore (default) en nam5, edición Standard, modo nativo, modo producción, con las reglas de la ficha 001 publicadas (por usuario, sobre `users/{uid}`); app web registrada. Configuración guardada fuera del repo. Sin probar aún con usuarios reales ni en dispositivo | Furyan |
+| 23/10 | Web: entrar con **correo y contraseña** (Firebase Authentication), ficha 005; reemplaza a "Google de un toque" (19/10). El **registro está abierto** para quien no tiene cuenta; `VITE_ALLOW_SIGNUP=0` lo apaga | Furyan |
 
 ## En cambio
 | Fecha | Tema | Estado |

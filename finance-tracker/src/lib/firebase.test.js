@@ -63,12 +63,18 @@ describe('readFirebaseConfig', () => {
 })
 
 describe('isSignUpAllowed', () => {
-  it('is on only with exactly "1"', async () => {
+  it('is on by default, so anyone without an account can sign up', async () => {
     const { module } = await load()
-    expect(module.isSignUpAllowed({ VITE_ALLOW_SIGNUP: '1' })).toBe(true)
-    for (const value of [undefined, '', '0', 'true', 'yes', ' 1']) {
-      expect(module.isSignUpAllowed({ VITE_ALLOW_SIGNUP: value }), String(value)).toBe(false)
+    for (const value of [undefined, '', '1', 'true', 'yes']) {
+      expect(module.isSignUpAllowed({ VITE_ALLOW_SIGNUP: value }), String(value)).toBe(true)
     }
+    expect(module.isSignUpAllowed({})).toBe(true)
+  })
+
+  it('is off only with "0"', async () => {
+    const { module } = await load()
+    expect(module.isSignUpAllowed({ VITE_ALLOW_SIGNUP: '0' })).toBe(false)
+    expect(module.isSignUpAllowed({ VITE_ALLOW_SIGNUP: ' 0 ' })).toBe(false)
   })
 })
 
