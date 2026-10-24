@@ -19,7 +19,7 @@ const sources = Object.entries(
 
 // Strings that are the same in both languages on purpose: the brand name,
 // and words that are written the same way in Spanish and English
-const SAME_IN_BOTH = ['titleMain', 'titleAccent', 'quincena', 'color', 'colones', 'paySinpe']
+const SAME_IN_BOTH = ['titleMain', 'titleAccent', 'color', 'colones', 'paySinpe']
 
 // Key families built at run time: t(`schedule.${...}`) and so on
 const DYNAMIC_PREFIXES = ['schedule.', 'color.', 'category.']

@@ -1,6 +1,6 @@
 # Registro de decisiones
 
-Última actualización: 20/10/2026. Una línea por decisión. Lo que está en **Abierto** no se construye hasta que una persona decida.
+Última actualización: 24/10/2026. Una línea por decisión. Lo que está en **Abierto** no se construye hasta que una persona decida.
 
 ## Vigentes
 | Fecha | Decisión | Quién |
@@ -17,6 +17,7 @@
 | 19/10 | El `appId` de Android es **`cr.iampoorfornow`** (sin nombre de persona) | Furyan (opción propuesta por Claude) |
 | 19/10 | Sesiones de Claude = investigación, propuestas, preguntas y fichas. Claude Code = construir con calidad a partir de las fichas | Furyan |
 | 20/10 | Proyecto Firebase `iampoorfornow` creado: plan Spark; Authentication con Google habilitado; Firestore (default) en nam5, edición Standard, modo nativo, modo producción, con las reglas de la ficha 001 publicadas (por usuario, sobre `users/{uid}`); app web registrada. Configuración guardada fuera del repo. Sin probar aún con usuarios reales ni en dispositivo | Furyan |
+| 24/10 | En inglés el periodo se llama "pay period"; en español sigue "quincena". Los nombres internos no cambian | Ian |
 
 ## En cambio
 | Fecha | Tema | Estado |
@@ -30,7 +31,6 @@
 - ¿Qué pasa con los datos que ya hay guardados en cada aparato al activar la cuenta? (propuesto: subirlos una sola vez, desde un aparato y con confirmación; evita duplicados)
 - Privacidad: Ley 8968 y PRODHAB antes de abrir la app a más personas.
 - ¿Quién usa iOS? Hoy solo hay `@capacitor/android`.
-- ¿"Quincena" se queda como nombre del periodo en la interfaz?
 - Nombre en Play Store.
 - ¿Se agrega un campo en Ajustes para cambiar la meta de ahorro? Hoy solo se cambia repitiendo la configuración inicial.
 - ¿Botón "Apartar ahora" que mueva el dinero a Ahorros? (propuesto, sin decidir)
