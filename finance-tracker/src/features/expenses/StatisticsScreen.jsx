@@ -63,7 +63,7 @@ export default function StatisticsScreen() {
       <>
         <h1 className="screen-title">{t('statistics')}</h1>
         <div className="narrow">
-          <EmptyState />
+          <EmptyState illustration="chart" />
         </div>
       </>
     )

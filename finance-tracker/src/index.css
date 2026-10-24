@@ -2415,14 +2415,105 @@ a.tx-row:active {
   padding: var(--space-5) var(--space-4);
 }
 
-.welcome-icon {
-  display: grid;
-  place-items: center;
-  width: 72px;
-  height: 72px;
-  border-radius: var(--radius-pill);
-  background: var(--accent-soft);
-  color: var(--accent);
+/* Ilustraciones (src/components/Illustration.jsx): formas planas con el trazo
+   del logo. Solo usan tres colores: el acento, su fondo suave y --muted para
+   las líneas (en claro --muted ya es oscuro y contrasta contra el blanco). El
+   relleno sólido (il-solid) y el trazo del acento llevan --accent. */
+.illustration {
+  display: block;
+  flex: none;
+  max-width: 100%;
+  height: auto;
+}
+
+.illustration .il-line,
+.illustration .il-accent,
+.illustration .il-solid,
+.illustration .il-dot {
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.illustration .il-line {
+  fill: none;
+  stroke: var(--muted);
+}
+
+.illustration .il-accent {
+  fill: none;
+  stroke: var(--accent);
+}
+
+/* Relleno suave, con o sin contorno */
+.illustration .il-fill {
+  fill: var(--accent-soft);
+}
+
+.illustration .il-solid {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.illustration .il-dot {
+  fill: var(--muted);
+  stroke: none;
+}
+
+.illustration .il-thick {
+  stroke-width: 5;
+}
+
+/* Línea punteada del gráfico: puntos redondos */
+.illustration .il-dotted {
+  stroke-width: 4;
+  stroke-dasharray: 0.1 9;
+}
+
+/* La palomita pequeña de los avisos: trazo más fino al ser de 20px */
+.illustration .il-check {
+  stroke-width: 2;
+}
+
+.welcome-art {
+  width: 112px;
+  height: 112px;
+}
+
+.toast-art {
+  flex: none;
+}
+
+/* En la bienvenida la ilustración va centrada arriba del título; en pantallas
+   bajas (celulares pequeños o horizontales) se achica para que los 5 pasos
+   quepan sin desplazarse de más */
+.ob-art {
+  align-self: center;
+  width: 88px;
+  height: 88px;
+}
+
+@media (max-height: 700px) {
+  .ob-art {
+    width: 72px;
+    height: 72px;
+  }
+}
+
+/* Entrada suave: aparece y sube 6px (solo si la persona no pidió menos
+   movimiento). Los avisos no la llevan: ya tienen su propia animación */
+@media (prefers-reduced-motion: no-preference) {
+  .welcome-art,
+  .ob-art {
+    animation: art-in 250ms var(--ease-out) both;
+  }
+}
+
+@keyframes art-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
 }
 
 .welcome-title {

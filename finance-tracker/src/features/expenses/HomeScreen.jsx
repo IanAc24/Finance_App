@@ -126,6 +126,7 @@ export default function HomeScreen() {
       })
       // the card disappears, so say where the money went
       toast.show({
+        kind: 'success',
         message: t('toastLeftoverMoved').replace('{amount}', formatMoney(leftover, code)),
       })
     })

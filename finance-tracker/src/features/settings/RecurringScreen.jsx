@@ -212,7 +212,7 @@ export default function RecurringScreen() {
 
       <div className="narrow">
         {recurring.length === 0 ? (
-          <EmptyState card actions={false} icon="repeat" text={t('noRecurring')} />
+          <EmptyState card actions={false} illustration="bills" text={t('noRecurring')} />
         ) : (
           <section className="card">
             <ul className="list">

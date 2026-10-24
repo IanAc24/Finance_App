@@ -233,7 +233,7 @@ export default function AddExpenseScreen() {
       if (editing) {
         await updateTransaction(editing.id, tx)
         navigate(backTo)
-        toast.show({ message: t('toastChangesSaved') })
+        toast.show({ message: t('toastChangesSaved'), kind: 'success' })
       } else {
         // a due recurring item with the same amount may be this very bill
         const match = findMatchingDue(recurring, tx, new Date(), quincenaSchedule)
@@ -269,6 +269,7 @@ export default function AddExpenseScreen() {
         if (type === 'expense') writePref('lastCategoryId', savedCategoryId)
         navigate('/')
         toast.show({
+          kind: 'success',
           message: type === 'income' ? t('toastIncomeSaved') : t('toastExpenseSaved'),
           action: { label: t('addAnother'), to: `/add?type=${type}` },
         })

@@ -1,19 +1,19 @@
 import { Link } from 'react-router-dom'
 import { useSettings } from '../context/useSettings'
-import { Icon } from './CategoryIcon'
+import Illustration from './Illustration'
 
-// A welcoming empty state: a soft round icon, a reassuring line and one clear
+// A welcoming empty state: a small illustration, a reassuring line and one clear
 // action. Without `text` it is the first-use message (title, text and the
 // button to add the first movement). With `text` it is just that line, with a
 // `title` if one is given. `actions` false leaves the buttons out; `children`
 // are buttons of the caller's own, in their place. `card`
 // draws it as a card (for a place inside a screen); otherwise it is centred
-// on the page. `icon` is a name from CategoryIcon's set.
+// on the page. `illustration` is a name from Illustration's set.
 export default function EmptyState({
   actions = true,
   text,
   title,
-  icon = 'wallet',
+  illustration = 'wallet',
   card = false,
   children,
 }) {
@@ -22,9 +22,7 @@ export default function EmptyState({
 
   return (
     <section className={card ? 'welcome is-card card' : 'welcome'}>
-      <span className="welcome-icon" aria-hidden="true">
-        <Icon name={icon} size={32} />
-      </span>
+      <Illustration name={illustration} size={112} className="welcome-art" />
       {heading && <h2 className="welcome-title">{heading}</h2>}
       <p className="welcome-text">{text ?? t('emptyText')}</p>
       {!actions && children && <div className="welcome-actions">{children}</div>}

@@ -281,7 +281,7 @@ export default function HistoryScreen() {
           <EmptyState
             card
             actions={false}
-            icon="search"
+            illustration="search"
             title={
               shownQuery
                 ? t('noResultsQuery').replace('{query}', shownQuery)
@@ -299,7 +299,7 @@ export default function HistoryScreen() {
           <EmptyState
             card
             actions={false}
-            icon="calendar"
+            illustration="calendar"
             title={t('emptyMonthTitle').replace('{month}', monthName(month, locale))}
             text={t('emptyMonthText')}
           />
