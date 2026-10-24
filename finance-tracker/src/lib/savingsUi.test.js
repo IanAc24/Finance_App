@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_FILL,
   MIN_FILL,
+  allGoalsReached,
   amountProblem,
   barRatios,
   dateProblem,
@@ -72,6 +73,23 @@ describe('pigFill', () => {
 
   it('has a gentle default without a goal', () => {
     expect(pigFill(1000, null)).toBe(DEFAULT_FILL)
+    expect(pigFill(1000, null, false)).toBe(DEFAULT_FILL)
+  })
+
+  it('is full when every goal is reached, still empty with no balance', () => {
+    expect(pigFill(1000, null, true)).toBe(1)
+    expect(pigFill(0, null, true)).toBe(0)
+  })
+})
+
+describe('allGoalsReached', () => {
+  it('needs goals of that currency and all of them reached', () => {
+    expect(allGoalsReached([], 'CRC')).toBe(false)
+    expect(allGoalsReached([goal({ achievedAt: '2026-02-01' })], 'CRC')).toBe(true)
+    expect(allGoalsReached([goal({ achievedAt: '2026-02-01' }), goal({ id: 2 })], 'CRC')).toBe(false)
+    expect(allGoalsReached([goal({ achievedAt: '2026-02-01' })], 'USD')).toBe(false)
+    const mixed = [goal({ achievedAt: '2026-02-01' }), goal({ id: 2, currency: 'USD' })]
+    expect(allGoalsReached(mixed, 'CRC')).toBe(true)
   })
 })
 
@@ -133,6 +151,17 @@ describe('amountProblem', () => {
     expect(amountProblem('-5', dep)).toBe('invalid')
     expect(amountProblem('1.500', dep)).toBeNull()
     expect(amountProblem('12,50', dep)).toBeNull()
+  })
+
+  it('refuses céntimos in colones but keeps two decimals in dollars', () => {
+    const crc = { ...dep, currency: 'CRC' }
+    expect(amountProblem('100,49', crc)).toBe('wholeColones')
+    expect(amountProblem('1.500,50', crc)).toBe('wholeColones')
+    expect(amountProblem('100', crc)).toBeNull()
+    expect(amountProblem('100,00', crc)).toBeNull()
+    expect(amountProblem('1.500', crc)).toBeNull()
+    expect(amountProblem('12,50', { ...dep, currency: 'USD' })).toBeNull()
+    expect(amountProblem('0,5', { direction: 'out', balance: 10, currency: 'CRC' })).toBe('wholeColones')
   })
 
   it('knows an amount above the global limit from a typo', () => {

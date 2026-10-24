@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '../../context/useAuth'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
 import { byNewest, isValidDate, parseDate, todayString } from '../../lib/dates'
 import { dayTitle } from '../../lib/days'
 import { formatDate, formatMonth } from '../../lib/format'
+import { rememberedFor } from '../../lib/incomeFilters'
 import { INCOME_SOURCES, incomeSummary, periodRange, sourceLabelKey } from '../../lib/income'
 import { useListTransitions } from '../../lib/motion'
 import { currencies, formatMoney, sum } from '../../lib/money'
@@ -34,15 +36,16 @@ const withCount = (t, count) =>
 // What the person was looking at, kept while the app stays open: opening an
 // income to edit it unmounts this screen, and coming back must find the same
 // period, currency and filters (a reload starts fresh)
+// (kept per signed-in account: another account never inherits them)
 let remembered = null
 
 // The currency first shown: the one of the income just added, else the one
 // being looked at, else the one of the last movement added, else the profile's
-function firstCurrency(fromState, profileCurrency) {
+function firstCurrency(fromState, profileCurrency, recalled) {
   const saved = readPref('lastCurrency')
   const known = (code) => currencies.some((c) => c.code === code)
   if (known(fromState)) return fromState
-  if (known(remembered?.currency)) return remembered.currency
+  if (known(recalled?.currency)) return recalled.currency
   return known(saved) ? saved : profileCurrency
 }
 
@@ -54,21 +57,25 @@ export default function IncomeScreen() {
   const { transactions, profile } = useTransactions()
   const today = useToday()
   const location = useLocation()
+  const { user } = useAuth()
+  const uid = user?.uid ?? null
+  // read once, when this screen mounts, for the account that is signed in
+  const [recalled] = useState(() => rememberedFor(remembered, uid))
 
-  const [period, setPeriod] = useState(() => remembered?.period ?? 'month')
+  const [period, setPeriod] = useState(() => recalled?.period ?? 'month')
   const [customFrom, setCustomFrom] = useState(
-    () => remembered?.customFrom ?? `${today.getFullYear()}-01-01`,
+    () => recalled?.customFrom ?? `${today.getFullYear()}-01-01`,
   )
-  const [customTo, setCustomTo] = useState(() => remembered?.customTo ?? todayString(today))
+  const [customTo, setCustomTo] = useState(() => recalled?.customTo ?? todayString(today))
   const [currency, setCurrency] = useState(() =>
-    firstCurrency(location.state?.currency, profile.currency),
+    firstCurrency(location.state?.currency, profile.currency, recalled),
   )
-  const [source, setSource] = useState(() => remembered?.source ?? 'all')
-  const [query, setQuery] = useState(() => remembered?.query ?? '')
+  const [source, setSource] = useState(() => recalled?.source ?? 'all')
+  const [query, setQuery] = useState(() => recalled?.query ?? '')
 
   useEffect(() => {
-    remembered = { period, customFrom, customTo, currency, source, query }
-  }, [period, customFrom, customTo, currency, source, query])
+    remembered = { uid, period, customFrom, customTo, currency, source, query }
+  }, [uid, period, customFrom, customTo, currency, source, query])
 
   // the range on view; null while a custom range is not valid
   const customOk = isValidDate(customFrom) && isValidDate(customTo) && customFrom <= customTo

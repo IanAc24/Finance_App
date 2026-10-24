@@ -55,8 +55,8 @@ function CurrencyRecap({ code, labelKey, data, order }) {
   const partial = data.reason === 'historyAfterSavings'
   const headId = `rc-${code}`
   // Position of every block in the reveal (60ms apart). Each currency starts
-  // one step after the one before. Without the income block the savings start sooner.
-  const start = order + (partial ? 2 : 6)
+  // one step after the one before.
+  const start = order + 6
 
   return (
     <section className="card rc-card" aria-labelledby={headId} data-currency={code}>
@@ -77,33 +77,29 @@ function CurrencyRecap({ code, labelKey, data, order }) {
 
       {!noData && (
         <>
-          {!partial && (
-            <>
-              <dl className="rc-lines">
-                <Line label={t('rcIncome')} amount={data.income} currency={code} index={order + 1} />
-                <Line label={t('rcExpenses')} amount={data.expenses} currency={code} index={order + 2} />
-                <Line
-                  label={t('rcSurplus')}
-                  amount={data.surplus}
-                  currency={code}
-                  index={order + 3}
-                  note={t('rcSurplusNote')}
-                />
-              </dl>
-              <CompareBars
-                first={order + 4}
-                kind="flow"
-                ariaLabel={fillTemplate(t('rcBarsIncome'), {
-                  inflow: formatMoney(data.income, code),
-                  outflow: formatMoney(data.expenses, code),
-                })}
-                rows={[
-                  { label: t('rcIncome'), value: data.income },
-                  { label: t('rcExpenses'), value: data.expenses },
-                ]}
-              />
-            </>
-          )}
+          <dl className="rc-lines">
+            <Line label={t('rcIncome')} amount={data.income} currency={code} index={order + 1} />
+            <Line label={t('rcExpenses')} amount={data.expenses} currency={code} index={order + 2} />
+            <Line
+              label={t('rcSurplus')}
+              amount={data.surplus}
+              currency={code}
+              index={order + 3}
+              note={t('rcSurplusNote')}
+            />
+          </dl>
+          <CompareBars
+            first={order + 4}
+            kind="flow"
+            ariaLabel={fillTemplate(t('rcBarsIncome'), {
+              inflow: formatMoney(data.income, code),
+              outflow: formatMoney(data.expenses, code),
+            })}
+            rows={[
+              { label: t('rcIncome'), value: data.income },
+              { label: t('rcExpenses'), value: data.expenses },
+            ]}
+          />
 
           <dl className="rc-lines">
             <Line label={t('svDeposited')} amount={data.deposits} currency={code} index={start} />

@@ -67,11 +67,12 @@ export function availableYears(transactions, savings, goals = []) {
 //   goalsAchieved (the goals reached during the year, in that currency),
 //   incomplete + reason.
 // incomplete is true when the numbers cannot be trusted as a full picture:
-//   reason 'noData'              nothing of that currency in the year
+//   reason 'noData'              nothing in the year and no balance carried over
 //   reason 'historyAfterSavings' savings moves exist before the first
 //                                transaction of that currency, so the
 //                                history of spending starts after the savings
-// The UI should say the data is incomplete instead of inventing numbers.
+// Every figure that exists is still returned; the UI shows them and adds a
+// caution for 'historyAfterSavings' (the surplus of earlier years may be short).
 export function yearRecap(transactions, savings, goals, year) {
   const result = {}
   for (const { code } of currencies) {
@@ -94,7 +95,11 @@ export function yearRecap(transactions, savings, goals, year) {
       firstTransaction !== null && moves.some((move) => move.date < firstTransaction)
 
     let reason = null
-    if (inYear.length === 0 && movesInYear.length === 0) reason = 'noData'
+    // nothing happened AND nothing is carried over (a year without activity
+    // but with a balance still shows opening = closing)
+    if (inYear.length === 0 && movesInYear.length === 0 && saved.opening === 0 && saved.closing === 0) {
+      reason = 'noData'
+    }
     else if (savedBeforeHistory || (firstTransaction === null && moves.length > 0)) {
       reason = 'historyAfterSavings'
     }

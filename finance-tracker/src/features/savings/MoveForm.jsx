@@ -38,7 +38,7 @@ export default function MoveForm({ direction, currency, balance, today, onSubmit
     return () => clearTimeout(timer)
   }, [])
 
-  const problem = refused ? 'aboveBalance' : amountProblem(amountText, { direction, balance })
+  const problem = refused ? 'aboveBalance' : amountProblem(amountText, { direction, balance, currency })
   // "nothing typed" is only an error once the person tried to send
   const showProblem = problem && (tried || (amountText.trim() !== '' && problem !== 'empty'))
   const dateIssue = dateProblem(date, today)

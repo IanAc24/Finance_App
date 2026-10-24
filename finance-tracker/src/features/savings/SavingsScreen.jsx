@@ -9,6 +9,7 @@ import { formatMoney } from '../../lib/money'
 import { savingsBalance, savingsInRange } from '../../lib/savings'
 import { periodSurplus } from '../../lib/savingsReport'
 import {
+  allGoalsReached,
   fillTemplate,
   goalProgress,
   moveOutcome,
@@ -82,7 +83,7 @@ export default function SavingsScreen() {
 
   // what is shown: the held values while a coin is on its way
   const shownBalance = holding ? holding.balance : balance
-  const fill = pinFill ?? (holding ? holding.fill : pigFill(balance, target))
+  const fill = pinFill ?? (holding ? holding.fill : pigFill(balance, target, allGoalsReached(goals, currency)))
   const isEmpty = !savings.some((move) => move.currency === currency)
   const progress = target ? goalProgress(target, shownBalance) : null
 
@@ -110,7 +111,11 @@ export default function SavingsScreen() {
     setHold({
       currency: move.currency,
       balance: savingsBalance(savings, move.currency),
-      fill: pigFill(savingsBalance(savings, move.currency), nextGoal(goals, move.currency)),
+      fill: pigFill(
+        savingsBalance(savings, move.currency),
+        nextGoal(goals, move.currency),
+        allGoalsReached(goals, move.currency),
+      ),
       reachedIds: plan.ok ? plan.achieveGoalIds : [],
     })
     let result

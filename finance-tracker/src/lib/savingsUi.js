@@ -23,6 +23,12 @@ export function nextGoal(goals, currency) {
   return [...open].sort((a, b) => a.target - b.target || a.id - b.id)[0]
 }
 
+// True when the currency has goals and every one of them was reached
+export function allGoalsReached(goals, currency) {
+  const own = goals.filter((goal) => goal.currency === currency)
+  return own.length > 0 && own.every((goal) => Boolean(goal.achievedAt))
+}
+
 // How far a goal is, for a progress bar and its percentage. A goal that was
 // reached once stays at 100% even if the balance later drops (achievedAt is
 // never cleared). `percent` is a whole number and only 100 when really done.
@@ -38,9 +44,11 @@ export function goalProgress(goal, balance) {
 
 // The level of the piggy's belly, 0..1: empty with nothing saved; the progress
 // towards the next goal when there is one; a gentle default otherwise
-export function pigFill(balance, goal) {
+// When every goal of the currency is reached there is nothing left to measure
+// against and the piggy shows full (allReached, see allGoalsReached).
+export function pigFill(balance, goal, allReached = false) {
   if (!(balance > 0)) return 0
-  if (!goal) return DEFAULT_FILL
+  if (!goal) return allReached ? 1 : DEFAULT_FILL
   return Math.max(MIN_FILL, goalProgress(goal, balance).ratio)
 }
 
@@ -84,11 +92,13 @@ function isAboveMax(text) {
 //   'empty'        nothing typed          'zero'          zero
 //   'invalid'      not an amount          'tooBig'        above MAX_AMOUNT
 //   'aboveBalance' a withdrawal larger than the balance of that currency
-export function amountProblem(text, { direction, balance }) {
+//   'wholeColones' céntimos in colones (colones are whole units in the app)
+export function amountProblem(text, { direction, balance, currency }) {
   if (text.trim() === '') return 'empty'
   const amount = parseAmount(text)
   if (amount === null) return isAboveMax(text) ? 'tooBig' : 'invalid'
   if (amount === 0) return 'zero'
+  if (currency === 'CRC' && toCents(amount) % 100 !== 0) return 'wholeColones'
   if (direction === 'out' && toCents(amount) > toCents(balance)) return 'aboveBalance'
   return null
 }
@@ -104,6 +114,8 @@ export function amountMessage(t, problem, { currency, balance }) {
       return t('invalidAmount')
     case 'tooBig':
       return fillTemplate(t('svAmountTooBig'), { max: formatMoney(MAX_AMOUNT, currency) })
+    case 'wholeColones':
+      return t('svAmountWholeColones')
     case 'aboveBalance':
       return `${t('notEnoughSavings')} ${formatMoney(balance, currency)}`
     default:

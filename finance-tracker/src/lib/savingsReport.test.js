@@ -204,13 +204,26 @@ describe('yearRecap', () => {
     expect(yearRecap(list, [], [], 2026).CRC.expenses).toBe(20)
   })
 
-  it('flags a year with nothing in a currency as incomplete (no data)', () => {
+  it('a year without activity but with a carried balance shows opening = closing, not no data', () => {
     const recap = yearRecap(transactions, savings, goals, 2028)
-    expect(recap.CRC).toMatchObject({ incomplete: true, reason: 'noData', income: 0, surplus: 0 })
-    expect(recap.USD.incomplete).toBe(true)
-    // the carried balance is still shown
+    expect(recap.CRC.reason).not.toBe('noData')
+    expect(recap.CRC).toMatchObject({ income: 0, surplus: 0, deposits: 0, withdrawals: 0 })
+    expect(recap.CRC.opening).toBe(550)
     expect(recap.CRC.closing).toBe(550)
-    expect(yearRecap([], [], [], 2026).CRC.incomplete).toBe(true)
+  })
+
+  it('flags a currency with no moves, no transactions and no balance as no data', () => {
+    const recap = yearRecap([tx('2025-05-01', 10)], [], [], 2027)
+    expect(recap.USD).toMatchObject({ incomplete: true, reason: 'noData', opening: 0, closing: 0 })
+    expect(recap.CRC).toMatchObject({ incomplete: true, reason: 'noData' })
+    expect(yearRecap([], [], [], 2026).CRC).toMatchObject({ incomplete: true, reason: 'noData' })
+  })
+
+  it('keeps every figure that exists when the savings start before the history', () => {
+    const list = [tx('2026-03-01', 800, 'income'), tx('2026-04-01', 120)]
+    const recap = yearRecap(list, [move('2025-11-01', 500)], [], 2026).CRC
+    expect(recap.reason).toBe('historyAfterSavings')
+    expect(recap).toMatchObject({ income: 800, expenses: 120, surplus: 680, opening: 500, closing: 500 })
   })
 
   it('flags savings moves before the first transaction as incomplete', () => {

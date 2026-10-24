@@ -76,7 +76,13 @@ test.describe('full flow', () => {
     // edit amount and note
     await page.locator('.hist-row').filter({ hasText: 'Lunch' }).click()
     await expect(addAmountText(page)).toContainText('4.500')
-    for (let i = 0; i < 4; i++) await page.keyboard.press('Backspace')
+    // the screen shows its text a moment before it listens to the keyboard:
+    // press the first Backspace until it is taken, then the other three
+    await expect(async () => {
+      await page.keyboard.press('Backspace')
+      await expect(addAmountText(page)).not.toContainText('4.500', { timeout: 500 })
+    }).toPass()
+    for (let i = 0; i < 3; i++) await page.keyboard.press('Backspace')
     await expect(addAmountText(page)).toHaveText(/^₡0$/)
     await page.keyboard.type('7250')
     await page.getByRole('textbox', { name: /^(Note|Nota)/ }).fill('Late lunch')

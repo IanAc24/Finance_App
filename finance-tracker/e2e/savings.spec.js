@@ -245,8 +245,8 @@ test.describe('savings screen', () => {
       'Income ₡100.000 against expenses ₡30.000',
     )
     // dollars: savings but no recorded dollar entries -> says so, no invented numbers
-    await expect(usd).toContainText('Incomplete data: your savings start before your recorded entries')
-    await expect(usd.locator('.rc-line').filter({ hasText: 'Total income' })).toHaveCount(0)
+    await expect(usd).toContainText('Your savings start before your recorded entries')
+    await expect(usd.locator('.rc-line').filter({ hasText: 'Total income' })).toHaveCount(1)
     await expect(figure(usd, 'Closing balance')).toHaveText('$70.00')
     await expect(figure(usd, 'Withdrawn')).toHaveText('$50.00')
     // a year without anything

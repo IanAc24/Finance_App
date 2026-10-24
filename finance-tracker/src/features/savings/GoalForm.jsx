@@ -31,7 +31,7 @@ export default function GoalForm({ goal, currency, onSubmit, onDone }) {
   }, [])
 
   const nameEmpty = name.trim() === ''
-  const problem = amountProblem(targetText, { direction: 'in', balance: 0 })
+  const problem = amountProblem(targetText, { direction: 'in', balance: 0, currency })
   const label = currencies.find((c) => c.code === currency)
 
   const submit = async (event) => {
