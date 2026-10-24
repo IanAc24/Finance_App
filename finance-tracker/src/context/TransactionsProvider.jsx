@@ -32,6 +32,7 @@ import {
   readDeviceData,
   setDataUser,
   uploadDeviceData,
+  wasLoadConfirmed,
 } from '../db/dataStore'
 import { acquireTabLock } from '../db/tabLock'
 import { summarizeCounts } from '../lib/backup'
@@ -97,7 +98,11 @@ export default function TransactionsProvider({ children }) {
   // In the cloud, an account with nothing of its own is offered the data
   // saved on this device before accounts existed (see lib/deviceData)
   const offerDeviceData = async (accountState) => {
-    if (!isCloudData() || !canOfferDeviceData(uid, accountState)) return null
+    if (!isCloudData()) return null
+    if (!canOfferDeviceData(uid, accountState, { confirmed: wasLoadConfirmed() })) return null
+    // the device database allows one tab at a time: if another tab has it,
+    // the offer waits for another time
+    if (!(await acquireTabLock())) return null
     const device = await readDeviceData()
     if (!hasData(device)) return null
     return device

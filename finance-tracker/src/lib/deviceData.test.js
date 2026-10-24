@@ -40,23 +40,31 @@ describe('hasData and countState', () => {
 })
 
 describe('offering the data of this device', () => {
+  // Firebase confirmed the account is empty (not just the browser copy)
+  const ok = { confirmed: true }
+
+  it('is not offered when only the browser copy says the account is empty (offline, new device)', () => {
+    expect(canOfferDeviceData('ana', empty)).toBe(false)
+    expect(canOfferDeviceData('ana', empty, { confirmed: false })).toBe(false)
+  })
+
   it('is offered to an account with nothing of its own', () => {
-    expect(canOfferDeviceData('ana', empty)).toBe(true)
+    expect(canOfferDeviceData('ana', empty, ok)).toBe(true)
   })
 
   it('is not offered to an account that already has data, or with no account', () => {
-    expect(canOfferDeviceData('ana', { ...empty, transactions: [{ id: 1 }] })).toBe(false)
-    expect(canOfferDeviceData(null, empty)).toBe(false)
+    expect(canOfferDeviceData('ana', { ...empty, transactions: [{ id: 1 }] }, ok)).toBe(false)
+    expect(canOfferDeviceData(null, empty, ok)).toBe(false)
   })
 
   it('once one account takes it, no other account is asked', () => {
     markDeviceDataTaken('ana')
-    expect(canOfferDeviceData('beto', empty)).toBe(false)
+    expect(canOfferDeviceData('beto', empty, ok)).toBe(false)
   })
 
   it('an account that said no is not asked again, but another one is', () => {
     markDeviceDataDeclined('ana')
-    expect(canOfferDeviceData('ana', empty)).toBe(false)
-    expect(canOfferDeviceData('beto', empty)).toBe(true)
+    expect(canOfferDeviceData('ana', empty, ok)).toBe(false)
+    expect(canOfferDeviceData('beto', empty, ok)).toBe(true)
   })
 })

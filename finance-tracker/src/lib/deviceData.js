@@ -25,9 +25,12 @@ export function hasData(state) {
   return Object.values(countState(state)).some((n) => n > 0) || Boolean(state.profile?.onboardedAt)
 }
 
-// True when the account could be offered the data of this device
-export function canOfferDeviceData(uid, accountState) {
-  if (!uid || hasData(accountState)) return false
+// True when the account could be offered the data of this device.
+// `confirmed`: Firebase itself said the account is empty. Without internet a
+// new device only has an empty browser copy, and taking that for an empty
+// account would mix this device's data into one that already has its own.
+export function canOfferDeviceData(uid, accountState, { confirmed = false } = {}) {
+  if (!uid || !confirmed || hasData(accountState)) return false
   if (readPref(OWNER_PREF)) return false
   return readPref(declinedPref(uid)) !== '1'
 }

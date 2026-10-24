@@ -366,9 +366,17 @@ function toCategory(snapshot) {
 const isBuiltIn = (id) => builtInCategories.some((c) => c.id === id)
 const rows = (snapshot, convert) => snapshot.docs.map(convert).filter(Boolean)
 
+// True when the last loadAll came from Firebase, not only from the browser
+// copy (without internet a new device has an empty copy, which must not be
+// taken for an empty account)
+let lastLoadConfirmed = false
+
+export function wasLastLoadConfirmed() {
+  return lastLoadConfirmed
+}
+
 async function readAll(fresh) {
-  const [transactions, categories, budgets, recurring, savings, goals, profile, schedule] =
-    await Promise.all([
+  const snapshots = await Promise.all([
       readList(listOf('transactions'), fresh),
       readList(listOf('categories'), fresh),
       readList(listOf('budgets'), fresh),
@@ -378,6 +386,11 @@ async function readAll(fresh) {
       readItem(metaOf('profile'), fresh),
       readItem(metaOf('schedule'), fresh),
     ])
+  const [transactions, categories, budgets, recurring, savings, goals, profile, schedule] =
+    snapshots
+  if (fresh) {
+    lastLoadConfirmed = snapshots.every((snapshot) => snapshot.metadata?.fromCache !== true)
+  }
   return {
     profile: toProfile(profile.exists() ? profile.data() : null),
     transactions: rows(transactions, toTransaction).sort(byId),

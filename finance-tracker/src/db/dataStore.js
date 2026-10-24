@@ -52,3 +52,6 @@ export function onWriteError(listener) {
 // The data saved on this device before accounts existed (SQLite)
 export const readDeviceData = () => local.loadAll()
 export const uploadDeviceData = (state) => cloud.uploadLocalData(state)
+
+// True when the last loadAll was answered by Firebase (always with SQLite)
+export const wasLoadConfirmed = () => (isCloudData() ? cloud.wasLastLoadConfirmed() : true)
