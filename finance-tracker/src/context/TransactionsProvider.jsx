@@ -127,7 +127,9 @@ export default function TransactionsProvider({ children }) {
     )
     const run = async () => {
       setDataUser(uid)
-      const hasLock = await acquireTabLock()
+      // only the one database of this device needs a single tab; in the
+      // cloud Firestore shares its browser copy between tabs
+      const hasLock = isCloudData() || (await acquireTabLock())
       if (!hasLock) {
         finish(() => {
           setBlocked(true)
