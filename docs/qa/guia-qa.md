@@ -112,6 +112,8 @@ En `finance-tracker/e2e/results/`:
 
 Corrida `20261024004258` en `iampoorfornow`: 32 pasaron, 7 fallaron (3 de reglas publicadas, 4 de las pruebas de navegador, ya corregidas), 5 huecos conocidos; 398 de 400 escrituras, limpieza completa (no quedaron documentos).
 
+Corrida `20261024010935`: 34 pasaron, 5 fallaron (las mismas 3 de reglas y 2 de navegador: la prueba leía el Historial antes de que la pantalla cambiara; los datos estaban bien, 100 × $0,10 sumaban $10,00 en pantalla). 514 de 1000 escrituras, sin documentos sobrantes. Corregido: `goTo` espera la nueva pantalla.
+
 ### 5.1 Lo que funciona bien (probado en el proyecto real)
 
 - **Aislamiento entre cuentas:** la cuenta 2 no pudo leer, listar, cambiar ni borrar nada de la cuenta 1, y los datos de la cuenta 1 quedaron iguales.

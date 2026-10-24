@@ -147,10 +147,25 @@ const NAV = {
   settings: T.settings,
 }
 
+// Where each menu link leads, to know when the new screen is there
+const NAV_PATH = {
+  home: /^\/$/,
+  add: /^\/add$/,
+  history: /^\/history$/,
+  stats: /^\/stats$/,
+  settings: /^\/settings$/,
+}
+
 // Client-side navigation through the visible menu (top bar on desktop, bottom
-// tab bar on phones), so the app is not reloaded
+// tab bar on phones), so the app is not reloaded. It returns only once the
+// address and the screen's title have changed, so the next step never reads
+// the previous screen (seen with the real Firebase, where saves are slower).
 export async function goTo(page, where) {
   await page.getByRole('link', { name: NAV[where] }).filter({ visible: true }).first().click()
+  await page.waitForURL((url) => NAV_PATH[where].test(url.pathname), { timeout: 30_000 })
+  if (where === 'history') {
+    await expect(page.getByRole('heading', { level: 1, name: /^(History|Historial)$/ })).toBeVisible()
+  }
 }
 
 // YYYY-MM-DD of "today minus offset days" in the browser's (= this machine's) zone
