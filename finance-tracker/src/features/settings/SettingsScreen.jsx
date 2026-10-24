@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTransactions } from '../../context/useTransactions'
+import { useAuth } from '../../context/useAuth'
 import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import {
@@ -25,6 +26,7 @@ function readLastBackup() {
 export default function SettingsScreen() {
   const { lang, setLang, theme, setTheme, locale, t } = useSettings()
   const { alert, confirm } = useDialog()
+  const { user, signOut } = useAuth()
   const {
     transactions,
     categories,
@@ -67,6 +69,19 @@ export default function SettingsScreen() {
       console.error(error)
       await alert(t('saveError'))
     } finally {
+      setBusy(false)
+    }
+  }
+
+  // the local data is not touched: it is there again after signing back in
+  const handleSignOut = async () => {
+    if (busy) return
+    setBusy(true)
+    try {
+      await signOut()
+    } catch (error) {
+      console.warn('auth', error?.code ?? 'unknown')
+      await alert(t('authUnknown'))
       setBusy(false)
     }
   }
@@ -194,6 +209,22 @@ export default function SettingsScreen() {
 
       <div className="cols">
         <div className="col">
+          <section className="card">
+            <p className="label">{t('account')}</p>
+            <p className="account-email">{user?.email}</p>
+            <p className="sub">{t('signOutHint')}</p>
+            <div className="actions">
+              <button
+                type="button"
+                className="btn secondary"
+                disabled={busy}
+                onClick={handleSignOut}
+              >
+                {t('signOut')}
+              </button>
+            </div>
+          </section>
+
           <section className="card">
             <p className="label">{t('language')}</p>
             <div className="pill-group wrap">

@@ -3,6 +3,7 @@ import { useTransactions } from './context/useTransactions'
 import DialogProvider from './context/DialogProvider'
 import SettingsProvider from './context/SettingsProvider'
 import TransactionsProvider from './context/TransactionsProvider'
+import AuthProvider from './context/AuthProvider'
 import AppBar from './components/AppBar'
 import SkipLink from './components/SkipLink'
 import HomeScreen from './features/expenses/HomeScreen'
@@ -15,6 +16,8 @@ import BudgetsScreen from './features/settings/BudgetsScreen'
 import RecurringScreen from './features/settings/RecurringScreen'
 import SavingsScreen from './features/settings/SavingsScreen'
 import OnboardingScreen from './features/onboarding/OnboardingScreen'
+import AuthGate, { PublicOnly } from './features/auth/AuthGate'
+import LoginScreen from './features/auth/LoginScreen'
 
 // The first-use screen replaces the whole app (no menu, no other route)
 // until it is done or skipped; it is also what "Repeat initial setup" opens
@@ -52,16 +55,37 @@ function Shell() {
   )
 }
 
+// Only /login and the other sign-in pages are open. The rest, and with it
+// the local database (TransactionsProvider), starts only with a session.
 export default function App() {
   return (
     <SettingsProvider>
       <DialogProvider>
-      <TransactionsProvider>
-        <BrowserRouter>
-          <SkipLink />
-          <Shell />
-        </BrowserRouter>
-      </TransactionsProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <SkipLink />
+            <Routes>
+              <Route
+                path="/login"
+                element={
+                  <PublicOnly>
+                    <LoginScreen />
+                  </PublicOnly>
+                }
+              />
+              <Route
+                path="*"
+                element={
+                  <AuthGate>
+                    <TransactionsProvider>
+                      <Shell />
+                    </TransactionsProvider>
+                  </AuthGate>
+                }
+              />
+            </Routes>
+          </BrowserRouter>
+        </AuthProvider>
       </DialogProvider>
     </SettingsProvider>
   )
