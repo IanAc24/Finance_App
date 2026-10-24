@@ -15,6 +15,7 @@ import { Icon } from '../../components/CategoryIcon'
 import QuincenaSetting from '../../components/QuincenaSetting'
 import { downloadCsv, downloadFile, transactionRows } from '../../lib/csv'
 import { byNewest, isValidDate, parseDate, todayString } from '../../lib/dates'
+import { isCloudData } from '../../lib/firebase'
 import { formatDate } from '../../lib/format'
 import { LEGAL_DOCS } from '../../lib/legal'
 import { MAX_PROFILE_NAME_LENGTH } from '../../lib/limits'
@@ -244,7 +245,8 @@ export default function SettingsScreen() {
           <section className="card">
             <h2 className="section-title">{t('account')}</h2>
             <p className="account-email">{user?.email}</p>
-            <p className="sub">{t('signOutHint')}</p>
+            {/* in the cloud the data follows the account, not the device */}
+            <p className="sub">{isCloudData() ? t('signOutHintCloud') : t('signOutHint')}</p>
             <div className="actions">
               <button
                 type="button"
