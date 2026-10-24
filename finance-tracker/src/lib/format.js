@@ -20,7 +20,20 @@ export function formatDate(date, locale, { year = true, weekday = false } = {}) 
   })
 }
 
-// 'octubre de 2026' | 'October 2026'
+const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1)
+
+// 'Octubre de 2026' | 'October 2026'. Only the month name is capitalised: in
+// Spanish the "de" stays small ("Octubre De 2026" is wrong).
 export function formatMonth(date, locale) {
+  if (locale.startsWith('es')) {
+    const month = date.toLocaleDateString(locale, { month: 'long' })
+    return `${capitalize(month)} de ${date.getFullYear()}`
+  }
   return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
+}
+
+// The month alone, for a sentence: 'octubre' | 'October'
+export function monthName(date, locale) {
+  const name = date.toLocaleDateString(locale, { month: 'long' })
+  return locale.startsWith('es') ? name : capitalize(name)
 }

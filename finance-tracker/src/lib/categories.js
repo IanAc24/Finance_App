@@ -25,6 +25,13 @@ export function categoryColor(category) {
   return `var(--cat-${category.color})`
 }
 
+// The soft fill of a bar segment or legend dot: a pastel in both themes (the
+// --seg-* variables), with dark text on top. categoryColor stays for text and
+// icons, which need the stronger tone on a light background.
+export function categoryFill(category) {
+  return `var(--seg-${category.color})`
+}
+
 // Built-in categories have a translation key, custom ones have a name
 export function categoryLabel(category, t) {
   return category.name ?? t(`category.${category.key}`)

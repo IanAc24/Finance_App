@@ -21,12 +21,19 @@ export default function SettingsProvider({ children }) {
 
   useEffect(() => {
     document.documentElement.lang = lang === 'es' ? 'es-CR' : 'en'
-    document.title = `${translations[lang].titleMain} ${translations[lang].titleAccent}`
   }, [lang])
 
   useEffect(() => {
     writePref('theme', theme)
     document.documentElement.dataset.theme = theme
+    // status bar colour follows the page background of the active theme
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (meta) {
+      const bg = getComputedStyle(document.documentElement)
+        .getPropertyValue('--bg')
+        .trim()
+      if (bg) meta.setAttribute('content', bg)
+    }
   }, [theme])
 
   const t = (key) => translations[lang][key] ?? key

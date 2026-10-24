@@ -56,9 +56,11 @@ export default function QuincenaSetting({ embedded = false, initial, onChange })
     transactions.length > 0 || savings.length > 0 || recurring.length > 0
 
   const [mode, setMode] = useState(shown.mode)
-  const [day1, setDay1] = useState(String(shown.mode === 'paydays' ? shown.day1 : 5))
+  // the boxes start with the days of the schedule in use when it is already
+  // "my pay days"; otherwise with the usual 15 and 30
+  const [day1, setDay1] = useState(String(shown.mode === 'paydays' ? shown.day1 : 15))
   const [day2, setDay2] = useState(
-    shown.mode === 'paydays' ? String(shown.day2 ?? '') : '20',
+    shown.mode === 'paydays' ? String(shown.day2 ?? '') : '30',
   )
   // the day the person was paid (manual): today unless the welcome had one
   const [paidOn, setPaidOn] = useState(
@@ -137,7 +139,7 @@ export default function QuincenaSetting({ embedded = false, initial, onChange })
 
   return (
     <Wrapper className={embedded ? 'quincena-embedded' : 'card'}>
-      {!embedded && <p className="label">{t('quincenaSetting')}</p>}
+      {!embedded && <h2 className="section-title">{t('quincenaSetting')}</h2>}
       {!embedded && <p className="sub">{describe(current)}</p>}
       {!embedded && pending && (
         <p className="sub">

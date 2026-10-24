@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTransactions } from '../../context/useTransactions'
+import { useConsent } from '../../context/useConsent'
 import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import {
@@ -9,12 +10,23 @@ import {
   inspectBackup,
   summarizeCounts,
 } from '../../lib/backup'
+import { Icon } from '../../components/CategoryIcon'
 import QuincenaSetting from '../../components/QuincenaSetting'
 import { downloadCsv, downloadFile, transactionRows } from '../../lib/csv'
 import { byNewest, isValidDate, parseDate, todayString } from '../../lib/dates'
 import { formatDate } from '../../lib/format'
-import { MAX_NAME_LENGTH, cleanName } from '../../lib/onboarding'
-import { readPref, writePref } from '../../lib/prefs'
+import { LEGAL_DOCS } from '../../lib/legal'
+import { MAX_PROFILE_NAME_LENGTH } from '../../lib/limits'
+import { cleanName } from '../../lib/onboarding'
+import { BACKUP_SNOOZE_PREF, readPref, removePref, writePref } from '../../lib/prefs'
+
+// The screens that hold what the person manages, in the order they are used
+const MANAGE_LINKS = [
+  { to: '/savings', icon: 'piggyBank', labelKey: 'savings' },
+  { to: '/settings/recurring', icon: 'repeat', labelKey: 'recurring' },
+  { to: '/settings/categories', icon: 'tag', labelKey: 'categories' },
+  { to: '/settings/budgets', icon: 'wallet', labelKey: 'budgets' },
+]
 
 // The date of the last backup made on this device, or null
 function readLastBackup() {
@@ -39,6 +51,8 @@ export default function SettingsScreen() {
     saveProfileName,
     startOnboarding,
   } = useTransactions()
+
+  const { consent, withdraw } = useConsent()
 
   const [busy, setBusy] = useState(false)
   const [lastBackup, setLastBackup] = useState(readLastBackup)
@@ -97,6 +111,7 @@ export default function SettingsScreen() {
     const today = todayString()
     saveBackupFile(`i-am-poor-for-now-backup-${today}.json`)
     writePref('lastBackup', today)
+    removePref(BACKUP_SNOOZE_PREF)
     setLastBackup(today)
   }
 
@@ -179,12 +194,27 @@ export default function SettingsScreen() {
       confirmLabel: t('clearConfirm'),
       danger: true,
       // what is about to be erased can be saved to a file first
-      checkbox: { label: t('restoreMakeBackup'), defaultChecked: true },
+      checkbox: { label: t('clearMakeBackup'), defaultChecked: false },
     })
     if (!confirmed) return
     run(async () => {
       if (checked) saveBackupFile(`i-am-poor-for-now-before-clear-${todayString()}.json`)
       await clearAllData()
+    })
+  }
+
+  // Withdrawing the consent erases the data like "Clear all" and then shows
+  // the consent screen again
+  const handleWithdraw = async () => {
+    const { confirmed } = await confirm({
+      message: t('withdrawIntro'),
+      confirmLabel: t('withdrawConfirm'),
+      danger: true,
+    })
+    if (!confirmed) return
+    run(async () => {
+      await clearAllData()
+      withdraw()
     })
   }
 
@@ -195,7 +225,28 @@ export default function SettingsScreen() {
       <div className="cols">
         <div className="col">
           <section className="card">
-            <p className="label">{t('language')}</p>
+            <h2 className="section-title">{t('manage')}</h2>
+            <ul className="list">
+              {MANAGE_LINKS.map(({ to, icon, labelKey }) => (
+                <li key={to}>
+                  <Link className="tx-row row-link" to={to}>
+                    <span className="cat-icon is-nav" aria-hidden="true">
+                      <Icon name={icon} size={20} />
+                    </span>
+                    <span className="tx-text">
+                      <span className="tx-name">{t(labelKey)}</span>
+                    </span>
+                    <span className="row-chevron" aria-hidden="true">
+                      <Icon name="chevronRight" size={20} />
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="card">
+            <h2 className="section-title">{t('language')}</h2>
             <div className="pill-group wrap">
               <button
                 type="button"
@@ -217,7 +268,7 @@ export default function SettingsScreen() {
           </section>
 
           <section className="card">
-            <p className="label">{t('theme')}</p>
+            <h2 className="section-title">{t('theme')}</h2>
             <div className="pill-group wrap">
               <button
                 type="button"
@@ -244,7 +295,7 @@ export default function SettingsScreen() {
               <input
                 type="text"
                 autoComplete="given-name"
-                maxLength={MAX_NAME_LENGTH}
+                maxLength={MAX_PROFILE_NAME_LENGTH}
                 value={nameText}
                 onChange={(e) => setNameText(e.target.value)}
               />
@@ -264,7 +315,7 @@ export default function SettingsScreen() {
           <QuincenaSetting />
 
           <section className="card">
-            <p className="label">{t('setupSection')}</p>
+            <h2 className="section-title">{t('setupSection')}</h2>
             <p className="sub">{t('redoSetupHint')}</p>
             <div className="actions">
               <button
@@ -278,28 +329,11 @@ export default function SettingsScreen() {
             </div>
           </section>
 
-          <section className="card">
-            <p className="label">{t('manage')}</p>
-            <div className="actions">
-              <Link className="btn secondary" to="/savings">
-                {t('savings')}
-              </Link>
-              <Link className="btn secondary" to="/settings/categories">
-                {t('categories')}
-              </Link>
-              <Link className="btn secondary" to="/settings/budgets">
-                {t('budgets')}
-              </Link>
-              <Link className="btn secondary" to="/settings/recurring">
-                {t('recurring')}
-              </Link>
-            </div>
-          </section>
         </div>
 
         <div className="col">
           <section className="card">
-            <p className="label">{t('data')}</p>
+            <h2 className="section-title">{t('data')}</h2>
             <div className="actions">
               <button
                 type="button"
@@ -359,6 +393,39 @@ export default function SettingsScreen() {
                 ? `${t('lastBackup')} ${formatDate(parseDate(lastBackup), locale)}`
                 : t('noBackupYet')}
             </p>
+          </section>
+
+          <section className="card">
+            <h2 className="section-title">{t('legalSection')}</h2>
+            {consent && (
+              <p className="sub">
+                {t('legalAccepted')
+                  .replace('{v}', consent.version)
+                  .replace(
+                    '{date}',
+                    formatDate(new Date(consent.acceptedAt), locale),
+                  )}
+              </p>
+            )}
+            <ul className="legal-links">
+              {LEGAL_DOCS.map(({ id, titleKey }) => (
+                <li key={id}>
+                  <Link className="text-link" to={`/legal/${id}`}>
+                    {t(titleKey)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <div className="actions">
+              <button
+                type="button"
+                className="btn danger"
+                disabled={busy}
+                onClick={handleWithdraw}
+              >
+                {t('withdrawConsent')}
+              </button>
+            </div>
           </section>
         </div>
       </div>

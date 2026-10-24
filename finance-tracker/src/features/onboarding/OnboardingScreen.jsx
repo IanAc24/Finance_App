@@ -5,15 +5,18 @@ import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
 import CurrencyPills from '../../components/CurrencyPills'
 import Logo from '../../components/Logo'
+import Money from '../../components/Money'
 import QuincenaSetting from '../../components/QuincenaSetting'
 import { formatMoney, currencies } from '../../lib/money'
 import { categoryLabel } from '../../lib/categories'
 import {
-  BILLS_CATEGORY_ID,
   MAX_CATEGORY_NAME_LENGTH,
+  MAX_NOTE_LENGTH,
+  MAX_PROFILE_NAME_LENGTH,
+} from '../../lib/limits'
+import {
+  BILLS_CATEGORY_ID,
   NEW_CATEGORY,
-  MAX_NAME_LENGTH,
-  MAX_EXPENSE_NOTE_LENGTH,
   buildFixedExpense,
   cleanName,
   freePerQuincena,
@@ -39,8 +42,8 @@ function FreeSummary({ figures, hasIncome, currency }) {
       <p className="label">{t('obFreeLabel')}</p>
       {hasIncome ? (
         <>
-          <p className={negative ? 'balance has-message' : 'balance'}>
-            {formatMoney(figures.free, currency)}
+          <p className={negative ? 'summary-amount is-muted' : 'summary-amount'}>
+            <Money text={formatMoney(figures.free, currency)} />
           </p>
           {negative && <p className="sub warn">{t('obFreeNegative')}</p>}
           <p className="sub">{t('obFreeAverage')}</p>
@@ -286,8 +289,10 @@ export default function OnboardingScreen() {
       expenses.length > 0
     if (typed) {
       const { confirmed } = await confirm({
-        message: t('obSkipAllConfirm'),
-        confirmLabel: repeatingOnboarding ? t('cancel') : t('obSkipAll'),
+        message: repeatingOnboarding ? t('obRepeatLeaveConfirm') : t('obSkipAllConfirm'),
+        confirmLabel: repeatingOnboarding ? t('obRepeatLeave') : t('obSkipAll'),
+        // the dialog's own Cancel button must not read "Cancel" twice
+        cancelLabel: repeatingOnboarding ? t('obRepeatKeep') : undefined,
         danger: true,
       })
       if (!confirmed) return
@@ -356,7 +361,7 @@ export default function OnboardingScreen() {
               <input
                 type="text"
                 autoComplete="given-name"
-                maxLength={MAX_NAME_LENGTH}
+                maxLength={MAX_PROFILE_NAME_LENGTH}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
@@ -465,7 +470,7 @@ export default function OnboardingScreen() {
                 <input
                   ref={draftNameInput}
                   type="text"
-                  maxLength={MAX_EXPENSE_NOTE_LENGTH}
+                  maxLength={MAX_NOTE_LENGTH}
                   aria-invalid={draftError === 'name'}
                   aria-describedby={draftError === 'name' ? 'ob-draft-error' : undefined}
                   value={draftName}
@@ -632,7 +637,7 @@ export default function OnboardingScreen() {
             )}
             <button
               type="button"
-              className="btn secondary"
+              className="text-link ob-skip-step"
               disabled={busy}
               onClick={skipStep}
             >
