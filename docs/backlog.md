@@ -16,6 +16,7 @@
 | Ficha | Tarea | Falta |
 |---|---|---|
 | 001 | Firebase: prueba de humo en un Android real | Proyecto Firebase listo (20/10). Falta: registrar la app Android `cr.iampoorfornow` con su SHA-1 de depuración, descargar `google-services.json` (fuera del repo), confirmar las cuentas de Google de Ian y Furyan, y tener Android Studio y un celular con depuración USB |
+| 006 | Publicar las reglas de Firestore del repo en `iampoorfornow` y comprobarlas con `npm run qa:firebase` (antes: 36 pasan, 3 fallan; después: todas) | Lo hace Furyan: publicar (consola o `firebase-tools` con su login) y correr la suite antes y después |
 
 ## Necesitan investigación o decisión antes de construir
 | # | Tema | Qué falta |
