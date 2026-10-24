@@ -5,6 +5,7 @@ import StatusScreen from '../components/StatusScreen'
 import {
   isFirebaseConfigured,
   resetPassword,
+  setAuthLanguage,
   signIn,
   signOut,
   signUp,
@@ -16,9 +17,13 @@ const actions = { signIn, signUp, signOut, resetPassword }
 // Who is signed in. Firebase keeps the session in the browser, so after a
 // reload it is 'loading' for a moment and then 'authenticated' again.
 export default function AuthProvider({ children }) {
-  const { t } = useSettings()
+  const { lang, t } = useSettings()
   const configured = isFirebaseConfigured()
   const [session, setSession] = useState({ status: 'loading', user: null })
+
+  useEffect(() => {
+    if (configured) setAuthLanguage(lang)
+  }, [configured, lang])
 
   useEffect(() => {
     if (!configured) return undefined

@@ -18,10 +18,28 @@ const KEYS = {
   'auth/network-request-failed': 'authOffline',
 }
 
+// Problems with how the app is connected to Firebase, not with the person:
+// the message says what to fix instead of "something went wrong". Firebase
+// builds some codes from the server text, so these are matched by prefix
+// (a bad key gives "auth/api-key-not-valid.-please-pass-a-valid-api-key.").
+const SETUP_PREFIXES = [
+  ['auth/api-key-not-valid', 'authBadConfig'],
+  ['auth/invalid-api-key', 'authBadConfig'],
+  ['auth/project-not-found', 'authBadConfig'],
+  ['auth/app-not-authorized', 'authBadConfig'],
+  ['auth/requests-from-referer', 'authBadConfig'],
+  ['auth/operation-not-allowed', 'authMethodDisabled'],
+  ['auth/configuration-not-found', 'authMethodDisabled'],
+  ['auth/admin-restricted-operation', 'authSignUpDisabled'],
+]
+
 export const UNKNOWN_ERROR = 'authUnknown'
 
 export function authErrorKey(error) {
-  return KEYS[error?.code] ?? UNKNOWN_ERROR
+  const code = typeof error?.code === 'string' ? error.code : ''
+  if (KEYS[code]) return KEYS[code]
+  const setup = SETUP_PREFIXES.find(([prefix]) => code.startsWith(prefix))
+  return setup ? setup[1] : UNKNOWN_ERROR
 }
 
 // Codes that would say whether an email has an account

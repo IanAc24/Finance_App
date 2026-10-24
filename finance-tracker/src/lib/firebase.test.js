@@ -131,6 +131,15 @@ describe('Firebase start and actions', () => {
     expect(firebaseAuth.sendPasswordResetEmail.mock.calls[0]).toHaveLength(2)
   })
 
+  it('sends Firebase emails in the language of the app', async () => {
+    const { module, firebaseAuth } = await load()
+    module.setAuthLanguage('es')
+    const auth = firebaseAuth.getAuth.mock.results[0].value
+    expect(auth.languageCode).toBe('es')
+    module.setAuthLanguage('en')
+    expect(auth.languageCode).toBe('en')
+  })
+
   it('passes the listener and returns the function that stops it', async () => {
     const { module, firebaseAuth } = await load()
     const stop = vi.fn()

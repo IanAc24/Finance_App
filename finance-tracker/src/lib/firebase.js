@@ -72,6 +72,11 @@ export function resetPassword(email) {
   return sendPasswordResetEmail(getFirebaseAuth(), email.trim())
 }
 
+// Emails from Firebase (the password reset link) in the app's language
+export function setAuthLanguage(lang) {
+  getFirebaseAuth().languageCode = lang
+}
+
 export function signOut() {
   return firebaseSignOut(getFirebaseAuth())
 }

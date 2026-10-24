@@ -60,3 +60,29 @@ describe('resetResultKey', () => {
     expect(resetResultKey(error('auth/other'))).toBe(UNKNOWN_ERROR)
   })
 })
+
+describe('setup problems', () => {
+  it('explains a bad or blocked Firebase key instead of "something went wrong"', () => {
+    // the exact code Firebase gives for a wrong API key
+    expect(authErrorKey(error('auth/api-key-not-valid.-please-pass-a-valid-api-key.'))).toBe('authBadConfig')
+    expect(authErrorKey(error('auth/invalid-api-key'))).toBe('authBadConfig')
+    expect(
+      authErrorKey(error('auth/requests-from-referer-https://algo.netlify.app-are-blocked.')),
+    ).toBe('authBadConfig')
+  })
+
+  it('says when email and password are not turned on, or sign-up is off', () => {
+    expect(authErrorKey(error('auth/operation-not-allowed'))).toBe('authMethodDisabled')
+    expect(authErrorKey(error('auth/configuration-not-found'))).toBe('authMethodDisabled')
+    expect(authErrorKey(error('auth/admin-restricted-operation'))).toBe('authSignUpDisabled')
+  })
+
+  it('also shows them on password recovery, where they are not about the account', () => {
+    expect(resetResultKey(error('auth/api-key-not-valid.-please-pass-a-valid-api-key.'))).toBe('authBadConfig')
+    expect(resetResultKey(error('auth/operation-not-allowed'))).toBe('authMethodDisabled')
+  })
+
+  it('ignores codes that are not text', () => {
+    expect(authErrorKey({ code: 42 })).toBe(UNKNOWN_ERROR)
+  })
+})

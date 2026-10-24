@@ -339,6 +339,12 @@ export const translations = {
     authPasswordHint: 'Al menos 8 caracteres.',
     authHaveAccount: 'Ya tengo cuenta',
     authNoAccount: '¿No tienes cuenta?',
+    authBadConfig:
+      'La app no pudo conectarse con Firebase: los valores de .env.local no son válidos o este sitio no está autorizado.',
+    authMethodDisabled:
+      'Entrar con correo y contraseña no está activado en Firebase (Authentication → Método de acceso).',
+    authSignUpDisabled:
+      'Crear cuentas desde la app está desactivado en Firebase. Pide a quien administra la app que te cree una.',
   },
   en: {
     titleMain: 'I AM POOR',
@@ -677,5 +683,11 @@ export const translations = {
     authPasswordHint: 'At least 8 characters.',
     authHaveAccount: 'I already have an account',
     authNoAccount: 'No account yet?',
+    authBadConfig:
+      'The app could not connect to Firebase: the values in .env.local are not valid or this site is not authorized.',
+    authMethodDisabled:
+      'Signing in with email and password is not turned on in Firebase (Authentication → Sign-in method).',
+    authSignUpDisabled:
+      'Creating accounts from the app is turned off in Firebase. Ask whoever runs the app to create one for you.',
   },
 }
