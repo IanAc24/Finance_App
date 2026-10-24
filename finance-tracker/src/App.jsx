@@ -19,6 +19,8 @@ import OnboardingScreen from './features/onboarding/OnboardingScreen'
 import AuthGate, { PublicOnly } from './features/auth/AuthGate'
 import LoginScreen from './features/auth/LoginScreen'
 import ResetPasswordScreen from './features/auth/ResetPasswordScreen'
+import SignUpScreen from './features/auth/SignUpScreen'
+import { isSignUpAllowed } from './lib/firebase'
 
 // The first-use screen replaces the whole app (no menu, no other route)
 // until it is done or skipped; it is also what "Repeat initial setup" opens
@@ -74,6 +76,18 @@ export default function App() {
                   </PublicOnly>
                 }
               />
+              {/* without VITE_ALLOW_SIGNUP="1" the page does not exist:
+                  /registro falls into the protected part like any other */}
+              {isSignUpAllowed() && (
+                <Route
+                  path="/registro"
+                  element={
+                    <PublicOnly>
+                      <SignUpScreen />
+                    </PublicOnly>
+                  }
+                />
+              )}
               {/* open with or without a session */}
               <Route path="/recuperar" element={<ResetPasswordScreen />} />
               <Route

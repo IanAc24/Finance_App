@@ -19,6 +19,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 const { default: AuthGate, PublicOnly } = await import('./AuthGate')
 const { default: LoginScreen } = await import('./LoginScreen')
 const { default: ResetPasswordScreen } = await import('./ResetPasswordScreen')
+const { default: SignUpScreen } = await import('./SignUpScreen')
 
 const settings = { lang: 'es', t: (key) => `[${key}]` }
 
@@ -143,6 +144,29 @@ describe('ResetPasswordScreen', () => {
   })
 
   it('links back to sign in', () => {
+    expect(html).toContain('href="/login"')
+  })
+})
+
+describe('sign-up switch (VITE_ALLOW_SIGNUP)', () => {
+  it('shows the "create an account" link only when it is "1"', () => {
+    vi.stubEnv('VITE_ALLOW_SIGNUP', '0')
+    const off = render('unauthenticated', h(LoginScreen))
+    expect(off).not.toContain('href="/registro"')
+    vi.stubEnv('VITE_ALLOW_SIGNUP', '1')
+    const on = render('unauthenticated', h(LoginScreen))
+    expect(on).toContain('href="/registro"')
+    vi.unstubAllEnvs()
+  })
+
+  it('asks for the password twice, as a new password, with the 8 character hint', () => {
+    const html = render('unauthenticated', h(SignUpScreen))
+    expect(html).toContain('for="signup-email"')
+    expect(html).toContain('for="signup-password"')
+    expect(html).toContain('for="signup-confirm"')
+    expect(html.match(/autoComplete="new-password"/g)).toHaveLength(2)
+    expect(html).toContain('[authPasswordHint]')
+    expect(html).toContain('aria-describedby="signup-password-hint"')
     expect(html).toContain('href="/login"')
   })
 })

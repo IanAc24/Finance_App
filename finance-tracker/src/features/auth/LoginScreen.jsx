@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import { useSettings } from '../../context/useSettings'
 import { validateSignIn } from '../../lib/authForm'
+import { isSignUpAllowed } from '../../lib/firebase'
 import AuthLayout from './AuthLayout'
 import { EmailField, FormMessage, PasswordField } from './AuthFields'
 import { useAuthForm } from './useAuthForm'
@@ -48,6 +49,11 @@ export default function LoginScreen() {
         <Link className="text-link" to="/recuperar">
           {t('authForgot')}
         </Link>
+        {isSignUpAllowed() && (
+          <Link className="text-link" to="/registro">
+            {t('authSignUpTitle')}
+          </Link>
+        )}
       </p>
     </AuthLayout>
   )
