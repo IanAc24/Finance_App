@@ -1,67 +1,67 @@
 import { Link, useLocation } from 'react-router-dom'
-import { categoryColor, categoryLabel } from '../lib/categories'
-import { parseDate } from '../lib/dates'
+import { categoryLabel } from '../lib/categories'
+import { parseDate, todayString } from '../lib/dates'
+import { dateWithYear } from '../lib/describe'
 import { formatDate } from '../lib/format'
 import { formatMoney } from '../lib/money'
 import { paymentNote } from '../lib/payment'
 import { useSettings } from '../context/useSettings'
 import { useTransactions } from '../context/useTransactions'
+import CategoryIcon from './CategoryIcon'
 
+// One transaction as a list row: icon, description, meta and the amount on the
+// right. The whole row is the tap target. A movement dated after today says
+// "Upcoming" in its meta line (in words, not only a colour). Long text is cut with an ellipsis on
+// one line. Expenses are "−" in the text colour, income "+" in the income colour.
 export default function TransactionItem({ tx, showDate = true }) {
   const { locale, t } = useSettings()
   const { categories } = useTransactions()
   const { pathname } = useLocation()
   const isIncome = tx.type === 'income'
   const category = categories.find((c) => c.id === tx.categoryId)
-  const fallback = isIncome ? t('income') : t('typeExpense')
+  const fallback = isIncome ? t('typeIncome') : t('category.uncategorized')
   const label = category ? categoryLabel(category, t) : fallback
-  const date = formatDate(parseDate(tx.date), locale, { year: false })
+  const upcoming = tx.date > todayString()
+  // a movement dated in a later year says which, so '05/03' is never a guess
+  const date = upcoming
+    ? dateWithYear(parseDate(tx.date), new Date(), locale)
+    : formatDate(parseDate(tx.date), locale, { year: false })
   // card and SINPE are named in the row; cash is the default and says nothing
   const method = paymentNote(tx.paymentMethod, t)
   const join = (...parts) => parts.filter(Boolean).join(' · ')
-
-  const dot = category && (
-    <span
-      className="dot"
-      aria-hidden="true"
-      style={{ background: categoryColor(category) }}
-    />
-  )
+  // with a note the category goes in the meta; without one it is the name
+  const meta = tx.note
+    ? showDate
+      ? join(label, date, method)
+      : join(label, method)
+    : join(showDate && date, method)
 
   return (
     <li>
       {/* "from" tells the edit screen where to go back to */}
       <Link
-        className="row row-link"
+        className="tx-row row-link"
         to={`/edit/${tx.id}`}
         state={{ from: pathname }}
       >
-        <div>
-          {tx.note ? (
-            <>
-              <p className="row-name">{tx.note}</p>
-              <p className="row-meta">
-                {dot}
-                {showDate ? join(label, date, method) : join(label, method)}
-              </p>
-            </>
-          ) : (
-            <>
-              {/* no note: the label is the name, so meta is only the date */}
-              <p className="row-name">
-                {dot}
-                {label}
-              </p>
-              {(showDate || method) && (
-                <p className="row-meta">{join(showDate && date, method)}</p>
-              )}
-            </>
+        <CategoryIcon
+          category={isIncome ? undefined : category}
+          kind={isIncome ? 'income' : undefined}
+        />
+        <span className="tx-text">
+          <span className="tx-name">{tx.note || label}</span>
+          {(meta || upcoming) && (
+            <span className="tx-meta">
+              {upcoming && <span className="tx-upcoming">{t('upcoming')}</span>}
+              {upcoming && meta && ' · '}
+              {meta}
+            </span>
           )}
-        </div>
-        <p className={isIncome ? 'row-amount income' : 'row-amount spending'}>
+        </span>
+        <span className={isIncome ? 'tx-amount income' : 'tx-amount'}>
           {isIncome ? '+' : '−'}
           {formatMoney(tx.amount, tx.currency)}
-        </p>
+        </span>
       </Link>
     </li>
   )

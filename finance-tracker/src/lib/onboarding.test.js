@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { MAX_PROFILE_NAME_LENGTH } from './limits'
 import {
-  MAX_NAME_LENGTH,
   buildFixedExpense,
   buildIncomeItem,
   cleanCurrency,
@@ -17,7 +17,7 @@ import { DEFAULT_SCHEDULE } from './quincenaSchedule'
 describe('cleanName', () => {
   it('trims, collapses spaces and cuts to the limit', () => {
     expect(cleanName('  Ana   María ')).toBe('Ana María')
-    expect(cleanName('x'.repeat(100))).toHaveLength(MAX_NAME_LENGTH)
+    expect(cleanName('x'.repeat(100))).toHaveLength(MAX_PROFILE_NAME_LENGTH)
     expect(cleanName('')).toBe('')
     expect(cleanName(undefined)).toBe('')
     expect(cleanName(42)).toBe('')

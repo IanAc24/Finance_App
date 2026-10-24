@@ -38,6 +38,8 @@ export default function StatisticsScreen() {
     ),
     categories,
   ).sort((a, b) => b.total - a.total)
+  // newest first: the first one is the quincena in progress (it is part of
+  // this list on purpose, so the section is named "Your quincenas")
   const history = trimQuincenaHistory(
     getQuincenaHistory(
       transactions,
@@ -92,7 +94,7 @@ export default function StatisticsScreen() {
       <div className="cols">
         <div className="col">
           <section className="card">
-            <p className="label">{t('spending')}</p>
+            <h2 className="section-title">{t('spending')}</h2>
             <BarChart
               bars={bars}
               formatValue={(value) => formatMoney(value, currency)}
@@ -100,26 +102,39 @@ export default function StatisticsScreen() {
           </section>
 
           <section className="card">
-            <p className="label">{t('pastQuincenas')}</p>
+            <h2 className="section-title">{t('pastQuincenas')}</h2>
             {history.length === 0 ? (
               <p className="sub empty">{t('noTransactionsCurrency')}</p>
             ) : (
               <ul className="list">
-                {history.map((q) => (
+                {history.map((q, index) => (
                   <li className="row" key={q.start.getTime()}>
                     <div>
                       <p className="row-name">
                         {shortDate(q.start)} – {shortDate(q.end)}
+                        {index === 0 && (
+                          <span className="tag">{t('thisQuincena')}</span>
+                        )}
                       </p>
-                      <p className="row-meta">
-                        {/* a zero keeps the muted color so color keeps its meaning */}
-                        <span className={q.income > 0 ? 'income' : undefined}>
-                          +{formatMoney(q.income, currency)}
-                        </span>
+                      <p className="row-meta figures">
+                        {/* a zero is muted and has no sign */}
+                        {q.income > 0 ? (
+                          <span className="nowrap income">
+                            +{formatMoney(q.income, currency)}
+                          </span>
+                        ) : (
+                          <span className="nowrap is-zero">
+                            {formatMoney(0, currency)}
+                          </span>
+                        )}
                         {' · '}
-                        <span className={q.spent > 0 ? 'spending' : undefined}>
-                          −{formatMoney(q.spent, currency)}
-                        </span>
+                        {q.spent > 0 ? (
+                          <span className="nowrap">−{formatMoney(q.spent, currency)}</span>
+                        ) : (
+                          <span className="nowrap is-zero">
+                            {formatMoney(0, currency)}
+                          </span>
+                        )}
                       </p>
                     </div>
                     <p className={q.net < 0 ? 'row-amount spending' : 'row-amount'}>
@@ -134,7 +149,7 @@ export default function StatisticsScreen() {
 
         <div className="col">
           <section className="card">
-            <p className="label">{t('byCategory')}</p>
+            <h2 className="section-title">{t('byCategory')}</h2>
             {byCategory.length === 0 ? (
               <p className="sub empty">{t('noSpending')}</p>
             ) : (
@@ -143,7 +158,7 @@ export default function StatisticsScreen() {
           </section>
 
           <section className="card">
-            <p className="label">{t('transactions')}</p>
+            <h2 className="section-title">{t('transactions')}</h2>
             {recent.length === 0 ? (
               <p className="sub empty">{t('noTransactionsCurrency')}</p>
             ) : (

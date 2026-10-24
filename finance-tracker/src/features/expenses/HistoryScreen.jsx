@@ -1,21 +1,33 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTransactions } from '../../context/useTransactions'
 import { categoryLabel } from '../../lib/categories'
 import { downloadCsv, transactionRows } from '../../lib/csv'
 import { byNewest, getQuincenaRange, isSameMonth, parseDate } from '../../lib/dates'
-import { formatDate, formatMonth } from '../../lib/format'
-import { currencies, formatMoney, getTotals } from '../../lib/money'
+import { dayTitle } from '../../lib/days'
+import { formatDate, formatMonth, monthName } from '../../lib/format'
+import { currencies, getTotals } from '../../lib/money'
 import { paymentMethods, totalsByMethod } from '../../lib/payment'
 import { filterTransactions, hasFilters } from '../../lib/search'
+import { useToday } from '../../lib/useToday'
 import { useSettings } from '../../context/useSettings'
+import { Icon } from '../../components/CategoryIcon'
 import EmptyState from '../../components/EmptyState'
-import TransactionItem from '../../components/TransactionItem'
+import Figure from '../../components/Figure'
+import HistoryRow from '../../components/HistoryRow'
+import Sheet from '../../components/Sheet'
 
+// The query as shown in the "nothing found" title: short, on one line
+const QUERY_SHOWN = 30
+
+// A clean list: no cards, bold day headings with the day's spending on the
+// right, big icons and amounts on the right. The type is a row of chips, the
+// month and the other filters (category, payment method) open in a sheet and
+// the search opens from the magnifier.
 export default function HistoryScreen() {
   const { lang, locale, t } = useSettings()
   const { transactions, categories, quincenaSchedule } = useTransactions()
 
-  const today = new Date()
+  const today = useToday()
   const [month, setMonth] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1),
   )
@@ -23,12 +35,20 @@ export default function HistoryScreen() {
   const [type, setType] = useState('all')
   const [categoryId, setCategoryId] = useState('all')
   const [method, setMethod] = useState('all')
-  const [showFilters, setShowFilters] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [sheet, setSheet] = useState(null) // 'month' | 'filters' | null
+  const [methodsOpen, setMethodsOpen] = useState(false)
+  const searchInput = useRef(null)
   const filters = { query, type, categoryId, method }
   const filtering = hasFilters(filters)
-  // an active type, category or method filter can never be hidden
-  const open =
-    showFilters || type !== 'all' || categoryId !== 'all' || method !== 'all'
+  const searchShown = searchOpen || query !== ''
+  // category and payment method are the filters that live in the sheet
+  const sheetFilters = [categoryId, method].filter((v) => v !== 'all').length
+
+  // the field gets the focus when the search opens
+  useEffect(() => {
+    if (searchOpen) searchInput.current?.focus()
+  }, [searchOpen])
 
   // later months can be seen too when a transaction is dated in one
   const nextMonth = new Date(month.getFullYear(), month.getMonth() + 1, 1)
@@ -45,7 +65,7 @@ export default function HistoryScreen() {
     setType('all')
     setCategoryId('all')
     setMethod('all')
-    setShowFilters(false)
+    setSearchOpen(false)
   }
 
   // Filtering searches every month; otherwise it is the month on screen
@@ -55,18 +75,31 @@ export default function HistoryScreen() {
       : transactions.filter((tx) => isSameMonth(parseDate(tx.date), month))
   ).sort(byNewest)
 
-  // one group per day, newest first
+  // one group per day, newest first, with the day's spending and income per
+  // currency (never netted, never a total across currencies)
   const days = []
   for (const tx of list) {
     const last = days[days.length - 1]
     if (last && last.date === tx.date) last.items.push(tx)
     else days.push({ date: tx.date, items: [tx] })
   }
+  const daysWithTotals = days.map((day) => ({
+    ...day,
+    totals: currencies
+      .map((c) => ({ ...c, ...getTotals(day.items, c.code) }))
+      .filter((c) => c.count > 0),
+  }))
 
-  // spending per payment method in the quincena of today; it ignores the
-  // filters so the three methods can always be compared
+  // spending per payment method in the quincena of today. It ignores the
+  // filters so the three methods can always be compared, and it only shows
+  // while the month on screen is the one of today (it would mislead in others)
   const quincena = getQuincenaRange(today, quincenaSchedule)
-  const methodTotals = totalsByMethod(transactions, quincena)
+  // only the methods that were used: a method at ₡0 / $0.00 says nothing, and
+  // with a single method used the comparison has nothing to compare
+  const methodTotals = totalsByMethod(transactions, quincena).filter((m) =>
+    currencies.some((c) => m[c.code].spent > 0),
+  )
+  const showMethods = !filtering && isSameMonth(month, today) && methodTotals.length > 1
 
   const summaries = currencies
     .map((c) => ({ ...c, ...getTotals(list, c.code) }))
@@ -86,245 +119,300 @@ export default function HistoryScreen() {
 
   if (transactions.length === 0) {
     return (
-      <>
-        <h1 className="screen-title">{t('history')}</h1>
-        <div className="narrow">
-          <EmptyState />
-        </div>
-      </>
+      <div className="narrow hist">
+        <h1 className="hist-title">{t('history')}</h1>
+        <EmptyState />
+      </div>
     )
   }
 
+  const shownQuery =
+    query.trim().length > QUERY_SHOWN
+      ? `${query.trim().slice(0, QUERY_SHOWN)}…`
+      : query.trim()
+
   return (
     <>
-      <h1 className="screen-title">{t('history')}</h1>
-
-      <div className="narrow">
-        {!filtering && (
-          <div className="month-nav">
+      <div className="narrow hist">
+        <div className="hist-headrow">
+          <h1 className="hist-title">{t('history')}</h1>
+          {showMethods && (
             <button
               type="button"
-              className="month-btn"
-              aria-label={t('prevMonth')}
-              onClick={() => changeMonth(-1)}
+              className="calc-toggle"
+              aria-expanded={methodsOpen}
+              aria-controls="hist-methods"
+              onClick={() => setMethodsOpen((open) => !open)}
             >
-              ‹
-            </button>
-            <p className="month-name">
-              {formatMonth(month, locale)}
-            </p>
-            <button
-              type="button"
-              className="month-btn"
-              aria-label={t('nextMonth')}
-              disabled={!canGoNext}
-              onClick={() => changeMonth(1)}
-            >
-              ›
-            </button>
-          </div>
-        )}
-
-        <label className="field">
-          <span className="label">{t('search')}</span>
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('searchHint')}
-          />
-        </label>
-
-        <div className="pill-group">
-          <button
-            type="button"
-            className={open ? 'pill active' : 'pill'}
-            aria-expanded={open}
-            onClick={() => setShowFilters((v) => !v)}
-          >
-            {t('filters')}
-          </button>
-          {filtering && (
-            <button type="button" className="pill" onClick={clearFilters}>
-              {t('clearFilters')}
+              {t('spentByMethod')}
             </button>
           )}
         </div>
 
-        {open && (
-          <>
-            <div className="pill-group">
-              {[
-                ['all', t('all')],
-                ['expense', t('typeExpense')],
-                ['income', t('typeIncome')],
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  className={type === value ? 'pill active' : 'pill'}
-                  aria-pressed={type === value}
-                  onClick={() => setType(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            <div className="pill-group payment">
-              {[
-                ['all', t('all')],
-                ...paymentMethods.map((m) => [m.code, t(m.labelKey)]),
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  type="button"
-                  className={method === value ? 'pill active' : 'pill'}
-                  aria-pressed={method === value}
-                  onClick={() => setMethod(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-
-            <label className="field">
-              <span className="label">{t('category')}</span>
-              <select
-                value={categoryId}
-                onChange={(e) =>
-                  setCategoryId(
-                    e.target.value === 'all' ? 'all' : Number(e.target.value),
-                  )
-                }
+        <div className="hist-chips">
+          <div className="hist-chip-row" role="group" aria-label={t('type')}>
+            {[
+              ['all', t('filterAll')],
+              ['expense', t('filterExpenses')],
+              ['income', t('filterIncome')],
+            ].map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                className={type === value ? 'chip is-on' : 'chip'}
+                aria-pressed={type === value}
+                onClick={() => setType(value)}
               >
-                <option value="all">{t('allCategories')}</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {categoryLabel(c, t)}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </>
+                {label}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="chip"
+              aria-haspopup="dialog"
+              disabled={filtering}
+              onClick={() => setSheet('month')}
+            >
+              <span>{filtering ? t('allMonths') : formatMonth(month, locale)}</span>
+              <Icon name="chevronDown" size={16} />
+            </button>
+            <button
+              type="button"
+              className={sheetFilters > 0 ? 'chip is-on' : 'chip'}
+              aria-haspopup="dialog"
+              onClick={() => setSheet('filters')}
+            >
+              <Icon name="sliders" size={16} />
+              <span>
+                {t('filters')}
+                {sheetFilters > 0 ? ` (${sheetFilters})` : ''}
+              </span>
+            </button>
+          </div>
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label={searchShown ? t('searchClose') : t('searchOpen')}
+            aria-expanded={searchShown}
+            onClick={() => {
+              if (searchShown) {
+                setQuery('')
+                setSearchOpen(false)
+              } else {
+                setSearchOpen(true)
+              }
+            }}
+          >
+            <Icon name={searchShown ? 'x' : 'search'} size={20} />
+          </button>
+        </div>
+
+        {searchShown && (
+          <div className="hist-search">
+            <Icon name="search" size={18} />
+            <input
+              ref={searchInput}
+              type="search"
+              aria-label={t('search')}
+              placeholder={t('searchHint')}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
         )}
-      </div>
 
-      <div className="cols">
-        <div className="col">
-          {list.length > 0 && (
-            <section className="card">
-              {summaries.map((s, index) => (
-                <div className={index === 0 ? undefined : 'divider'} key={s.code}>
-                  <p className="label">
-                    {t('balance')} · {t(s.labelKey)}
-                  </p>
-                  <p className="month-balance">{formatMoney(s.net, s.code)}</p>
-                  <div className="stats-row">
-                    <div>
-                      <p className="label">{t('income')}</p>
-                      <p className="stat income">
-                        +{formatMoney(s.income, s.code)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="label">{t('spent')}</p>
-                      <p className="stat spending">
-                        {s.spent > 0 ? '−' : ''}
-                        {formatMoney(s.spent, s.code)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </section>
-          )}
+        {/* the month (or the results) per currency: income and spending, never
+            added across currencies */}
+        {summaries.length > 0 && (
+          <div className="hist-sum">
+            {summaries.map((s) => (
+              <p key={s.code}>
+                <span>
+                  {filtering ? t('allMonths') : monthName(month, locale)} · {t(s.labelKey)}
+                </span>
+                {s.income > 0 && <Figure amount={s.income} code={s.code} kind="income" />}
+                <Figure amount={s.spent} code={s.code} kind="spent" />
+              </p>
+            ))}
+          </div>
+        )}
 
-          <section className="card">
-            <p className="label">
-              {t('spentByMethod')} · {t('quincena')}
-            </p>
+        {showMethods && methodsOpen && (
+          <section className="card" id="hist-methods">
+            <h2 className="section-title">{t('spentByMethod')}</h2>
             <p className="sub">
-              {formatDate(quincena.start, locale, { year: false })} –{' '}
+              {t('thisQuincena')} · {formatDate(quincena.start, locale, { year: false })} –{' '}
               {formatDate(quincena.end, locale, { year: false })}
             </p>
-            <ul className="list">
+            <ul className="list method-list">
               {methodTotals.map((m) => (
                 <li className="row" key={m.code}>
                   <span>{t(m.labelKey)}</span>
-                  <span className="sub day-totals">
-                    {currencies.map((c) => (
-                      <span className="spending" key={c.code}>
-                        {formatMoney(m[c.code].spent, c.code)}
-                      </span>
-                    ))}
+                  <span className="day-total">
+                    {currencies
+                      .filter((c) => m[c.code].spent > 0)
+                      .map((c) => (
+                        <Figure
+                          amount={m[c.code].spent}
+                          code={c.code}
+                          kind="spent"
+                          key={c.code}
+                        />
+                      ))}
                   </span>
                 </li>
               ))}
             </ul>
           </section>
+        )}
 
-          <section className="card">
-            <p className="label">{t('data')}</p>
-            <div className="actions">
-              <button
-                type="button"
-                className="btn secondary"
-                disabled={list.length === 0}
-                onClick={handleExport}
-              >
-                {filtering ? t('exportResults') : t('exportCsv')}
-              </button>
-            </div>
-          </section>
-        </div>
+        {list.length === 0 && filtering && (
+          <EmptyState
+            card
+            actions={false}
+            icon="search"
+            title={
+              shownQuery
+                ? t('noResultsQuery').replace('{query}', shownQuery)
+                : t('noResultsFilters')
+            }
+            text={t('noResultsText')}
+          >
+            <button type="button" className="btn secondary" onClick={clearFilters}>
+              {t('clearFilters')}
+            </button>
+          </EmptyState>
+        )}
 
-        <div className="col">
-          {list.length === 0 ? (
-            <section className="card">
-              <p className="sub empty">
-                {filtering ? t('noResults') : t('noTransactions')}
-              </p>
-            </section>
-          ) : (
-            <section className="card">
-              {days.map((day, index) => (
-                <div className={index === 0 ? undefined : 'divider'} key={day.date}>
-                  <div className="row">
-                    <p className="label">
-                      {formatDate(parseDate(day.date), locale, {
-                        weekday: true,
-                        // results can span years
-                        year: filtering,
-                      })}
-                    </p>
-                    {/* net of the day per currency: + income color, − spending */}
-                    <p className="sub day-totals">
-                      {currencies
-                        .map((c) => ({ ...c, ...getTotals(day.items, c.code) }))
-                        .filter((c) => c.count > 0)
-                        .map((c) => (
-                          <span
-                            className={c.net < 0 ? 'spending' : 'income'}
-                            key={c.code}
-                          >
-                            {c.net < 0 ? '' : '+'}
-                            {formatMoney(c.net, c.code)}
-                          </span>
-                        ))}
-                    </p>
-                  </div>
-                  <ul className="list">
-                    {day.items.map((tx) => (
-                      <TransactionItem key={tx.id} tx={tx} showDate={false} />
-                    ))}
-                  </ul>
-                </div>
+        {list.length === 0 && !filtering && (
+          <EmptyState
+            card
+            actions={false}
+            icon="calendar"
+            title={t('emptyMonthTitle').replace('{month}', monthName(month, locale))}
+            text={t('emptyMonthText')}
+          />
+        )}
+
+        {daysWithTotals.map((day) => (
+          <section className="day-group" key={day.date} aria-labelledby={`day-${day.date}`}>
+            <header className="day-head">
+              <h2 className="day-title" id={`day-${day.date}`}>
+                {dayTitle(day.date, today, locale, t, {
+                  // results can span years
+                  year: filtering,
+                })}
+              </h2>
+              {/* per currency: the spending of the day (text colour, "−") and,
+                  only when the day has income, the income (green, "+"). Never
+                  netted and never added across currencies */}
+              <span className="day-total">
+                {day.totals.map((c) => (
+                  <span className="day-total-cur" key={c.code}>
+                    {/* a day with only income shows just the income */}
+                    {(c.spent > 0 || c.income === 0) && (
+                      <Figure amount={c.spent} code={c.code} kind="spent" />
+                    )}
+                    {c.income > 0 && <Figure amount={c.income} code={c.code} kind="income" />}
+                  </span>
+                ))}
+              </span>
+            </header>
+            <ul className="hist-rows">
+              {day.items.map((tx) => (
+                <HistoryRow
+                  key={tx.id}
+                  tx={tx}
+                  category={categories.find((cat) => cat.id === tx.categoryId)}
+                />
               ))}
-            </section>
+            </ul>
+          </section>
+        ))}
+
+        {list.length > 0 && (
+          <div className="hist-export">
+            <button type="button" className="btn secondary" onClick={handleExport}>
+              {filtering ? t('exportResults') : t('exportCsv')}
+            </button>
+          </div>
+        )}
+      </div>
+
+      <Sheet open={sheet === 'month'} onClose={() => setSheet(null)} title={t('chooseMonth')}>
+        <div className="sheet-month">
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label={t('prevMonth')}
+            onClick={() => changeMonth(-1)}
+          >
+            <Icon name="chevronLeft" size={22} />
+          </button>
+          <p className="sheet-month-name" role="status" aria-live="polite">
+            {formatMonth(month, locale)}
+          </p>
+          <button
+            type="button"
+            className="icon-btn"
+            aria-label={t('nextMonth')}
+            disabled={!canGoNext}
+            onClick={() => changeMonth(1)}
+          >
+            <Icon name="chevronRight" size={22} />
+          </button>
+        </div>
+        <button type="button" className="btn" onClick={() => setSheet(null)}>
+          {t('done')}
+        </button>
+      </Sheet>
+
+      <Sheet open={sheet === 'filters'} onClose={() => setSheet(null)} title={t('filters')}>
+        <h3 className="sheet-sub" id="filter-method-label">
+          {t('paymentMethod')}
+        </h3>
+        <div className="pill-group wrap" role="group" aria-labelledby="filter-method-label">
+          {[['all', t('all')], ...paymentMethods.map((m) => [m.code, t(m.labelKey)])].map(
+            ([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                className={method === value ? 'pill active' : 'pill'}
+                aria-pressed={method === value}
+                onClick={() => setMethod(value)}
+              >
+                {label}
+              </button>
+            ),
           )}
         </div>
-      </div>
+        <label className="field">
+          <span className="label">{t('category')}</span>
+          <select
+            value={categoryId}
+            onChange={(e) =>
+              setCategoryId(e.target.value === 'all' ? 'all' : Number(e.target.value))
+            }
+          >
+            <option value="all">{t('allCategories')}</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {categoryLabel(c, t)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="sheet-actions">
+          {filtering && (
+            <button type="button" className="btn secondary" onClick={clearFilters}>
+              {t('clearFilters')}
+            </button>
+          )}
+          <button type="button" className="btn" onClick={() => setSheet(null)}>
+            {t('done')}
+          </button>
+        </div>
+      </Sheet>
     </>
   )
 }

@@ -1,12 +1,15 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { categoryLabel } from '../../lib/categories'
+import { deleteMessage, itemName, signedAmount } from '../../lib/describe'
+import { MAX_NOTE_LENGTH } from '../../lib/limits'
 import { parseAmount } from '../../lib/money'
 import { scheduleKey, schedules } from '../../lib/recurring'
 import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
 import CurrencyPills from '../../components/CurrencyPills'
+import SubHeader from '../../components/SubHeader'
+import EmptyState from '../../components/EmptyState'
 import RecurringRow from '../../components/RecurringRow'
 
 // item is null for a new one
@@ -66,7 +69,14 @@ function RecurringEditor({ item, onDone }) {
   const handleDelete = async () => {
     if (saving) return
     const { confirmed } = await confirm({
-      message: t('confirmDeleteRecurring'),
+      message: deleteMessage(t('confirmDeleteRecurring'), {
+        name: itemName(item, categories, t),
+        amount: signedAmount(
+          item.type === 'income' ? '+' : '−',
+          item.amount,
+          item.currency,
+        ),
+      }),
       confirmLabel: t('delete'),
       danger: true,
     })
@@ -134,11 +144,16 @@ function RecurringEditor({ item, onDone }) {
         <span className="label">{t('note')}</span>
         <input
           type="text"
+          autoComplete="off"
+          aria-describedby="note-hint"
           value={note}
-          maxLength={60}
+          maxLength={MAX_NOTE_LENGTH}
           onChange={(e) => setNote(e.target.value)}
         />
       </label>
+      <p className="sub note-hint" id="note-hint">
+        {t('noteHint')}
+      </p>
 
       <p className="label">{t('repeats')}</p>
       <div className="pill-group wrap">
@@ -166,6 +181,9 @@ function RecurringEditor({ item, onDone }) {
         >
           {t('save')}
         </button>
+        <button type="button" className="btn secondary" disabled={saving} onClick={onDone}>
+          {t('cancel')}
+        </button>
         {item && (
           <button
             type="button"
@@ -189,29 +207,22 @@ export default function RecurringScreen() {
 
   return (
     <>
-      <Link className="back-link" to="/settings">
-        ‹ {t('settings')}
-      </Link>
-      <h1 className="screen-title">{t('recurring')}</h1>
+      <SubHeader to="/settings" backLabel={t('settings')} title={t('recurring')} />
       <p className="sub">{t('recurringHint')}</p>
 
       <div className="narrow">
-        <section className="card">
-          {recurring.length === 0 ? (
-            <p className="sub empty">{t('noRecurring')}</p>
-          ) : (
+        {recurring.length === 0 ? (
+          <EmptyState card actions={false} icon="repeat" text={t('noRecurring')} />
+        ) : (
+          <section className="card">
             <ul className="list">
               {recurring.map((item) => (
                 <li key={item.id}>
-                  <RecurringRow item={item}>
-                    <button
-                      type="button"
-                      className="pill"
-                      onClick={() => setEditing(editing === item.id ? null : item.id)}
-                    >
-                      {editing === item.id ? t('cancel') : t('edit')}
-                    </button>
-                  </RecurringRow>
+                  <RecurringRow
+                    item={item}
+                    expanded={editing === item.id}
+                    onClick={() => setEditing(editing === item.id ? null : item.id)}
+                  />
                   {editing === item.id && (
                     <RecurringEditor
                       key={item.id}
@@ -222,8 +233,8 @@ export default function RecurringScreen() {
                 </li>
               ))}
             </ul>
-          )}
-        </section>
+          </section>
+        )}
 
         {editing !== 'new' && (
           <button type="button" className="btn" onClick={() => setEditing('new')}>

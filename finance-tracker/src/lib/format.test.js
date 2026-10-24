@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatMonth } from './format'
+import { formatDate, formatMonth, monthName } from './format'
 
 const date = new Date(2026, 9, 13) // Tuesday
 
@@ -39,7 +39,18 @@ describe('formatDate', () => {
 
 describe('formatMonth', () => {
   it('names the month in each language', () => {
-    expect(formatMonth(date, 'es-CR')).toBe('octubre de 2026')
+    expect(formatMonth(date, 'es-CR')).toBe('Octubre de 2026')
     expect(formatMonth(date, 'en-US')).toBe('October 2026')
+  })
+
+  it('capitalises only the month name in Spanish', () => {
+    expect(formatMonth(new Date(2026, 2, 1), 'es-CR')).toBe('Marzo de 2026')
+  })
+})
+
+describe('monthName', () => {
+  it('gives the month alone, ready for a sentence', () => {
+    expect(monthName(date, 'es-CR')).toBe('octubre')
+    expect(monthName(date, 'en-US')).toBe('October')
   })
 })

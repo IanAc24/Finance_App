@@ -3,83 +3,151 @@
    (se importa en main.jsx).
    ========================================================================== */
 
-/* Variables de color: tema oscuro (por defecto).
-   Todos los colores de la app salen de aquí; para cambiar la paleta
-   solo hay que tocar estas variables. */
+/* Variables de diseño: tema oscuro (por defecto).
+   Todos los colores, radios, espacios y tiempos de la app salen de aquí; para
+   cambiar el aspecto solo hay que tocar estas variables. Dirección "amable y
+   cercana": colores suaves, calma antes que alerta. Valores y contrastes en
+   docs/diseno/investigacion.md. */
 :root {
   color-scheme: dark; /* controles nativos (scroll, calendario) en oscuro */
-  --bg: #0b1114; /* fondo de la página */
-  --surface: #121b20; /* fondo de las tarjetas */
-  --surface-2: #1a262c; /* fondo de pills, teclas e inputs */
-  --border: #243239; /* bordes y líneas divisorias */
-  --text: #e6eef0; /* texto principal */
-  --muted: #94a8ad; /* texto secundario */
+  --bg: #0e1517; /* fondo de la página */
+  --surface: #151e21; /* fondo de las tarjetas */
+  --surface-2: #1d282c; /* fondo de pills, teclas e inputs */
+  --border: #2a373c; /* bordes y líneas divisorias (solo decorativos) */
+  --text: #e8eeee; /* texto principal */
+  --muted: #9aacb0; /* texto secundario */
 
-  /* Color de marca (teal): solo para cosas que se pueden tocar
+  /* Color de marca (teal suave): solo para cosas que se pueden tocar
      (botones, pestaña activa) y el acento del título */
-  --accent: #2dd4bf;
-  --accent-dim: rgba(45, 212, 191, 0.3); /* teal transparente */
-  --on-accent: #04201c; /* texto encima del teal */
+  --accent: #4cc9b8;
+  --accent-soft: #1e3939; /* acento al 16% sobre --surface: fondo de la tarjeta resumen y de pestañas activas */
+  --accent-dim: rgba(76, 201, 184, 0.3); /* teal transparente */
+  --on-accent: #052a26; /* texto encima del teal */
 
-  /* Colores con significado: cada uno se usa solo para lo suyo */
-  --income: #34d399; /* menta: montos de ingreso */
-  --spending: #fb7185; /* coral: montos de gasto */
-  --spending-dim: rgba(251, 113, 133, 0.62); /* barras del gráfico */
-  --warning: #fbbf24; /* ámbar: avisos */
-  --danger: #f35b5b; /* rojo: borrar, errores y presupuesto pasado */
-
-  /* Tarjeta principal del inicio */
-  --hero-from: #123038; /* inicio del degradado */
-  --hero-stop: 85%; /* dónde el degradado llega al color de la tarjeta */
-  --hero-glow: rgba(45, 212, 191, 0.14); /* brillo alrededor */
+  /* Colores con significado: cada uno se usa solo para lo suyo.
+     El gasto normal NO es un error: sus montos van en --text con signo "−";
+     --spending queda solo para barras y gráficos. */
+  --income: #7fd1a6; /* verde suave: montos de ingreso */
+  --spending: #e59a8f; /* terracota: solo gráficos */
+  --spending-dim: rgba(229, 154, 143, 0.62); /* barras del gráfico */
+  --warning: #e6b566; /* ámbar: avisos (siempre con texto) */
+  --danger: #f0928a; /* borrar, errores y presupuesto pasado (siempre con texto) */
 
   /* Colores de categoría. Cada categoría guarda el nombre del color
-     (por ejemplo "orange") y aquí se define su valor en cada tema. */
-  --cat-orange: #fb923c; /* Comida */
-  --cat-blue: #60a5fa; /* Transporte */
-  --cat-violet: #a78bfa; /* Servicios */
-  --cat-lime: #a3e635; /* Diversión */
-  --cat-cyan: #22d3ee; /* de aquí en adelante: categorías personalizadas */
-  --cat-fuchsia: #e879f9;
-  --cat-slate: #94a3b8;
-  --cat-sand: #d6b98c;
+     (por ejemplo "orange") y aquí se define su valor en cada tema, junto con
+     el fondo suave del círculo del ícono (el color al 14% sobre --surface). */
+  --cat-orange: #e8a06b; /* Comida */
+  --cat-blue: #85b4e8; /* Transporte */
+  --cat-violet: #b6a3e8; /* Servicios */
+  --cat-lime: #aecb70; /* Diversión */
+  --cat-cyan: #6fc8d8; /* de aquí en adelante: categorías personalizadas */
+  --cat-fuchsia: #d99ee2;
+  --cat-slate: #a3b0ba; /* Sin categoría */
+  --cat-sand: #d4ba90;
+  --cat-orange-soft: #33302b;
+  --cat-blue-soft: #25333d;
+  --cat-violet-soft: #2c313d;
+  --cat-lime-soft: #2a362c;
+  --cat-cyan-soft: #22363b;
+  --cat-fuchsia-soft: #30303c;
+  --cat-slate-soft: #293236;
+  --cat-sand-soft: #303431;
+
+  /* Relleno de las barras segmentadas y puntos de la leyenda: el mismo pastel
+     que --cat-* en oscuro. El texto dentro del segmento usa --on-seg y el aro
+     (--seg-edge) solo hace falta en claro, donde el pastel casi no se separa
+     del fondo. */
+  --seg-orange: #e8a06b;
+  --seg-blue: #85b4e8;
+  --seg-violet: #b6a3e8;
+  --seg-lime: #aecb70;
+  --seg-cyan: #6fc8d8;
+  --seg-fuchsia: #d99ee2;
+  --seg-slate: #a3b0ba;
+  --seg-sand: #d4ba90;
+  --seg-edge: transparent;
+
+  /* Radios: tres valores */
+  --radius-s: 10px; /* campos, teclas */
+  --radius-m: 16px; /* tarjetas */
+  --radius-pill: 999px; /* botones, pills, círculos y barras */
+
+  /* Espacios (base 4/8) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* Movimiento: una sola curva (arranca rápido y frena suave) y tres duraciones */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --dur-fast: 120ms; /* pulsación, cambio de color */
+  --dur: 200ms; /* aparecer, barras que crecen */
+  --dur-slow: 280ms; /* hojas, confirmaciones */
+
+  /* Elevación: en oscuro no hay sombras (se separa con capas de color) */
+  --shadow-card: none;
+
+  /* Fuente de títulos y cifras grandes (Poppins, ver main.jsx) */
+  --font-display: 'Poppins', system-ui, sans-serif;
 }
 
-/* Tema claro: mismas variables con otros valores (base arena, no blanco
-   puro, y acentos más oscuros para que se lean sobre fondo claro).
+/* Tema claro (base arena, no blanco puro, y acentos más oscuros para que se
+   lean sobre fondo claro). Corrige los contrastes que antes fallaban:
+   --income, --cat-lime y --cat-sand.
    SettingsProvider pone data-theme="light" en <html> al cambiar de tema. */
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #f5f2ee;
-  --surface: #ffffff;
-  --surface-2: #ece8e1;
-  --border: #ddd7ce;
-  --text: #14201f;
-  --muted: #5b6b6a;
+  --bg: #f6f3ee;
+  --surface: #fffefb;
+  --surface-2: #efebe4;
+  --border: #e0dad0;
+  --text: #1c2a29;
+  --muted: #586867;
 
   --accent: #0f766e;
+  --accent-soft: #e2eeea; /* acento al 12% sobre --surface */
   --accent-dim: rgba(15, 118, 110, 0.3);
   --on-accent: #ffffff;
 
-  --income: #15803d;
-  --spending: #d1103f;
-  --spending-dim: rgba(209, 16, 63, 0.62);
-  --warning: #a04a08;
-  --danger: #b91c1c;
+  --income: #2b7550;
+  --spending: #d4705f; /* terracota suave, como el oscuro: >= 3:1 contra la tarjeta */
+  --spending-dim: rgba(212, 112, 95, 0.55);
+  --warning: #8f5a0c;
+  --danger: #b0352c;
 
-  --hero-from: #e3f3f0;
-  /* termina antes: los montos quedan sobre blanco y se leen bien */
-  --hero-stop: 40%;
-  --hero-glow: rgba(15, 118, 110, 0.12);
+  --cat-orange: #a9531a;
+  --cat-blue: #2b66b0;
+  --cat-violet: #6b50b5;
+  --cat-lime: #566f1c;
+  --cat-cyan: #14738a;
+  --cat-fuchsia: #94409f;
+  --cat-slate: #4f5d68;
+  --cat-sand: #7f6429;
+  --cat-orange-soft: #f3e6dc;
+  --cat-blue-soft: #e1e9f1;
+  --cat-violet-soft: #eae6f1;
+  --cat-lime-soft: #e7eadc;
+  --cat-cyan-soft: #deebeb;
+  --cat-fuchsia-soft: #f0e3ee;
+  --cat-slate-soft: #e6e7e6;
+  --cat-sand-soft: #ede8de;
 
-  --cat-orange: #c2410c;
-  --cat-blue: #2563eb;
-  --cat-violet: #7c3aed;
-  --cat-lime: #4d7c0f;
-  --cat-cyan: #0e7490;
-  --cat-fuchsia: #a21caf;
-  --cat-slate: #475569;
-  --cat-sand: #8a6d3b;
+  /* Rellenos pastel para barras y leyenda (los --cat-* de arriba quedan
+     oscuros para texto e íconos). Texto encima: --on-seg, >= 6,9:1 */
+  --seg-orange: #eba57a;
+  --seg-blue: #8db5e3;
+  --seg-violet: #b9a8e6;
+  --seg-lime: #b3cc7e;
+  --seg-cyan: #7fc9d6;
+  --seg-fuchsia: #d9a4e0;
+  --seg-slate: #aab5bf;
+  --seg-sand: #d8c08e;
+  --seg-edge: rgba(28, 42, 41, 0.55); /* aro de 1px: >= 3:1 contra la tarjeta */
+
+  /* Elevación: una sola sombra muy suave para las tarjetas */
+  --shadow-card: 0 1px 2px rgba(28, 42, 41, 0.06), 0 4px 12px rgba(28, 42, 41, 0.05);
 }
 
 /* Base */
@@ -103,6 +171,57 @@ button {
   font-family: inherit;
 }
 
+/* Sin el destello gris al tocar en el celular (el :active de los botones lo reemplaza) */
+a,
+button,
+input,
+select,
+textarea,
+label {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Toque directo: sin la espera del doble toque para hacer zoom */
+.btn,
+.pill,
+.key,
+.top-nav a,
+.icon-link {
+  touch-action: manipulation;
+}
+
+/* Los controles no se seleccionan al mantener el dedo (nunca el texto de la página) */
+.btn,
+.pill,
+.key {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Texto seleccionado con el color de marca */
+::selection {
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+/* Cursor de escritura en teal */
+input,
+textarea {
+  caret-color: var(--accent);
+}
+
+/* Barra de scroll con los colores del tema */
+html {
+  scrollbar-color: var(--border) var(--bg);
+}
+
+/* Títulos con las líneas parejas, sin palabras sueltas al final */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
 /* Texto de ejemplo en los inputs, con contraste suficiente */
 ::placeholder {
   color: var(--muted);
@@ -124,32 +243,42 @@ h1, h2, h3, h4, p {
 main {
   max-width: 480px;
   margin: 0 auto;
-  padding: 8px 20px 40px;
+  padding: 8px var(--space-4) 40px;
   display: flex;
   flex-direction: column;
   gap: 16px; /* espacio entre las secciones de la pantalla */
 }
 
-/* Barra superior en todo el ancho de la ventana: marca a la izquierda,
-   pestañas al centro y ajustes a la derecha. Queda pegada arriba al hacer
-   scroll. En celular son dos filas (marca y ajustes / pestañas) */
+/* Barra superior, pegada arriba al hacer scroll. En celular solo lleva la marca
+   (las pestañas y Ajustes están en la barra de abajo). Desde 900px: marca a la
+   izquierda, pestañas con ícono y ajustes a la derecha, en dos filas, y desde
+   1100px en una sola */
 .app-bar {
   position: sticky;
-  /* Solo la fila de pestañas debe quedar visible al hacer scroll, así que la
-     barra sube lo que mide la fila 1: 8px de relleno superior + 44px del logo
-     y del engranaje + 8px de separación entre filas = 60px */
-  top: -60px;
+  top: 0;
   z-index: 10; /* por encima del contenido que pasa por debajo */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'brand gear'
-    'tabs tabs';
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: 'brand';
   align-items: center;
-  gap: 8px 12px;
-  padding: 8px 16px;
+  padding: 4px 16px;
   background: var(--bg);
   border-bottom: 1px solid var(--border);
+}
+
+@media (min-width: 900px) {
+  .app-bar {
+    /* Solo la fila de pestañas debe quedar visible al hacer scroll, así que la
+       barra sube lo que mide la fila 1: 8px de relleno superior + 44px del logo
+       y del engranaje + 8px de separación entre filas = 60px */
+    top: -60px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'brand gear'
+      'tabs tabs';
+    gap: 8px 12px;
+    padding: 8px 16px;
+  }
 }
 
 /* Marca: logo y nombre de la app, enlace al inicio (mín. 44px para tocar) */
@@ -213,31 +342,38 @@ main {
   stroke: var(--accent);
 }
 
-/* Botón redondo con el ícono de engranaje, a la derecha de la barra */
+/* Botón redondo con el ícono de engranaje, a la derecha de la barra (solo
+   desde 900px: en celular Ajustes es una pestaña de abajo) */
 .app-bar .icon-link {
   grid-area: gear;
   justify-self: end;
-  display: grid;
+  display: none;
   width: 44px;
   height: 44px;
   place-items: center;
   background: transparent;
   color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 999px; /* 999px = bordes totalmente redondos */
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
   cursor: pointer;
+}
+
+@media (min-width: 900px) {
+  .app-bar .icon-link {
+    display: grid;
+  }
 }
 
 /* Tamaño del ícono de engranaje */
 .icon-link svg {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
 }
 
 /* Enlace resaltado cuando estamos en ajustes */
 .app-bar .icon-link.active {
   color: var(--accent);
-  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 /* Título de la app */
@@ -263,11 +399,12 @@ main {
 
 /* Barra de las pantallas previas (abriendo, bloqueada, con error): solo
    el logo y el nombre, centrados y sin subir al hacer scroll */
-.app-bar--lite {
+.app-bar.app-bar--lite {
   top: 0;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: 'brand';
   justify-items: center;
+  padding: 8px 16px;
 }
 
 .app-bar--lite .brand {
@@ -287,7 +424,7 @@ main {
   top: -64px;
   z-index: 30;
   padding: 10px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 600;
@@ -298,12 +435,12 @@ main {
   top: 8px;
 }
 
-/* Pestañas dentro de la barra: segunda fila a todo el ancho, centradas.
-   El relleno de 4px (compensado con margen negativo) deja sitio al contorno
-   de foco, que el overflow recortaría */
+/* Pestañas dentro de la barra (solo desde 900px): segunda fila a todo el
+   ancho, centradas. El relleno de 4px (compensado con margen negativo) deja
+   sitio al contorno de foco, que el overflow recortaría */
 .top-nav {
   grid-area: tabs;
-  display: flex;
+  display: none;
   justify-content: safe center; /* centradas, pero sin cortar la primera si no caben */
   gap: 8px;
   margin: -4px;
@@ -312,20 +449,28 @@ main {
   scrollbar-width: none; /* oculta la barra, pero se sigue pudiendo deslizar */
 }
 
+@media (min-width: 900px) {
+  .top-nav {
+    display: flex;
+  }
+}
+
 /* Oculta la barra de scroll en Chrome/Safari (el deslizamiento sigue funcionando) */
 .top-nav::-webkit-scrollbar {
   display: none;
 }
 
+/* Pestañas: píldora suave con ícono. La inactiva es transparente y apagada; la
+   activa lleva el fondo suave del acento, el texto del acento y peso 600 */
 .top-nav a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-height: 44px; /* tamaño mínimo cómodo para tocar */
   padding: 10px 18px;
-  border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
   color: var(--muted);
   text-decoration: none;
   font-size: 14px;
@@ -336,66 +481,31 @@ main {
 
 /* Pantalla actual (React Router agrega la clase "active") */
 .top-nav a.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--on-accent);
+  background: var(--accent-soft);
+  color: var(--accent);
   font-weight: 600;
-}
-
-/* En celulares: menos relleno y las pestañas reparten el ancho para que quepan las cuatro */
-@media (max-width: 440px) {
-  /* Las pestañas se reparten el ancho */
-  .top-nav a {
-    flex: 1 0 auto;
-    padding: 10px 8px;
-    text-align: center;
-  }
-}
-
-/* En celulares muy angostos (320px) las pestañas en español necesitan aún menos espacio */
-@media (max-width: 360px) {
-  /* La barra usa menos margen lateral para que quepan las pestañas */
-  .app-bar {
-    padding-left: 12px;
-    padding-right: 12px;
-  }
-
-  /* Menos espacio entre pestañas */
-  .top-nav {
-    gap: 6px;
-  }
-
-  /* Pestañas más compactas */
-  .top-nav a {
-    padding: 10px 6px;
-    font-size: 13px;
-  }
-}
-
-/* Por debajo de 360px el nombre no cabe junto al engranaje: solo queda el logo */
-@media (max-width: 359px) {
-  /* Oculta el nombre */
-  .brand-name {
-    display: none;
-  }
 }
 
 /* Estilos de texto */
 
-/* Título de cada pantalla, centrado */
+/* Título de cada pantalla, a la izquierda como en Inicio e Historial. Solo la
+   bienvenida y el consentimiento (.ob-title) lo llevan centrado */
 .screen-title {
-  font-size: 20px;
-  font-weight: 500;
-  text-align: center;
+  font-family: var(--font-display);
+  /* crece con el ancho de la pantalla, entre 22px y 24px */
+  font-size: clamp(22px, 6vw, 24px);
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: start;
 }
 
-/* Texto de introducción justo debajo del título: también centrado */
+/* Texto de introducción justo debajo del título: también a la izquierda */
 .screen-title + .sub {
-  text-align: center;
+  text-align: start;
 }
 
-/* Inicio: saludo y fecha de la quincena, centrados como un bloque */
-.greeting {
+.ob-title,
+.ob-title + .sub {
   text-align: center;
 }
 
@@ -410,8 +520,8 @@ main {
 }
 
 .day-bar span {
-  height: 8px;
-  border-radius: 4px;
+  height: 6px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
 }
 
@@ -423,12 +533,13 @@ main {
   background: var(--accent);
 }
 
-/* Etiqueta pequeña en mayúsculas, encima de un dato */
+/* Etiqueta pequeña encima de un dato: en minúsculas de oración (las
+   mayúsculas espaciadas se leen como formulario), 13px, peso 600 y apagada */
 .label {
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 /* Monto grande de la tarjeta principal del inicio */
@@ -437,13 +548,6 @@ main {
   font-weight: 700;
   letter-spacing: -0.02em;
   margin: 6px 0 14px;
-}
-
-/* En la tarjeta principal el número protagonista es lo que se puede gastar
-   hoy: más grande que cualquier otra cifra de la pantalla */
-.card.hero .balance {
-  font-size: clamp(38px, 12vw, 54px);
-  overflow-wrap: anywhere; /* un monto larguísimo se parte en vez de salirse */
 }
 
 /* Cuando no hay nada que gastar hoy el número baja de peso y se explica
@@ -482,24 +586,14 @@ main {
   color: var(--muted);
 }
 
-/* Tarjetas: tranquilas, la profundidad viene del color de fondo */
+/* Tarjetas: tranquilas, la profundidad viene del color de fondo (en claro,
+   además, una sombra muy suave) */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 20px;
-}
-
-/* Tarjeta principal del inicio: la única con degradado fuerte, borde
-   teal y un brillo suave alrededor, para que sea la que más destaca */
-.card.hero {
-  background: linear-gradient(
-    160deg,
-    var(--hero-from) 0%,
-    var(--surface) var(--hero-stop)
-  );
-  border-color: var(--accent-dim);
-  box-shadow: 0 0 28px var(--hero-glow);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-4);
 }
 
 /* Barra de progreso y estadísticas */
@@ -507,7 +601,7 @@ main {
 /* Fondo de la barra de "% del ingreso gastado" */
 .progress {
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
   overflow: hidden; /* recorta el relleno a los bordes redondos */
   margin-bottom: 8px;
@@ -516,7 +610,7 @@ main {
 /* Relleno de la barra, en color de gasto; el ancho (%) se pone desde React */
 .progress-fill {
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--spending);
 }
 
@@ -532,16 +626,31 @@ main {
   font-size: 16px;
   font-weight: 600;
   margin-top: 2px;
+  white-space: nowrap; /* el signo − se queda pegado a su número */
+}
+
+/* Otras cifras sueltas: tampoco se parten ni separan el signo */
+.left-amount,
+.month-balance,
+.day-totals span {
+  white-space: nowrap;
 }
 
 /* Montos con significado: se usan junto con .stat, .row-amount o solos.
-   El signo + o − siempre va en el texto; el color solo lo refuerza. */
+   El signo + o − siempre va en el texto; el color solo lo refuerza.
+   Solo el ingreso lleva color: el gasto normal no es un error, así que va en
+   el color del texto con su "−" (--spending queda solo para gráficos). */
 .income {
   color: var(--income);
 }
 
 .spending {
-  color: var(--spending);
+  color: var(--text);
+}
+
+/* Un monto en cero no lleva el color de gasto: queda en el color secundario */
+.stat.zero {
+  color: var(--muted);
 }
 
 /* Botones */
@@ -558,7 +667,7 @@ main {
   text-align: center;
   padding: 14px 16px;
   border: 1px solid transparent; /* misma altura que los botones con borde */
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--accent);
   color: var(--on-accent);
   font-size: 16px;
@@ -580,22 +689,20 @@ main {
   gap: 8px;
 }
 
-/* Método de pago: tres píldoras seguidas; en pantallas angostas pasan a la
-   línea de abajo antes de salirse */
-.pill-group.payment {
-  flex-wrap: wrap;
-  margin: 6px 0 14px;
-}
-
 /* Pill base: 44px de alto para poder tocarla */
 .pill {
   padding: 12px 16px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
   border: 1px solid var(--border);
   color: var(--muted);
   font-size: 14px;
   cursor: pointer;
+  /* al menos 44 px de alto para poder tocarla */
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Opción seleccionada */
@@ -652,6 +759,7 @@ main {
   font-size: 12px;
   color: var(--muted);
   margin-top: 2px;
+  overflow-wrap: anywhere; /* los nombres largos no se salen de la fila */
 }
 
 /* El monto nunca se parte en dos líneas (el signo se quedaba solo) */
@@ -666,7 +774,7 @@ main {
 /* Barra delgada bajo cada categoría: su parte del gasto total */
 .mini-bar {
   height: 4px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
   margin-top: 8px;
   overflow: hidden;
@@ -675,7 +783,7 @@ main {
 /* Relleno; el ancho (%) y el color de la categoría se ponen desde React */
 .mini-bar > div {
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 
 /* Punto con el color de la categoría, antes de su nombre */
@@ -683,7 +791,7 @@ main {
   display: inline-block;
   width: 8px;
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   margin-right: 6px;
 }
 
@@ -720,7 +828,7 @@ main {
 .bar-fill {
   width: 100%;
   min-height: 4px; /* se ve una línea aunque el total sea 0 */
-  border-radius: 8px;
+  border-radius: var(--radius-s);
   background: var(--spending-dim); /* color de gasto, atenuado */
 }
 
@@ -740,81 +848,6 @@ main {
 .pill-group.wrap {
   flex-wrap: wrap;
   margin-top: 12px;
-}
-
-/* Sugerencias de nota: pegadas al campo y con aire antes de la fecha */
-.pill-group.suggestions {
-  margin-top: 0;
-  margin-bottom: 14px;
-}
-
-/* Las sugerencias no parecen categorías: borde punteado, más chicas y apagadas */
-.pill-group.suggestions .pill {
-  border-style: dashed;
-  font-size: 13px;
-  padding: 6px 12px;
-  color: var(--muted);
-}
-
-.amount-label {
-  margin-top: 16px;
-}
-
-/* Monto que se va escribiendo con el teclado */
-.amount-display {
-  font-size: 44px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 4px 0 16px;
-}
-
-/* Teclado numérico: cuadrícula de 3 columnas */
-.keypad {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-
-.key {
-  height: 60px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  color: var(--text);
-  font-size: 22px;
-  cursor: pointer;
-}
-
-/* Tecla mientras se presiona */
-.key:active {
-  background: var(--accent-dim);
-}
-
-/* Teclas más bajas en celular: así el teclado, las categorías y Guardar
-   caben juntos en pantallas de 360x640 y 390x844 */
-@media (max-width: 440px) {
-  .key {
-    height: 54px;
-  }
-}
-
-/* Barra de Guardar: queda pegada abajo y siempre visible mientras se escribe
-   el monto. El degradado deja ver el contenido que pasa por debajo; el
-   relleno inferior respeta la zona segura de los teléfonos con muesca */
-.save-bar {
-  position: sticky;
-  bottom: 0;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 16px 0 calc(12px + env(safe-area-inset-bottom, 0px));
-  margin-bottom: -12px;
-  background: linear-gradient(to bottom, transparent, var(--bg) 28%);
-}
-
-.save-bar .sub {
-  text-align: center;
 }
 
 /* Campo de formulario: etiqueta arriba, input abajo */
@@ -844,7 +877,7 @@ main > .field,
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-s);
   padding: 12px 14px;
   font-size: 16px; /* con menos de 16px el teléfono hace zoom al escribir */
   font-family: inherit;
@@ -861,50 +894,16 @@ main > .field,
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-s);
   padding: 12px 14px;
   font-size: 16px;
   font-family: inherit;
+  min-width: 0;
+  width: 100%;
+  text-overflow: ellipsis;
 }
 
 /* Pantalla de historial */
-
-/* Selector de mes: flecha, nombre del mes, flecha */
-.month-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-
-.month-name {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-/* El mes viene en minúscula en español ("octubre de 2026") */
-.month-name::first-letter {
-  text-transform: uppercase;
-}
-
-/* Flechas para cambiar de mes */
-.month-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  font-size: 22px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-/* Flecha "siguiente" cuando ya se está en el mes actual */
-.month-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
 
 /* Balance del mes en la tarjeta de resumen */
 .month-balance {
@@ -965,9 +964,9 @@ main > .field,
   color: var(--danger);
 }
 
-/* Inicio: "disponible por día" debajo de ingresos y gastado */
-.safe-day {
-  margin-top: 16px;
+/* Ayuda bajo el campo de nota: separada del campo y del siguiente bloque */
+.note-hint {
+  margin: 6px 0 12px;
 }
 
 /* Texto de "te pasaste del presupuesto" */
@@ -983,12 +982,37 @@ main > .field,
 
 /* Pantalla de categorías */
 
+/* Cabecera de las subpantallas: flecha de regreso y título en UNA fila */
+.sub-head {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sub-head .screen-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Flecha sola (el nombre va en aria-label): 44px para tocarla, y se corre a
+   la izquierda para que la flecha quede alineada con el borde del contenido */
+.back-link.is-icon {
+  flex: none;
+  justify-content: center;
+  width: 44px;
+  margin-left: -10px;
+}
+
 /* Enlace para volver a Ajustes */
 .back-link {
-  display: inline-block;
-  padding: 12px 0;
-  font-size: 13px;
-  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent);
   text-decoration: none;
 }
 
@@ -1004,7 +1028,7 @@ main > .field,
 .swatch {
   width: 44px;
   height: 44px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   border: 2px solid transparent;
   cursor: pointer;
 }
@@ -1034,7 +1058,7 @@ main > .field,
   background: var(--surface-2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-s);
   padding: 10px 12px;
   font-size: 16px;
   font-family: inherit;
@@ -1063,11 +1087,14 @@ main > .field,
   display: flex;
   gap: 8px;
   margin-top: 10px;
+  flex-wrap: wrap;
 }
 
-/* Marca "Listo" de un pendiente ya confirmado u omitido */
+/* Marca "Listo" de un pendiente ya confirmado u omitido (con el texto, no
+   solo con el color), debajo del texto de la fila */
 .due-done {
-  margin-top: 10px;
+  margin: 0;
+  padding: 0 0 var(--space-3) 48px;
   font-size: 14px;
   color: var(--muted);
 }
@@ -1110,11 +1137,7 @@ main > .field,
 /* Enlace de texto dentro de una frase */
 .text-link {
   color: var(--accent);
-}
-
-/* Inicio: aviso de copia de seguridad en una sola línea, centrado */
-.backup-line {
-  text-align: center;
+  text-underline-offset: 3px;
 }
 
 /* Botón "Ver todas" bajo la última categoría */
@@ -1173,19 +1196,6 @@ main > p.empty {
 
 /* Pantallas anchas (computadora): se ve como un sitio web */
 @media (min-width: 900px) {
-  /* Barra en una sola fila: marca a la izquierda, pestañas al centro de la ventana, ajustes a la derecha */
-  .app-bar {
-    top: 0; /* en pantallas anchas la barra es una sola fila y no hay nada que subir */
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    grid-template-areas: 'brand tabs gear';
-    padding: 12px 24px;
-  }
-
-  /* Las pestañas quedan en el centro de la ventana */
-  .top-nav {
-    justify-self: center;
-  }
-
   /* Logo y nombre más grandes */
   .logo {
     width: 56px;
@@ -1236,16 +1246,28 @@ main > p.empty {
     gap: 20px;
   }
 
-  /* Teclado con teclas de tamaño razonable y el monto centrado encima */
-  /* Teclado de hasta 360px, centrado */
-  .keypad {
-    max-width: 360px;
-    margin: 0 auto;
+  /* Bienvenida y consentimiento: columna de lectura de 560px, centrada */
+  .onboarding {
+    max-width: 560px;
+    margin-inline: auto;
+    width: 100%;
+  }
+}
+
+/* Barra en una sola fila: solo desde 1100px, donde la marca y las pestañas
+   centradas caben sin pisarse (entre 900px y 1100px la barra sigue en dos filas) */
+@media (min-width: 1100px) {
+  /* Marca a la izquierda, pestañas al centro de la ventana, ajustes a la derecha */
+  .app-bar {
+    top: 0; /* en pantallas anchas la barra es una sola fila y no hay nada que subir */
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas: 'brand tabs gear';
+    padding: 12px 24px;
   }
 
-  /* Monto centrado sobre el teclado */
-  .amount-display {
-    text-align: center;
+  /* Las pestañas quedan en el centro de la ventana */
+  .top-nav {
+    justify-self: center;
   }
 }
 
@@ -1269,7 +1291,8 @@ main > p.empty {
   }
 
   /* Filas que llevan a editar: el nombre se subraya */
-  .row-link:hover .row-name {
+  .row-link:hover .row-name,
+  a.tx-row:hover .tx-name {
     text-decoration: underline;
   }
 
@@ -1291,7 +1314,16 @@ main > p.empty {
 .link-card,
 .top-nav a,
 .icon-link {
-  transition: border-color 0.15s, color 0.15s, filter 0.15s;
+  transition: border-color var(--dur-fast), color var(--dur-fast),
+    background-color var(--dur-fast), filter var(--dur-fast),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+/* Al apretar, el botón se encoge un poco (no si está desactivado) */
+.btn:active:not(:disabled):not(.disabled),
+.pill:active:not(:disabled),
+.key:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1302,6 +1334,13 @@ main > p.empty {
   .top-nav a,
   .icon-link {
     transition: none;
+  }
+
+  /* Sin movimiento tampoco se encoge al apretar */
+  .btn:active:not(:disabled):not(.disabled),
+  .pill:active:not(:disabled),
+  .key:active:not(:disabled) {
+    transform: none;
   }
 }
 
@@ -1321,7 +1360,7 @@ dialog.modal {
   margin: auto;
   padding: 20px;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: var(--radius-m);
   background: var(--surface);
   color: var(--text);
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
@@ -1331,10 +1370,36 @@ dialog.modal::backdrop {
   background: rgba(4, 10, 12, 0.66);
 }
 
+/* Entrada del diálogo: aparece y crece de 0.96 a 1; el fondo oscuro se
+   desvanece con él (solo si la persona no pidió menos movimiento) */
+@media (prefers-reduced-motion: no-preference) {
+  dialog.modal[open] {
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+  }
+
+  dialog.modal[open]::backdrop {
+    opacity: 1;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+
+  @starting-style {
+    dialog.modal[open] {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+
+    dialog.modal[open]::backdrop {
+      opacity: 0;
+    }
+  }
+}
+
 /* Los saltos de línea del mensaje se respetan (listas de lo que se borra) */
 .modal-message {
   white-space: pre-line;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
@@ -1360,6 +1425,7 @@ dialog.modal::backdrop {
 /* Botones del diálogo: uno al lado del otro, de 44px o más */
 .modal-actions {
   display: flex;
+  align-items: stretch; /* los dos botones miden lo mismo aunque un texto ocupe dos líneas */
   gap: 12px;
   margin-top: 20px;
 }
@@ -1415,21 +1481,21 @@ dialog.modal::backdrop {
 /* Barra de progreso: llena en teal hasta el paso actual */
 .ob-progress {
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--surface-2);
   overflow: hidden;
 }
 
 .ob-progress-fill {
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--accent);
 }
 
 /* La barra avanza con animación solo si la persona no pidió menos movimiento */
 @media (prefers-reduced-motion: no-preference) {
   .ob-progress-fill {
-    transition: width 0.2s ease;
+    transition: width var(--dur-slow) var(--ease-out);
   }
 }
 
@@ -1472,13 +1538,13 @@ dialog.modal::backdrop {
 /* Cuánto queda libre por quincena */
 /* El monto grande se achica en pantallas angostas en vez de salirse */
 .ob-free .balance {
-  font-size: clamp(28px, 9vw, 40px);
-  overflow-wrap: anywhere;
+  font-size: clamp(24px, 8vw, 40px);
+  white-space: nowrap; /* un monto nunca se parte a la mitad */
 }
 
 .ob-free {
   padding: 14px;
-  border-radius: 12px;
+  border-radius: var(--radius-s);
   background: var(--surface-2);
   text-align: center;
 }
@@ -1520,11 +1586,10 @@ dialog.modal::backdrop {
   text-decoration: underline;
 }
 
-/* Inicio: saludo con el nombre, encima de la quincena */
+/* Inicio: saludo con el nombre, encima de la fecha */
 .hello {
-  text-align: center;
   color: var(--muted);
-  font-size: 15px;
+  font-size: 14px;
 }
 
 /* Accesibilidad y uso real en el celular (revisión previa a entregar) */
@@ -1545,14 +1610,6 @@ dialog.modal::backdrop {
   border-color: var(--control-border);
 }
 
-/* Las pills miden al menos 44 px de alto para poder tocarlas */
-.pill {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
 /* Campo de fecha: cabe en 320 px y no colapsa en iOS cuando está vacío */
 .field input[type='date'] {
   min-width: 0;
@@ -1568,21 +1625,11 @@ dialog.modal::backdrop {
   min-height: 1.2em;
 }
 
-.field select {
-  min-width: 0;
-  width: 100%;
-  text-overflow: ellipsis;
-}
-
 /* Tarjeta de inicio "Tu pago llega en días distintos" */
 .manual-card {
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.due-actions {
-  flex-wrap: wrap;
 }
 
 .due-actions .pill {
@@ -1591,8 +1638,7 @@ dialog.modal::backdrop {
 }
 
 /* Nombres largos no se salen de la fila */
-.row-name,
-.row-meta {
+.row-name {
   overflow-wrap: anywhere;
 }
 
@@ -1731,4 +1777,2468 @@ dialog.modal::backdrop {
   align-items: center;
   justify-content: center;
   min-height: 48px;
+}
+
+/* Consentimiento y textos legales */
+
+/* Botón con aspecto de enlace "‹ Volver" (en Ajustes es un enlace de verdad) */
+button.back-link {
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Documento abierto en la pantalla de consentimiento: el foco entra aquí
+   al abrirlo, sin contorno extra (con teclado el foco visible se conserva) */
+.consent-reading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.consent-reading:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Subtítulos de la pantalla de consentimiento, con aire arriba */
+.consent .field-title {
+  margin-top: 8px;
+}
+
+/* Lista de los cuatro documentos (consentimiento y Ajustes): un enlace por línea, de 44px o más */
+.legal-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.legal-links button,
+.legal-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Casilla de aceptación: sin marcar al inicio, con el texto a su lado */
+.consent-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.consent-check input {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+}
+
+/* Línea de apoyo bajo el botón de aceptar */
+.consent-note {
+  text-align: center;
+}
+
+/* Texto legal: renglones de lectura cómoda y nada que se salga de la pantalla
+   (la tarjeta ya limita el ancho; las palabras largas se parten) */
+.legal-text {
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.legal-text > * + * {
+  margin-top: 12px;
+}
+
+.legal-text h1 {
+  font-size: 20px;
+  line-height: 1.3;
+}
+
+.legal-text h2 {
+  margin-top: 24px;
+  font-size: 17px;
+  line-height: 1.3;
+}
+
+.legal-text h3,
+.legal-text h4 {
+  margin-top: 16px;
+  font-size: 15px;
+}
+
+/* Listas con sangría para que la viñeta no pegue con el borde de la tarjeta */
+.legal-text ul,
+.legal-text ol {
+  margin-bottom: 0;
+  padding-left: 22px;
+}
+
+.legal-text li + li {
+  margin-top: 6px;
+}
+
+.legal-text a {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.legal-text code {
+  font-size: 13px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+
+.legal-text blockquote {
+  margin: 12px 0 0;
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.legal-text hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 20px 0;
+}
+
+/* Tabla: se desliza de lado dentro de su caja si no cabe */
+.legal-table {
+  overflow-x: auto;
+}
+
+.legal-table table {
+  min-width: 460px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.legal-table th,
+.legal-table td {
+  padding: 8px;
+  border: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.legal-table th {
+  background: var(--surface-2);
+}
+
+/* Página de un documento legal en Ajustes: el botón de volver y el texto
+   comparten el ancho de lectura, centrados (en celular ocupan todo el ancho) */
+.legal-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 68ch;
+  margin-inline: auto;
+}
+
+/* En celulares muy angostos la tarjeta del texto legal usa menos relleno */
+@media (max-width: 360px) {
+  .legal-text {
+    padding: 14px;
+  }
+}
+
+/* ==========================================================================
+   Rediseño amable, ronda 1: íconos de categoría, filas de lista, cifras
+   grandes, Inicio, botón + del celular y estados vacíos.
+   ========================================================================== */
+
+/* Cifras grandes (componente Money). Todo el monto va en una sola línea
+   (nowrap): ni el número se parte ni el signo − se separa de él. Si el monto
+   es muy largo baja el tamaño con clamp en vez de romperse. El símbolo de
+   moneda y los decimales van más chicos y apagados: domina el entero. */
+.money {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(36px, 10vw, 48px);
+  line-height: 1.1;
+}
+
+.money.is-long {
+  font-size: clamp(26px, 8.5vw, 40px);
+}
+
+.money-symbol {
+  margin-right: 0.08em;
+  font-size: 0.55em;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.money-decimals {
+  font-size: 0.58em;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Texto que nunca se parte (un monto dentro de una frase) */
+.nowrap {
+  white-space: nowrap;
+}
+
+/* Ícono de categoría: círculo con fondo suave y el color de la categoría.
+   Los colores (--c y --c-soft) los pone el componente; es decorativo */
+.cat-icon {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background: var(--c-soft, var(--surface-2));
+  color: var(--c);
+}
+
+.cat-icon.is-large {
+  width: 44px;
+  height: 44px;
+}
+
+/* Categorías propias: la primera letra del nombre. Se mezcla un poco con el
+   color del texto para que la letra llegue a 4.5:1 sobre su círculo */
+.cat-icon-letter {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--c);
+  color: color-mix(in srgb, var(--c) 80%, var(--text));
+}
+
+.cat-icon.is-large .cat-icon-letter {
+  font-size: 19px;
+}
+
+/* Filas de lista: ícono a la izquierda, descripción y datos en medio (una sola
+   línea, con puntos suspensivos si es larga) y el monto a la derecha. Toda la
+   fila es el área para tocar */
+.tx-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: 56px;
+  padding: 10px 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.tx-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tx-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.tx-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+/* Monto de la fila: a la derecha, cifras de ancho fijo, en el color del texto
+   (el gasto normal no es un error); solo el ingreso (.income) lleva color.
+   Nunca se parte: el signo se queda con su número */
+.tx-amount {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-amount.income {
+  color: var(--income);
+}
+
+/* Al apretar la fila se aclara un poco (sin movimiento) */
+a.tx-row:active {
+  opacity: 0.7;
+}
+
+/* Listas de filas: sin espacio entre filas y una línea finísima entre ellas
+   (sin tarjetas por fila) */
+.list:has(> li > .tx-row) {
+  gap: 0;
+}
+
+.list:has(> li > .tx-row) > li + li {
+  border-top: 1px solid var(--border);
+}
+
+.section-title + .list {
+  margin-top: var(--space-1);
+}
+
+/* Pendientes: los botones quedan debajo del texto, no del ícono */
+.list:has(> li > .tx-row) .due-actions {
+  margin-top: 0;
+  padding: 0 0 var(--space-3) 48px;
+}
+
+/* Confirmar y Omitir lado a lado (la base de 140px los apilaba) */
+.list:has(> li > .tx-row) .due-actions .pill {
+  flex: 1 1 96px;
+}
+
+/* Categorías (dónde se fue el dinero): sin líneas entre filas, más juntas */
+.list.cat-list,
+.list.cat-list:has(> li > .tx-row) {
+  gap: var(--space-1);
+}
+
+.list.cat-list > li + li,
+.list.cat-list:has(> li > .tx-row) > li + li {
+  border-top: 0;
+}
+
+.cat-list .tx-row {
+  min-height: 52px;
+  padding: 8px 0;
+}
+
+.cat-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.cat-budget {
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* Barra de presupuesto y su aviso quedan alineados con el texto de la fila */
+.cat-list .mini-bar,
+.cat-list .budget-note {
+  margin-left: 48px;
+}
+
+.cat-list .mini-bar {
+  margin-top: 0;
+}
+
+.cat-list .show-all {
+  margin-top: var(--space-2);
+}
+
+/* Título de una sección o tarjeta */
+.section-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Inicio */
+
+/* Tarjeta resumen: fondo suave del acento, sin borde (en claro, la sombra
+   suave de las tarjetas). Lleva lo que se puede gastar hoy */
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  padding: 20px;
+  border-radius: var(--radius-m);
+  background: var(--accent-soft);
+  box-shadow: var(--shadow-card);
+}
+
+.summary .sub {
+  font-size: 14px;
+}
+
+.summary-amount {
+  margin: 2px 0 0;
+}
+
+/* Sin nada que gastar hoy la cifra baja de peso y el mensaje la explica */
+.summary-amount.is-muted .money {
+  color: var(--muted);
+}
+
+.summary-sentence {
+  font-size: 15px;
+  line-height: 1.4;
+  text-wrap: pretty; /* sin una palabra suelta en la última línea */
+}
+
+/* Una línea de contexto y, a su lado, "Cómo se calcula": el botón mide 44px
+   para tocarlo pero se solapa con el aire de arriba y abajo */
+.summary-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-3);
+}
+
+.calc-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-block: -12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* Flecha: gira al abrir (solo transform) */
+.calc-toggle::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-top: -3px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.calc-toggle[aria-expanded='true']::after {
+  margin-top: 3px;
+  transform: rotate(-135deg);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .calc-toggle::after {
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+}
+
+/* El cálculo de la cifra: cada paso con su monto, de arriba abajo */
+.calc-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+.calc-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+.calc-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.calc-list li > span:first-child {
+  min-width: 0;
+}
+
+.calc-list li > span:last-child {
+  font-variant-numeric: tabular-nums;
+}
+
+.calc-list .is-total {
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+  font-weight: 600;
+}
+
+/* Ingresos y gastado: en línea, y pasan a otra fila antes de apretarse */
+.summary-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  margin-top: var(--space-1);
+}
+
+.summary-stats > div {
+  min-width: 0;
+}
+
+/* Moneda secundaria: bloque compacto, en tarjeta normal y con la cifra más chica */
+.summary.is-compact {
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.summary.is-compact .money {
+  font-size: clamp(28px, 8vw, 34px);
+}
+
+.summary.is-compact .money.is-long {
+  font-size: clamp(22px, 7vw, 30px);
+}
+
+.summary-where {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+/* "Ver todo el historial": enlace de 44px de alto, bajo la lista */
+.see-all {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: var(--space-1);
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Tarjeta de ahorros: ícono, nombre y saldos de cada moneda */
+.link-card-balance {
+  min-width: 0;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Aviso de respaldo: tarjeta tranquila con dos enlaces de 44px */
+.backup-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.backup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-4);
+}
+
+.backup-card .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Disposición: en celular una sola columna con este orden (el número es el
+   orden); en pantallas anchas, dos columnas: resúmenes a la izquierda y
+   acciones, pendientes y lo reciente a la derecha */
+.home-cols {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.home-col {
+  display: contents; /* en celular las dos columnas se mezclan y se ordenan por "order" */
+}
+
+.home-cols > .home-col > * {
+  min-width: 0;
+}
+
+.hs-manual {
+  order: 1;
+}
+
+.hs-summary {
+  order: 2;
+}
+
+.hs-offers {
+  order: 3; /* lo que sobró va justo debajo del resumen principal */
+}
+
+.hs-where {
+  order: 5;
+}
+
+.hs-due {
+  order: 6;
+}
+
+.hs-secondary {
+  order: 7;
+}
+
+.hs-recent {
+  order: 8;
+}
+
+.hs-savings {
+  order: 9;
+}
+
+.hs-backup {
+  order: 10;
+}
+
+@media (min-width: 900px) {
+  .home-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+
+  .home-col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-width: 0;
+  }
+
+  .summary,
+  .summary.hs-summary {
+    padding: var(--space-5);
+  }
+
+  /* Confirmar de los pendientes: secundario, para no competir con la tarjeta
+     ni con "Agregar" */
+  .hs-due .due-actions .pill.active {
+    background: var(--surface-2);
+    border-color: var(--control-border);
+    color: var(--text);
+    font-weight: 600;
+  }
+}
+
+/* Estados vacíos acogedores: ícono suave, una frase tranquila y un botón */
+.welcome {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.welcome.is-card {
+  max-width: none;
+  padding: var(--space-5) var(--space-4);
+}
+
+.welcome-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.welcome-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.welcome-text {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 320px;
+  margin-top: var(--space-2);
+}
+
+.welcome-actions .btn {
+  flex: none;
+}
+
+/* Inicio sin datos: el mensaje solo, centrado, con las tarjetas que haya */
+.home-empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Entrada suave: aparece subiendo un poco (solo si la persona no pidió menos
+   movimiento) */
+@media (prefers-reduced-motion: no-preference) {
+  .welcome {
+    animation: rise-in var(--dur) var(--ease-out) both;
+  }
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ==========================================================================
+   Rediseño amable, ronda 2: Agregar, Historial, avisos breves y el resto de
+   las pantallas con las mismas piezas.
+   ========================================================================== */
+
+/* Lo que no vale (un cero) va apagado */
+.is-zero {
+  color: var(--muted);
+}
+
+/* Título pequeño de un bloque de formulario ("Categoría", "Fecha") */
+.field-title {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* "Otra": círculo punteado con un + */
+.cat-icon.is-other {
+  --c: var(--muted);
+  --c-soft: transparent;
+  border: 1.5px dashed var(--control-border);
+}
+
+/* Fecha: los últimos 7 días en una tira que se desliza de lado, con hoy a la
+   vista (la tira empieza en el final) y "Otra fecha" al lado */
+.date-strip {
+  display: flex;
+  gap: var(--space-2);
+  margin: var(--space-3) -4px 0;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.date-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.date-tile {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 56px;
+  min-height: 64px;
+  padding: 8px 4px;
+  border: 0;
+  border-radius: var(--radius-m);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 2px transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color var(--dur-fast), box-shadow var(--dur-fast),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.date-tile.active {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.date-tile:active {
+  transform: scale(0.97);
+}
+
+.date-tile-day {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  font-size: 12px;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.date-tile.active .date-tile-day {
+  color: var(--text);
+}
+
+.date-tile-number {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+/* "Otra fecha": un poco más ancha, con su nombre en vez de un número */
+.date-tile.is-other {
+  width: auto;
+  min-width: 76px;
+  padding-inline: var(--space-3);
+}
+
+.date-tile-text {
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Un campo que sigue a la tira de fechas: con aire arriba */
+.date-strip + .field {
+  margin-top: var(--space-3);
+}
+
+/* Que un campo con foco no quede detrás de la barra de pestañas */
+html {
+  scroll-padding-bottom: 96px;
+}
+
+/* Avisos breves ("Gasto guardado"): arriba de la barra de pestañas en el
+   celular (ver más abajo), abajo y centrados en pantallas anchas. La región es
+   aria-live */
+.toast-region {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-4);
+  pointer-events: none; /* solo el aviso recibe toques, no la franja */
+}
+
+@media (min-width: 900px) {
+  .toast-region {
+    bottom: var(--space-5);
+  }
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 440px;
+  padding: 6px 4px 6px var(--space-3);
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-m);
+  background: var(--surface-2);
+  color: var(--text);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.toast-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.toast-message {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.toast-action {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.toast-close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+/* Entrada suave: aparece subiendo 8px. Con menos movimiento solo cambia la
+   opacidad */
+@media (prefers-reduced-motion: no-preference) {
+  .toast {
+    animation: toast-in var(--dur) var(--ease-out) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: toast-fade var(--dur) var(--ease-out) both;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes toast-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Historial: ver la sección "Historial: lista limpia" al final del archivo */
+
+.method-list {
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+/* "Próximo": movimientos con fecha después de hoy, dicho con palabras */
+.tx-upcoming {
+  color: var(--warning);
+  font-weight: 600;
+}
+
+/* Estadísticas, Ajustes y las demás pantallas con las mismas piezas */
+
+/* Etiqueta chica junto a un nombre ("Esta quincena") */
+.tag {
+  display: inline-block;
+  margin-left: var(--space-2);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  vertical-align: middle;
+}
+
+/* Flecha al final de una fila que se puede abrir. Gira al abrirla */
+.row-chevron {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  color: var(--muted);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+.row-chevron.is-open {
+  transform: rotate(90deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row-chevron {
+    transition: none;
+  }
+}
+
+/* Fila que es un botón entero (Gastos fijos): sin el aspecto del botón del navegador */
+button.tx-row {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button.tx-row:active {
+  opacity: 0.7;
+}
+
+/* Círculo de ícono de las filas de Ajustes: en el color de marca */
+.cat-icon.is-nav {
+  --c: var(--accent);
+  --c-soft: var(--accent-soft);
+}
+
+/* Presupuestos: el límite se escribe con el símbolo de la moneda delante */
+.budget-field {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.budget-symbol {
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 16px;
+}
+
+.budget-input {
+  width: 108px;
+}
+
+/* Barra suave y estado en palabras bajo la fila del presupuesto */
+.budget-state {
+  padding: 0 0 var(--space-3) 48px;
+}
+
+.budget-state .mini-bar {
+  margin-top: 0;
+}
+
+.budget-state .budget-note {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.budget-state .budget-note.near {
+  color: var(--warning);
+}
+
+.budget-state .budget-note.over {
+  color: var(--danger);
+}
+
+/* Botones chicos bajo una fila (Eliminar en Ahorros), alineados con el texto */
+.row-actions {
+  display: flex;
+  padding: 0 0 var(--space-3) 48px;
+}
+
+/* Ahorros: el saldo de cada moneda en la tarjeta suave */
+.savings-balance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* Pantallas de carga, bloqueo y error: tarjeta de bienvenida con un poco de aire arriba */
+.welcome.status-screen {
+  margin-top: var(--space-5);
+}
+
+/* Bienvenida: "Saltar este paso" es un enlace de texto, no un botón más */
+.text-link.ob-skip-step {
+  flex: 1 1 100%;
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 14px;
+  text-align: center;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* Textos legales y consentimiento: títulos en la fuente de la app, y una
+   línea fina entre los enlaces a los documentos */
+.legal-text h1,
+.legal-text h2,
+.legal-text h3 {
+  font-family: var(--font-display);
+}
+
+.legal-text {
+  padding: var(--space-5) var(--space-4);
+}
+
+.legal-links li + li {
+  border-top: 1px solid var(--border);
+}
+
+.legal-links a,
+.legal-links button {
+  width: 100%;
+  color: var(--accent);
+}
+
+/* En esta fila el nombre y los datos pueden ocupar dos líneas: el monto y la
+   flecha le quitan ancho y el nombre no debe quedar cortado a la mitad */
+button.tx-row .tx-name,
+button.tx-row .tx-meta {
+  display: -webkit-box;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+
+/* Los grupos de pills dentro de una hoja ya tienen su nombre y su espacio */
+.sheet-body .pill-group.wrap {
+  margin-top: 0;
+}
+
+/* Aviso de "no tienes tanto" en Ahorros: con aire antes de lo que sigue */
+.savings-warning {
+  margin-bottom: var(--space-3);
+}
+
+/* El aviso de guardado cabe en una línea en 375 px */
+.toast {
+  gap: var(--space-2);
+}
+
+.toast-close {
+  width: 40px;
+}
+
+/* Cifras de cada quincena (Estadísticas): al menos 14 px */
+.row-meta.figures {
+  font-size: 14px;
+}
+
+/* La tira de fechas se desvanece en los bordes: avisa que se desliza */
+.date-strip {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+  mask-image: linear-gradient(to right, transparent, #000 14px, #000 calc(100% - 14px), transparent);
+}
+
+/* Enlaces de texto que hacen de botón: se nota que se apretaron */
+.back-link:active,
+.text-link:active,
+.see-all:active,
+.toast-action:active {
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back-link:active,
+  .text-link:active,
+  .see-all:active,
+  .toast-action:active {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
+   Rediseño amable, ronda 3: barra de pestañas del celular, Agregar compacto,
+   Historial en lista limpia e Inicio en panel. Reglas que se respetan: gasto
+   en el color del texto con "−", ingreso en verde con "+", cero apagado, el
+   color nunca es la única señal, cifras en una sola línea, 44px para tocar,
+   hover solo con (hover: hover) y (pointer: fine), movimiento solo con
+   transform y opacity (<= 250ms) y nada con prefers-reduced-motion.
+   ========================================================================== */
+
+:root {
+  --tab-bar-h: 56px; /* alto de la barra de pestañas del celular, sin la zona segura */
+  --on-seg: #0e1517; /* texto sobre los segmentos de colores (tema oscuro) */
+}
+
+:root[data-theme='light'] {
+  --on-seg: #1c2a29; /* texto oscuro sobre los pasteles, igual que en oscuro */
+}
+
+/* ---- Barra de pestañas del celular ---------------------------------------- */
+
+/* Inicio, Historial, + (Agregar), Estadísticas y Ajustes. Fija abajo y con la
+   zona segura de los teléfonos con barra de gestos. Desde 900px no se muestra:
+   los mismos enlaces están en la barra de arriba */
+.tab-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  height: calc(var(--tab-bar-h) + env(safe-area-inset-bottom, 0px));
+  padding: 0 max(0px, calc((100vw - 560px) / 2)) env(safe-area-inset-bottom, 0px);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0 2px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.2;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.tab-icon {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+}
+
+/* El nombre no se corta: en 320px "Estadísticas" se asoma un poco a los lados */
+.tab-label {
+  white-space: nowrap;
+}
+
+/* Pestaña activa: teal, texto en negrita y una marca arriba (no solo color) */
+.tab.is-active {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.tab.is-active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 24px;
+  height: 3px;
+  margin-left: -12px;
+  border-radius: 0 0 3px 3px;
+  background: var(--accent);
+}
+
+/* El + central: círculo teal dentro de la barra */
+.tab.is-add .tab-icon {
+  width: 36px;
+  height: 36px;
+  margin-block: -4px; /* ocupa lo mismo que los demás íconos: las etiquetas quedan alineadas */
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+/* En 320px un punto menos y sin relleno */
+@media (max-width: 359px) {
+  .tab {
+    padding-inline: 0;
+    font-size: 11px;
+  }
+}
+
+@media (min-width: 900px) {
+  .tab-bar {
+    display: none;
+  }
+}
+
+/* Con un diálogo u hoja abierta la barra se esconde */
+body:has(dialog[open]) .tab-bar {
+  display: none;
+}
+
+/* La página deja sitio a la barra para que nada quede escondido debajo; el
+   aviso breve ("Gasto guardado") queda por encima de ella */
+@media (max-width: 899px) {
+  main {
+    padding-bottom: calc(var(--tab-bar-h) + var(--space-5) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .toast-region {
+    bottom: calc(var(--tab-bar-h) + var(--space-3) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ---- Botones y piezas compartidas ----------------------------------------- */
+
+/* Botón redondo con un ícono (cerrar, buscar, mes anterior...) */
+.icon-btn {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.icon-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* Interruptor de dos opciones (tipo y moneda de Agregar). El borde va como
+   sombra interior para que mida exactamente 44px */
+.seg {
+  display: inline-flex;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--control-border);
+}
+
+.seg button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.seg button.is-on {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+/* Chip de filtro (Historial): una pastilla suave; la elegida va en teal */
+.chip {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 15px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.chip.is-on {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+.chip:disabled {
+  color: var(--muted);
+  cursor: default;
+}
+
+/* ---- Hojas (fecha y más opciones de Agregar; mes y filtros de Historial) -- */
+
+dialog.sheet {
+  width: 100%;
+  max-width: 560px;
+  max-height: 85dvh;
+  margin: auto auto 0;
+  padding: 0;
+  border: 0;
+  border-radius: 24px 24px 0 0;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+}
+
+dialog.sheet::backdrop {
+  background: rgba(4, 10, 12, 0.62);
+}
+
+.sheet-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+}
+
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sheet-head h2 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.sheet-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.sheet-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Hoja del mes: flechas a los lados del nombre */
+.sheet-month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sheet-month-name {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Dentro de una hoja los campos y botones no llevan margen propio */
+.sheet-body .field,
+.sheet-body .date-strip {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+@media (min-width: 900px) {
+  dialog.sheet {
+    width: min(92vw, 440px);
+    margin: auto;
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  }
+}
+
+/* Entra desde abajo y se aclara (solo transform y opacity) */
+@media (prefers-reduced-motion: no-preference) {
+  dialog.sheet[open] {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity var(--dur) var(--ease-out), transform var(--dur) var(--ease-out);
+  }
+
+  @starting-style {
+    dialog.sheet[open] {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+}
+
+/* ---- Agregar: todo en una pantalla ----------------------------------------- */
+
+/* En celular la pantalla cabe sin scroll en 375x667: poco aire entre bloques,
+   el teclado de 4 filas y Guardar justo debajo, encima de la barra */
+main:has(> .add-screen) {
+  gap: 5px;
+  padding-top: 4px;
+}
+
+@media (max-width: 899px) {
+  main:has(> .add-screen) {
+    padding-bottom: calc(var(--tab-bar-h) + 4px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+.add-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.add-left,
+.add-right {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.add-right .btn {
+  flex: none;
+}
+
+.add-left .field-note {
+  margin-top: 0;
+}
+
+.add-toprow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* Tarjeta del monto: cifra grande al centro y, debajo, la categoría elegida
+   y los tres métodos de pago */
+.add-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 8px 6px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.add-amount {
+  max-width: 100%;
+  font-family: var(--font-display);
+  font-size: clamp(36px, 11vw, 44px);
+  font-weight: 600;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.add-amount.is-long {
+  font-size: clamp(24px, 8vw, 34px);
+}
+
+.add-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
+}
+
+/* El campo de categoría nueva ocupa su propia fila sobre los métodos de pago */
+.add-card-row {
+  flex-wrap: wrap;
+}
+
+/* Al editar, la flecha de regreso comparte fila con Gasto/Ingreso y la moneda;
+   en pantallas muy angostas pasa a su propia fila */
+.add-toprow:has(> .back-link) {
+  flex-wrap: wrap;
+}
+
+/* El campo para nombrar una categoría nueva */
+.add-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 4px 12px 4px 4px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.add-chip .cat-icon {
+  width: 28px;
+  height: 28px;
+}
+
+.add-chip > span:last-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-chip.is-input {
+  flex-basis: 100%;
+  padding: 0 14px;
+  border: 1px dashed var(--control-border);
+}
+
+.add-chip.is-input:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.add-chip.is-input input {
+  width: 100%;
+  min-height: 34px;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+/* Método de pago: tres interruptores redondos con ícono; el elegido muestra
+   también su nombre */
+.pay-toggles {
+  flex: none;
+  display: flex;
+}
+
+.pay-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.pay-toggle.is-on {
+  padding: 0 14px 0 12px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+/* Fecha y nota: dos pastillas de 44px */
+.add-pills {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-2);
+}
+
+.add-pill {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.add-pill > svg {
+  flex: none;
+  color: var(--muted);
+}
+
+.add-pill > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-pill.is-field {
+  cursor: text;
+}
+
+.add-pill:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.add-pill input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+}
+
+/* Sugerencias de nota: flotan debajo del campo, sin mover nada */
+.add-suggest {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  max-height: 188px;
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  list-style: none;
+  border: 1px solid var(--control-border);
+  border-radius: 16px;
+  background: var(--surface-2);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.add-suggest button {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.add-income-note {
+  padding: 12px 4px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Categorías: una fila que se desliza de lado en celular (y se ajusta en
+   varias líneas desde 900px). La elegida lleva un aro por dentro del círculo
+   y el nombre en negrita */
+.cat-row {
+  display: flex;
+  gap: 4px;
+  margin: 0 -16px;
+  padding: 2px 16px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 28px), transparent 100%);
+}
+
+.cat-row::-webkit-scrollbar {
+  display: none;
+}
+
+.cat-tile {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 68px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.2;
+  cursor: pointer;
+  scroll-snap-align: center;
+  touch-action: manipulation;
+}
+
+.cat-tile .cat-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.cat-tile > span:last-child {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cat-tile.is-on .cat-icon {
+  box-shadow: inset 0 0 0 2.5px var(--accent);
+}
+
+.cat-tile.is-on > span:last-child {
+  font-weight: 700;
+}
+
+/* En 320px caben las 4 categorías y "Otra" sin deslizar: casillas de 57px,
+   nombre de 11px y un desvanecido más corto en los bordes */
+@media (max-width: 359px) {
+  .cat-row {
+    padding-inline: 8px;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 8px, #000 calc(100% - 8px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 8px, #000 calc(100% - 8px), transparent 100%);
+  }
+
+  .cat-tile {
+    width: 57px;
+    font-size: 11px;
+  }
+}
+
+/* "Más opciones": botón redondo de 44px con un ícono, al final de la fila de
+   métodos de pago (el nombre va en aria-label y title; desde 900px también se
+   escribe) */
+.add-more {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.add-more-label {
+  display: none;
+}
+
+/* Punto: hay algo elegido en "Más opciones" (pasar a ahorros) */
+.add-more-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Pantallas bajas (320x568): sin la barra de la marca arriba, el monto, el
+   teclado y Guardar caben sobre la barra de pestañas sin desplazarse */
+@media (max-height: 640px) and (max-width: 899px) {
+  body:has(.add-screen) .app-bar {
+    display: none;
+  }
+}
+
+/* Teclado: 1 2 3 / 4 5 6 / 7 8 9 / 000 0 ⌫, con teclas suaves y redondas, y
+   debajo la tecla grande de Guardar */
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px 6px;
+}
+
+.key {
+  display: grid;
+  place-items: center;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Tecla mientras se presiona */
+.key:active {
+  background: var(--accent-dim);
+}
+
+.save-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 44px;
+  padding-block: 0;
+  font-size: 17px;
+}
+
+/* Desde 900px: dos columnas (monto, fecha y categorías | teclado) */
+@media (min-width: 900px) {
+  main:has(> .add-screen) {
+    gap: 20px;
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+
+  .add-screen {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    align-items: start;
+    gap: 32px;
+    width: 100%;
+    max-width: 1040px;
+    margin-inline: auto;
+  }
+
+  .add-left,
+  .add-right {
+    gap: 12px;
+  }
+
+  .add-card {
+    gap: 6px;
+    padding: 10px 14px 12px;
+  }
+
+  .add-amount {
+    font-size: 56px;
+  }
+
+  .add-amount.is-long {
+    font-size: 38px;
+  }
+
+  .cat-row {
+    flex-wrap: wrap;
+    gap: 8px 4px;
+    margin: 0;
+    padding: 4px 0;
+    overflow: visible;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .cat-tile {
+    width: 76px;
+    font-size: 13px;
+  }
+
+  .cat-tile .cat-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .keypad {
+    gap: 10px 8px;
+  }
+
+  .key {
+    height: 60px;
+    font-size: 26px;
+  }
+
+  .save-key {
+    height: 56px;
+  }
+
+  .add-more {
+    padding: 0 16px;
+  }
+
+  .add-more-label {
+    display: inline;
+  }
+
+  .add-more-dot {
+    position: static;
+  }
+}
+
+/* ---- Historial: lista limpia ---------------------------------------------- */
+
+.hist {
+  gap: 10px;
+}
+
+/* Título y, a su derecha, el botón que abre "Gastado por método" */
+.hist-headrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 32px;
+}
+
+.hist-title {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 6vw, 24px);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.hist-chips {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Los chips se deslizan de lado; el relleno deja sitio al contorno de foco */
+.hist-chip-row {
+  flex: 1;
+  display: flex;
+  gap: var(--space-2);
+  min-width: 0;
+  margin: -4px 0 -4px -4px;
+  padding: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.hist-chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+/* Búsqueda: se abre con el botón de la lupa */
+.hist-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--control-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.hist-search:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.hist-search input {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hist-search {
+    animation: rise-in var(--dur) var(--ease-out) both;
+  }
+}
+
+/* Resumen del mes: una línea por moneda con ingresos y gastado (nunca se
+   suman colones con dólares) */
+.hist-sum {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.hist-sum p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+}
+
+.hist-sum p > span:first-child {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* El mes viene en minúscula en español: primera letra en mayúscula */
+.hist-sum p > span:first-child::first-letter {
+  text-transform: uppercase;
+}
+
+/* Un día: título en negrita y, a la derecha, lo gastado ese día por moneda y,
+   solo si hubo, el ingreso. Sin neto y sin sumar monedas. En 320px el nombre
+   del día queda arriba y las cifras debajo */
+.day-group {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space-2);
+}
+
+.day-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0 var(--space-3);
+}
+
+.day-title {
+  min-width: 0;
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+
+.day-total {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-total-cur {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 var(--space-3);
+}
+
+.hist-rows {
+  display: flex;
+  flex-direction: column;
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hist-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+  padding: var(--space-2) 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.hist-row .cat-icon {
+  width: 40px;
+  height: 40px;
+}
+
+.hist-row-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.hist-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.hist-row-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Monto de la fila: a la derecha, en el color del texto (solo el ingreso lleva
+   color) y sin partirse */
+.hist-row-amount {
+  flex: none;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* "Exportar" al final de la lista */
+.hist-export {
+  display: flex;
+  margin-top: var(--space-2);
+}
+
+@media (min-width: 900px) {
+  .hist-chip-row {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+}
+
+/* ---- Inicio: panel --------------------------------------------------------- */
+
+.home-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.home-date {
+  min-width: 0;
+}
+
+.home-date h1 {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 6vw, 24px);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+/* "Agregar +": la acción principal de Inicio. En el celular ya está el "+" de
+   la barra de pestañas (dos controles iguales compiten), así que este solo
+   se ve desde 900px, donde no hay barra de pestañas */
+.home-add {
+  flex: none;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+@media (min-width: 900px) {
+  .home-add {
+    display: inline-flex;
+  }
+}
+
+.home-day-line {
+  margin-top: -8px;
+}
+
+/* Tarjeta resumen fuerte: fondo del acento más marcado y la cifra más grande */
+.summary.hs-summary {
+  gap: 6px;
+  padding: 16px;
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface));
+  box-shadow: inset 0 0 0 1px var(--accent-dim);
+}
+
+:root[data-theme='light'] .summary.hs-summary {
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent-dim), var(--shadow-card);
+}
+
+.hs-summary .money {
+  font-size: clamp(44px, 13vw, 60px);
+}
+
+.hs-summary .money.is-long {
+  font-size: clamp(30px, 9vw, 44px);
+}
+
+/* Barra segmentada del gasto de la quincena por categoría, con el % dentro de
+   los segmentos anchos y la leyenda con punto, nombre y % */
+.spend-block {
+  margin-top: var(--space-2);
+}
+
+.spend-bar {
+  display: flex;
+  gap: 2px;
+  height: 32px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+}
+
+.spend-bar span {
+  flex-basis: 0;
+  min-width: 6px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: var(--on-seg);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: inset 0 0 0 1px var(--seg-edge);
+}
+
+.spend-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.spend-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.spend-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--seg-edge);
+}
+
+.spend-pct {
+  font-weight: 700;
+}
+
+/* Movimientos recientes: filas suaves con ícono cuadrado y el método debajo
+   del monto */
+.home-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 64px;
+  padding: 10px var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+  color: inherit;
+  text-decoration: none;
+}
+
+.recent-row .cat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+}
+
+.recent-side {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+/* ---- Toques, pasar el ratón y menos movimiento ---------------------------- */
+
+/* Al apretar, el control se encoge (sin movimiento no) */
+@media (prefers-reduced-motion: no-preference) {
+  .seg button,
+  .chip,
+  .icon-btn,
+  .pay-toggle,
+  .add-pill,
+  .add-more,
+  .cat-tile,
+  .home-add,
+  .tab {
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .seg button:active,
+  .chip:active:not(:disabled),
+  .icon-btn:active:not(:disabled),
+  .pay-toggle:active,
+  .add-pill:active,
+  .add-more:active,
+  .cat-tile:active,
+  .home-add:active,
+  .tab:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Filas que llevan a editar: se aclaran un poco al apretarlas */
+.hist-row:active,
+.recent-row:active {
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hist-row:active,
+  .recent-row:active {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .add-pill:hover,
+  .add-more:hover,
+  .icon-btn:hover:not(:disabled) {
+    border-color: var(--muted);
+  }
+
+  .chip:hover:not(:disabled):not(.is-on) {
+    background: var(--border);
+  }
+
+  .tab:hover:not(.is-active) {
+    color: var(--text);
+  }
+
+  .hist-row:hover .hist-row-name,
+  .recent-row:hover .hist-row-name {
+    text-decoration: underline;
+  }
 }
