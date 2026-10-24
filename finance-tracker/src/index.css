@@ -252,7 +252,7 @@ main {
 /* Barra superior, pegada arriba al hacer scroll. En celular solo lleva la marca
    (las pestañas y Ajustes están en la barra de abajo). Desde 900px: marca a la
    izquierda, pestañas con ícono y ajustes a la derecha, en dos filas, y desde
-   1100px en una sola */
+   1360px en una sola */
 .app-bar {
   position: sticky;
   top: 0;
@@ -1261,9 +1261,9 @@ main > p.empty {
   }
 }
 
-/* Barra en una sola fila: solo desde 1100px, donde la marca y las pestañas
-   centradas caben sin pisarse (entre 900px y 1100px la barra sigue en dos filas) */
-@media (min-width: 1100px) {
+/* Barra en una sola fila: solo desde 1360px, donde la marca y las pestañas
+   centradas caben sin pisarse (entre 900px y 1360px la barra sigue en dos filas) */
+@media (min-width: 1360px) {
   /* Marca a la izquierda, pestañas al centro de la ventana, ajustes a la derecha */
   .app-bar {
     top: 0; /* en pantallas anchas la barra es una sola fila y no hay nada que subir */
@@ -1275,6 +1275,35 @@ main > p.empty {
   /* Las pestañas quedan en el centro de la ventana */
   .top-nav {
     justify-self: center;
+  }
+
+  /* Barra de una fila: nombre y pestañas más grandes para que se lean de lejos */
+  .brand-name {
+    font-size: 28px;
+  }
+
+  .top-nav a {
+    font-size: 16px;
+    padding: 10px 20px;
+  }
+
+  .top-nav a svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .app-bar .icon-link svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Todo sobre una misma línea: las barras del logo están en la mitad de
+     abajo del logo, así que las pestañas y el engranaje bajan lo mismo para
+     quedar centrados con las barras y con el nombre (no cambia el alto de
+     la barra) */
+  .top-nav,
+  .app-bar .icon-link {
+    translate: 0 var(--brand-drop, 14px);
   }
 }
 
