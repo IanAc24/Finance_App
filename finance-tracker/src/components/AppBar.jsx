@@ -5,8 +5,8 @@ import { Icon } from './CategoryIcon'
 import Logo from './Logo'
 import TopNav from './TopNav'
 
-// The bar at the top. On phones it is only the brand (the bottom TabBar has
-// the links and Settings); from 900px it also has the tabs and the gear.
+// The bar at the top. On phones it is the brand and the gear (the bottom
+// TabBar has the links); from 900px it also has the tabs.
 export default function AppBar() {
   const { t } = useSettings()
   const { pathname } = useLocation()

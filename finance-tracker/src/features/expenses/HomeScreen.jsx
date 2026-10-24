@@ -407,6 +407,11 @@ export default function HomeScreen() {
           </div>
         </div>
 
+        <Link className="summary-link" to="/income">
+          <span>{t('viewIncome')}</span>
+          <Icon name="chevronRight" size={18} />
+        </Link>
+
         {(toSavings > 0 || fromSavings > 0) && (
           <div className="summary-stats">
             {toSavings > 0 && (

@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { INCOME_SOURCES, incomeSummary, normalizeSource, periodRange, sourceFor } from './income'
+import {
+  INCOME_SOURCES,
+  incomeSummary,
+  normalizeSource,
+  periodRange,
+  sourceFor,
+  sourceLabelKey,
+} from './income'
+import { translations } from './translations'
 
 describe('normalizeSource', () => {
   it('keeps the four known sources', () => {
@@ -148,5 +156,18 @@ describe('periodRange', () => {
     expect(periodRange({ from: '2026-03-01' })).toBeNull()
     expect(periodRange('week')).toBeNull()
     expect(periodRange(undefined)).toBeNull()
+  })
+})
+
+describe('sourceLabelKey', () => {
+  it('names each source and falls back to "no source"', () => {
+    const labelKey = sourceLabelKey
+    for (const source of ['salary', 'freelance', 'gift', 'other']) {
+      const key = labelKey(source)
+      expect(translations.es[key]).toBeTruthy()
+      expect(translations.en[key]).toBeTruthy()
+    }
+    expect(labelKey(null)).toBe('sourceNone')
+    expect(labelKey('lottery')).toBe('sourceNone')
   })
 })

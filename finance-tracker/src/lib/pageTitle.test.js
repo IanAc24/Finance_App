@@ -13,6 +13,7 @@ describe('pageTitleKey', () => {
     expect(pageTitleKey('/settings/budgets')).toBe('budgets')
     expect(pageTitleKey('/settings/recurring')).toBe('recurring')
     expect(pageTitleKey('/savings')).toBe('savings')
+    expect(pageTitleKey('/income')).toBe('income')
     expect(pageTitleKey('/report')).toBe('report')
   })
 
@@ -28,13 +29,13 @@ describe('pageTitleKey', () => {
 
 describe('isSettingsPath', () => {
   it('is true for Settings and the screens opened from it', () => {
-    for (const path of ['/settings', '/settings/budgets', '/savings', '/legal/terms']) {
+    for (const path of ['/settings', '/settings/budgets', '/legal/terms']) {
       expect(isSettingsPath(path)).toBe(true)
     }
   })
 
   it('is false for the main tabs', () => {
-    for (const path of ['/', '/add', '/stats', '/history', '/edit/3']) {
+    for (const path of ['/', '/add', '/stats', '/history', '/edit/3', '/income', '/savings']) {
       expect(isSettingsPath(path)).toBe(false)
     }
   })

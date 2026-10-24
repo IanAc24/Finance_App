@@ -14,6 +14,7 @@ import { lastDays, pillDate } from '../../lib/days'
 import { formatDate } from '../../lib/format'
 import { applyKey, formatTyping } from '../../lib/keypad'
 import { MAX_CATEGORY_NAME_LENGTH, MAX_NOTE_LENGTH } from '../../lib/limits'
+import { INCOME_SOURCES, normalizeSource, sourceLabelKey } from '../../lib/income'
 import { MAX_AMOUNT, currencies, parseAmount } from '../../lib/money'
 import { onceAtATime } from '../../lib/onceAtATime'
 import { isClosingDay, nextQuincenaStart } from '../../lib/quincena'
@@ -26,7 +27,7 @@ import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import { useToast } from '../../context/useToast'
 import { useTransactions } from '../../context/useTransactions'
-import { Icon } from '../../components/CategoryIcon'
+import CategoryIcon, { Icon } from '../../components/CategoryIcon'
 import CategoryRow from '../../components/CategoryRow'
 import DateStrip from '../../components/DateStrip'
 import Keypad from '../../components/Keypad'
@@ -44,6 +45,7 @@ const PHONE_WIDTH = 900
 function backLabel(path, t) {
   if (path === '/') return t('home')
   if (path === '/stats') return t('statistics')
+  if (path === '/income') return t('income')
   return t('history')
 }
 
@@ -62,6 +64,12 @@ function lastPaymentMethod() {
 function lastCategoryId(categories) {
   const saved = Number(readPref('lastCategoryId'))
   return categories.some((c) => c.id === saved) ? saved : categories[0].id
+}
+
+// The source of the last income added, only when it was a salary (the most
+// common one); anything else starts with no source
+function lastIncomeSource() {
+  return readPref('lastIncomeSource') === 'salary' ? 'salary' : null
 }
 
 // An entry to repeat, passed in the route state; anything malformed is ignored
@@ -102,6 +110,8 @@ export default function AddExpenseScreen() {
   // only when adding: the entry being repeated, which beats prefs and ?type=
   const repeat = editing || id ? null : validRepeat(location.state?.repeat)
   const source = editing ?? repeat
+  // opened from the Income screen: after saving the person goes back to it
+  const addedFrom = id ? null : location.state?.from
 
   const [type, setType] = useState(
     source?.type ?? (params.get('type') === 'income' ? 'income' : 'expense'),
@@ -127,6 +137,10 @@ export default function AddExpenseScreen() {
   const [customName, setCustomName] = useState('')
   const [note, setNote] = useState(
     typeof source?.note === 'string' ? source.note : '',
+  )
+  // where the income came from (null = no source); only incomes keep it
+  const [incomeSource, setIncomeSource] = useState(() =>
+    source ? normalizeSource(source.source) : lastIncomeSource(),
   )
   const [date, setDate] = useState(editing?.date ?? todayString)
   // the "Other date" field was opened by hand (it is also open whenever the
@@ -228,6 +242,7 @@ export default function AddExpenseScreen() {
         note: note.trim(),
         date,
         paymentMethod,
+        source: type === 'income' ? incomeSource : null,
       }
 
       if (editing) {
@@ -267,11 +282,17 @@ export default function AddExpenseScreen() {
         writePref('lastCurrency', currency)
         writePref('lastPaymentMethod', paymentMethod)
         if (type === 'expense') writePref('lastCategoryId', savedCategoryId)
-        navigate('/')
+        if (type === 'income') writePref('lastIncomeSource', incomeSource ?? 'none')
+        if (addedFrom === '/income') navigate('/income', { state: { currency } })
+        else navigate('/')
         toast.show({
           kind: 'success',
           message: type === 'income' ? t('toastIncomeSaved') : t('toastExpenseSaved'),
-          action: { label: t('addAnother'), to: `/add?type=${type}` },
+          action: {
+            label: t('addAnother'),
+            to: `/add?type=${type}`,
+            state: addedFrom === '/income' ? { from: addedFrom } : undefined,
+          },
         })
       }
     } catch (error) {
@@ -500,9 +521,25 @@ export default function AddExpenseScreen() {
           {type === 'expense' ? (
             <CategoryRow categories={categories} value={categoryId} onChange={setCategoryId} />
           ) : (
-            <p className="add-income-note">
-              {t('incomeNoCategory')} {t('incomeSavingsHint')}
-            </p>
+            <>
+              <div className="cat-row source-row-tiles" role="group" aria-label={t('sourcePicker')}>
+                {INCOME_SOURCES.map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={incomeSource === key ? 'cat-tile is-on' : 'cat-tile'}
+                    aria-pressed={incomeSource === key}
+                    onClick={() => setIncomeSource(incomeSource === key ? null : key)}
+                  >
+                    <CategoryIcon kind="income" source={key} size={44} />
+                    <span>{t(sourceLabelKey(key))}</span>
+                  </button>
+                ))}
+              </div>
+              <p className="add-income-note">
+                {t('sourcePickerHint')} {t('incomeNoCategory')} {t('incomeSavingsHint')}
+              </p>
+            </>
           )}
         </div>
 

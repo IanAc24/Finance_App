@@ -249,17 +249,17 @@ main {
   gap: 16px; /* espacio entre las secciones de la pantalla */
 }
 
-/* Barra superior, pegada arriba al hacer scroll. En celular solo lleva la marca
-   (las pestañas y Ajustes están en la barra de abajo). Desde 900px: marca a la
-   izquierda, pestañas con ícono y ajustes a la derecha, en dos filas, y desde
-   1360px en una sola */
+/* Barra superior, pegada arriba al hacer scroll. En celular lleva la marca y,
+   a la derecha, el engranaje de Ajustes (las pestañas están en la barra de
+   abajo). Desde 900px: marca a la izquierda, pestañas con ícono y ajustes a la
+   derecha, en dos filas, y desde 1640px en una sola */
 .app-bar {
   position: sticky;
   top: 0;
   z-index: 10; /* por encima del contenido que pasa por debajo */
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  grid-template-areas: 'brand';
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'brand gear';
   align-items: center;
   padding: 4px 16px;
   background: var(--bg);
@@ -349,12 +349,12 @@ main {
   stroke: var(--accent);
 }
 
-/* Botón redondo con el ícono de engranaje, a la derecha de la barra (solo
-   desde 900px: en celular Ajustes es una pestaña de abajo) */
+/* Botón redondo con el ícono de engranaje, a la derecha de la barra (también
+   en celular: ahí Ajustes ya no es una pestaña de abajo) */
 .app-bar .icon-link {
   grid-area: gear;
   justify-self: end;
-  display: none;
+  display: grid;
   width: 44px;
   height: 44px;
   place-items: center;
@@ -367,7 +367,6 @@ main {
 
 @media (min-width: 900px) {
   .app-bar .icon-link {
-    display: grid;
     /* baja hasta la línea de las letras del nombre (que se apoya en el pie
        de las barras del logo); no cambia el alto de la barra */
     translate: 0 var(--gear-drop, 15px);
@@ -1264,9 +1263,10 @@ main > p.empty {
   }
 }
 
-/* Barra en una sola fila: solo desde 1360px, donde la marca y las pestañas
-   centradas caben sin pisarse (entre 900px y 1360px la barra sigue en dos filas) */
-@media (min-width: 1360px) {
+/* Barra en una sola fila: solo desde 1640px, donde la marca y las seis pestañas
+   centradas caben sin pisarse (con Ingresos y Ahorros ya no cabían a 1360px;
+   entre 900px y 1640px la barra sigue en dos filas) */
+@media (min-width: 1640px) {
   /* Marca a la izquierda, pestañas al centro de la ventana, ajustes a la derecha */
   .app-bar {
     top: 0; /* en pantallas anchas la barra es una sola fila y no hay nada que subir */
@@ -3149,7 +3149,7 @@ button.tx-row .tx-meta {
 
 /* ---- Barra de pestañas del celular ---------------------------------------- */
 
-/* Inicio, Historial, + (Agregar), Estadísticas y Ajustes. Fija abajo y con la
+/* Inicio, Historial, + (Agregar), Ahorros y Estadísticas. Fija abajo y con la
    zona segura de los teléfonos con barra de gestos. Desde 900px no se muestra:
    los mismos enlaces están en la barra de arriba */
 .tab-bar {
@@ -4660,5 +4660,454 @@ main:has(> .add-screen) {
   /* los ingresos van en negro: el signo "+" ya los distingue */
   .report .income {
     color: #000 !important;
+  }
+}
+
+/* ==========================================================================
+   Kit de movimiento y pantalla de Ingresos (ronda 1 de ingresos y ahorros).
+   Reglas: solo transform y opacity (salvo la altura al borrar una fila y el
+   trazo de la palomita), curva --ease-out, menos de 300ms, nada al abrir la
+   página y, con prefers-reduced-motion, sin movimiento (solo fundidos cortos).
+   ========================================================================== */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ---- Cifra que cuenta (CountUpMoney) --------------------------------------- */
+
+/* La cifra final, invisible, da el ancho: al contar, nada se corre */
+.countup {
+  display: inline-block;
+  max-width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+.countup-stage {
+  display: grid;
+  justify-items: start;
+}
+
+.countup-stage > * {
+  grid-area: 1 / 1;
+  max-width: 100%;
+}
+
+.countup-size {
+  visibility: hidden;
+}
+
+.countup.is-income .money {
+  color: var(--income);
+}
+
+.countup.is-zero .money {
+  color: var(--muted);
+}
+
+/* ---- Esqueleto de carga ---------------------------------------------------- */
+
+.skeleton {
+  display: block;
+  flex: none;
+  max-width: 100%;
+  border-radius: var(--radius-s);
+  background: var(--surface-2);
+}
+
+.skeleton.is-round {
+  border-radius: var(--radius-pill);
+}
+
+/* Pulso suave de opacidad; con menos movimiento queda quieto */
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton {
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 64px;
+}
+
+/* ---- Palomita de confirmación (SuccessCheck) ------------------------------- */
+
+.success-check {
+  display: block;
+  flex: none;
+}
+
+.success-check-ring,
+.success-check-tick {
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+}
+
+.success-check-ring {
+  fill: var(--accent-soft);
+}
+
+.success-check-tick {
+  fill: none;
+}
+
+/* El círculo se dibuja (180ms) y la palomita le sigue: 300ms en total */
+@media (prefers-reduced-motion: no-preference) {
+  .success-check-ring {
+    animation: check-draw 180ms var(--ease-out) both;
+  }
+
+  .success-check-tick {
+    animation: check-draw 200ms var(--ease-out) 100ms both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .success-check {
+    animation: fade-in var(--dur-fast) var(--ease-out) both;
+  }
+}
+
+@keyframes check-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---- Selector de moneda con indicador que se desliza ----------------------- */
+
+.cur-seg {
+  position: relative;
+  flex: none;
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--control-border);
+}
+
+.cur-seg button {
+  position: relative;
+  z-index: 1;
+  min-width: 56px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: color var(--dur-fast), transform var(--dur-fast) var(--ease-out);
+}
+
+.cur-seg button:active {
+  transform: scale(0.97);
+}
+
+.cur-seg button.is-on {
+  color: var(--on-accent);
+  font-weight: 600;
+}
+
+/* El indicador mide la mitad y se desliza con transform */
+.cur-seg-thumb {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 50%;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  transition: transform var(--dur) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cur-seg-thumb {
+    transition: none;
+  }
+
+  .cur-seg button:active {
+    transform: none;
+  }
+}
+
+/* Un panel por moneda en el mismo lugar: el activo aparece y el otro se va
+   (opacidad). Mide lo del más alto, así que nada se mueve al cambiar */
+.cur-panels {
+  display: grid;
+}
+
+.cur-panel {
+  grid-area: 1 / 1;
+  min-width: 0;
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease-out);
+}
+
+.cur-panel.is-active {
+  opacity: 1;
+}
+
+/* ---- Filas de lista que entran, se editan o salen (TransitionRow) ---------- */
+
+.trow {
+  position: relative;
+  isolation: isolate;
+}
+
+.trow.is-leave {
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Fila nueva: aparece y sube 8px; con menos movimiento solo aparece */
+@media (prefers-reduced-motion: no-preference) {
+  .trow.is-enter {
+    animation: row-enter var(--dur) var(--ease-out) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trow.is-enter {
+    animation: fade-in var(--dur) var(--ease-out) both;
+  }
+}
+
+@keyframes row-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* Fila editada: un tinte suave detrás que se apaga en 600ms (opacidad) */
+.trow.is-edit::before {
+  content: '';
+  position: absolute;
+  inset: 0 calc(var(--space-2) * -1);
+  z-index: -1;
+  border-radius: var(--radius-s);
+  background: var(--accent-soft);
+  pointer-events: none;
+  animation: row-flash 600ms var(--ease-out) both;
+}
+
+@keyframes row-flash {
+  to {
+    opacity: 0;
+  }
+}
+
+/* ---- Navegación: seis pestañas arriba ---------------------------------------- */
+
+/* Con el engranaje a la derecha, en 320px el nombre baja a 14px para no pisarlo */
+@media (max-width: 359px) {
+  .brand-name {
+    font-size: 14px;
+    letter-spacing: 0.04em;
+  }
+}
+
+/* Con seis pestañas, de 900px a 1100px van un poco más juntas */
+@media (min-width: 900px) and (max-width: 1099px) {
+  .top-nav {
+    gap: 4px;
+  }
+
+  .top-nav a {
+    gap: 6px;
+    padding-inline: 12px;
+  }
+}
+
+a.chip {
+  text-decoration: none;
+}
+
+/* Enlace "Ver ingresos" al pie de la tarjeta de Inicio */
+.summary-link {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  margin-block: -8px -12px;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+/* ---- Ingresos --------------------------------------------------------------- */
+
+.income-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  min-width: 0;
+}
+
+/* El botón principal junto al título */
+.income-add {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-height: 44px;
+  gap: 6px;
+  padding-inline: 14px 18px;
+}
+
+.income-cols,
+.income-side,
+.income-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .income-screen {
+    gap: 20px;
+  }
+
+  /* Resumen a la izquierda, movimientos a la derecha */
+  .income-cols {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .income-side,
+  .income-main {
+    gap: 16px;
+  }
+}
+
+/* Personalizado: dos fechas lado a lado */
+.income-range {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0 var(--space-3);
+}
+
+.income-range .field-note {
+  grid-column: 1 / -1;
+}
+
+.income-sum-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.income-sum-title {
+  min-width: 0;
+}
+
+.income-period {
+  margin-top: 2px;
+}
+
+.income-total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.income-other {
+  text-wrap: pretty;
+}
+
+.income-none {
+  padding: var(--space-3) 0;
+}
+
+/* Por fuente: icono, nombre y monto; entra con un fundido al cambiar de moneda */
+.income-sources {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .income-sources {
+    animation: fade-in var(--dur) var(--ease-out) both;
+  }
+}
+
+.source-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.source-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  font-variant-numeric: tabular-nums;
+}
+
+.source-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+}
+
+/* Las fuentes de Agregar caben en una fila: cuatro casillas */
+.source-row-tiles {
+  justify-content: center;
+}
+
+/* Interacción con el ratón: solo donde hay hover real */
+@media (hover: hover) and (pointer: fine) {
+  .cur-seg button:hover:not(.is-on) {
+    color: var(--accent);
+  }
+
+  a.chip:hover {
+    filter: brightness(0.96);
+  }
+
+  .summary-link:hover {
+    text-decoration: underline;
   }
 }

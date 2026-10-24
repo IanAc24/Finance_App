@@ -83,3 +83,16 @@ export function periodRange(kind, today = new Date()) {
   if (!from || !to) return null
   return from <= to ? { from, to } : { from: to, to: from }
 }
+
+// The translation key of the name of an income source ('salary' ->
+// 'sourceSalary'); anything else (null) is "no source"
+export const SOURCE_LABEL_KEYS = {
+  salary: 'sourceSalary',
+  freelance: 'sourceFreelance',
+  gift: 'sourceGift',
+  other: 'sourceOther',
+}
+
+export function sourceLabelKey(source) {
+  return SOURCE_LABEL_KEYS[source] ?? 'sourceNone'
+}

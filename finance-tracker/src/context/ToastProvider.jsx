@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Icon } from '../components/CategoryIcon'
-import Illustration from '../components/Illustration'
+import SuccessCheck from '../components/SuccessCheck'
 import { ToastContext } from './ToastContext'
 import { useSettings } from './useSettings'
 
@@ -16,7 +16,8 @@ const TOAST_MS = 4000
 //
 //   const { show } = useToast()
 //   show({ message, action: { label, to: '/add?type=expense' } })
-// `kind: 'success'` adds the small check illustration at the start.
+// `kind: 'success'` adds the check that draws itself at the start; show it only
+// after the write was confirmed.
 export default function ToastProvider({ children }) {
   const { t } = useSettings()
   const [toast, setToast] = useState(null)
@@ -53,7 +54,7 @@ export default function ToastProvider({ children }) {
             }}
           >
             {toast.kind === 'success' ? (
-              <Illustration name="check" size={20} className="toast-art" />
+              <SuccessCheck size={20} className="toast-art" />
             ) : (
               <span className="toast-icon" aria-hidden="true">
                 <Icon name="check" size={18} />

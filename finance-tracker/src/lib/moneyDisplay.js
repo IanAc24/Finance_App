@@ -4,10 +4,11 @@
 // Cuts the text of formatMoney into { sign, symbol, whole, decimals }. The
 // parts always join back to the exact input:
 //   '−₡31.000'   -> { sign: '−', symbol: '₡', whole: '31.000', decimals: '' }
+//   '+₡31.000'   -> { sign: '+', symbol: '₡', whole: '31.000', decimals: '' }
 //   '$1,234.50'  -> { sign: '', symbol: '$', whole: '1,234', decimals: '.50' }
 // Colones never have decimals (their "." groups thousands), dollars always do.
 export function splitMoney(text) {
-  const match = /^(−?)([^\d−]*)(\d[\d.,]*)$/.exec(text)
+  const match = /^([−+]?)([^\d−+]*)(\d[\d.,]*)$/.exec(text)
   if (!match) return { sign: '', symbol: '', whole: text, decimals: '' }
   const [, sign, symbol, number] = match
   const dot = symbol === '$' ? number.lastIndexOf('.') : -1

@@ -8,8 +8,10 @@ export default function TopNav() {
   const items = [
     ['/', 'house', t('home')],
     ['/add', 'plus', t('add')],
-    ['/stats', 'chart', t('statistics')],
     ['/history', 'history', t('history')],
+    ['/income', 'handCoins', t('income')],
+    ['/savings', 'piggyBank', t('savings')],
+    ['/stats', 'chart', t('statistics')],
   ]
 
   return (
