@@ -19,6 +19,7 @@ import SettingsScreen from './features/settings/SettingsScreen'
 import CategoriesScreen from './features/settings/CategoriesScreen'
 import BudgetsScreen from './features/settings/BudgetsScreen'
 import RecurringScreen from './features/settings/RecurringScreen'
+import ReportScreen from './features/report/ReportScreen'
 import SavingsScreen from './features/settings/SavingsScreen'
 import OnboardingScreen from './features/onboarding/OnboardingScreen'
 import ConsentScreen from './features/legal/ConsentScreen'
@@ -64,6 +65,7 @@ function Shell() {
           <Route path="/settings/budgets" element={<BudgetsScreen />} />
           <Route path="/settings/recurring" element={<RecurringScreen />} />
           <Route path="/savings" element={<SavingsScreen />} />
+          <Route path="/report" element={<ReportScreen />} />
           <Route path="/legal/:doc" element={<LegalScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTransactions } from '../../context/useTransactions'
 import { useConsent } from '../../context/useConsent'
 import { useDialog } from '../../context/useDialog'
@@ -37,6 +37,7 @@ function readLastBackup() {
 export default function SettingsScreen() {
   const { lang, setLang, theme, setTheme, locale, t } = useSettings()
   const { alert, confirm } = useDialog()
+  const navigate = useNavigate()
   const {
     transactions,
     categories,
@@ -84,6 +85,8 @@ export default function SettingsScreen() {
       setBusy(false)
     }
   }
+
+  const handleExportAllPdf = () => navigate('/report', { state: { scope: { kind: 'all' } } })
 
   const handleExportAll = () => {
     const list = [...transactions].sort(byNewest)
@@ -342,6 +345,14 @@ export default function SettingsScreen() {
                 onClick={handleExportAll}
               >
                 {t('exportAll')}
+              </button>
+              <button
+                type="button"
+                className="btn secondary"
+                disabled={!hasTransactions || busy}
+                onClick={handleExportAllPdf}
+              >
+                {t('exportAllPdf')}
               </button>
               <button
                 type="button"

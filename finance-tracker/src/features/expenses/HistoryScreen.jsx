@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTransactions } from '../../context/useTransactions'
 import { categoryLabel } from '../../lib/categories'
 import { downloadCsv, transactionRows } from '../../lib/csv'
@@ -25,6 +26,7 @@ const QUERY_SHOWN = 30
 // the search opens from the magnifier.
 export default function HistoryScreen() {
   const { lang, locale, t } = useSettings()
+  const navigate = useNavigate()
   const { transactions, categories, quincenaSchedule } = useTransactions()
 
   const today = useToday()
@@ -115,6 +117,15 @@ export default function HistoryScreen() {
       transactionRows(list, categories, t, lang),
       lang,
     )
+  }
+
+  // The same rows as the CSV, as a printable report: the ids of the results
+  // when filtering, the month on screen otherwise
+  const handleExportPdf = () => {
+    const scope = filtering
+      ? { kind: 'list', ids: list.map((tx) => tx.id) }
+      : { kind: 'month', year: month.getFullYear(), month: month.getMonth() }
+    navigate('/report', { state: { scope } })
   }
 
   if (transactions.length === 0) {
@@ -332,8 +343,14 @@ export default function HistoryScreen() {
 
         {list.length > 0 && (
           <div className="hist-export">
+            <span className="hist-export-label">
+              {filtering ? t('exportResults') : t('exportMonth')}
+            </span>
             <button type="button" className="btn secondary" onClick={handleExport}>
-              {filtering ? t('exportResults') : t('exportCsv')}
+              {t('formatCsv')}
+            </button>
+            <button type="button" className="btn secondary" onClick={handleExportPdf}>
+              {t('formatPdf')}
             </button>
           </div>
         )}

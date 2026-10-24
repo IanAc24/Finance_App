@@ -3894,7 +3894,16 @@ main:has(> .add-screen) {
 /* "Exportar" al final de la lista */
 .hist-export {
   display: flex;
+  align-items: center;
+  gap: 10px;
   margin-top: var(--space-2);
+}
+
+/* "Exportar este mes:" y a su lado los botones CSV y PDF */
+.hist-export-label {
+  flex: none;
+  font-size: 15px;
+  color: var(--muted);
 }
 
 @media (min-width: 900px) {
@@ -4135,5 +4144,246 @@ main:has(> .add-screen) {
   .hist-row:hover .hist-row-name,
   .recent-row:hover .hist-row-name {
     text-decoration: underline;
+  }
+}
+
+/* Reporte imprimible (/report) */
+
+/* Barra de la pantalla: volver a la izquierda, guardar como PDF a la derecha */
+.report-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* El enlace de volver es un botón: se le quita el aspecto de botón */
+.report-bar .back-link {
+  gap: 4px;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.report-bar .btn {
+  flex: none;
+}
+
+.report-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.report-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.report-period {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.report-generated {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.report-empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.report-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-month {
+  margin: 8px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.report-sub {
+  margin: 8px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.report-day-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Tablas del reporte: celdas con línea fina; los montos van a la derecha con
+   cifras de ancho fijo para que las columnas se alineen */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.report-table caption {
+  padding: 0 0 4px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.report-table th,
+.report-table td {
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 400;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.report-table thead th,
+.report-table tbody th {
+  font-weight: 600;
+}
+
+.report-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Movimientos: cada día es su tabla, así que las columnas llevan ancho fijo
+   para que queden alineadas de un día al otro */
+.report-moves {
+  table-layout: fixed;
+}
+
+.report-moves td:nth-child(1) {
+  width: 34%;
+  overflow-wrap: anywhere;
+}
+
+.report-moves td:nth-child(2),
+.report-moves td:nth-child(3) {
+  width: 22%;
+  overflow-wrap: anywhere;
+}
+
+.report-moves td:nth-child(4) {
+  width: 22%;
+}
+
+/* En pantallas angostas las cinco columnas del resumen caben con letra y
+   relleno más chicos (al imprimir se usan los de abajo) */
+@media (max-width: 480px) {
+  .report-table {
+    font-size: 12px;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 6px 3px;
+  }
+}
+
+/* Al imprimir: solo el reporte, en blanco y negro, sin importar el tema */
+@page {
+  margin: 16mm;
+}
+
+@media print {
+  /* lo que no es del reporte */
+  .app-bar,
+  .tab-bar,
+  .toast-region,
+  .skip-link,
+  .report-bar {
+    display: none !important;
+  }
+
+  html,
+  body,
+  #root {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .report,
+  .report * {
+    color: #000 !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  .report {
+    max-width: none;
+    padding: 0;
+    gap: 12px;
+    font-size: 11pt;
+    line-height: 1.35;
+  }
+
+  .report-title {
+    font-size: 18pt;
+  }
+
+  .report-period {
+    font-size: 14pt;
+  }
+
+  .report-generated {
+    font-size: 10pt;
+  }
+
+  .report-month {
+    font-size: 15pt;
+  }
+
+  .report-sub {
+    font-size: 10pt;
+  }
+
+  .report-day-title {
+    font-size: 11pt;
+  }
+
+  .report-table {
+    font-size: 11pt;
+  }
+
+  .report-table th,
+  .report-table td {
+    border-bottom: 0.5pt solid #000;
+    padding: 3pt 4pt;
+  }
+
+  /* cada mes empieza en hoja nueva, menos el primero */
+  .report-section + .report-section {
+    break-before: page;
+  }
+
+  /* un día no se parte entre dos hojas si cabe */
+  .report-day,
+  .report-table tr {
+    break-inside: avoid;
+  }
+
+  .report-sub,
+  .report-month,
+  .report-day-title {
+    break-after: avoid;
+  }
+
+  /* los ingresos van en negro: el signo "+" ya los distingue */
+  .report .income {
+    color: #000 !important;
   }
 }
