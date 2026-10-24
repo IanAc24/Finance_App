@@ -286,7 +286,8 @@ main {
   grid-area: brand;
   justify-self: start;
   display: flex;
-  align-items: center;
+  /* el nombre se apoya abajo, sobre la misma línea que las barras del logo */
+  align-items: flex-end;
   gap: 10px;
   min-width: 0; /* deja que el nombre se encoja en vez de empujar el engranaje */
   min-height: 44px;
@@ -303,9 +304,15 @@ main {
   white-space: nowrap;
   font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 19px;
   letter-spacing: 0.06em;
   color: var(--text);
+  /* Interlineado 1: la base de las letras queda a la altura del pie de las
+     barras del logo. El relleno de abajo deja ver la coma de "POBRE, POR
+     AHORA" y el margen negativo lo compensa para no mover esa base */
+  line-height: 1;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
 }
 
 /* Tamaño del logo (no se encoge aunque falte espacio) */
@@ -1208,9 +1215,9 @@ main > p.empty {
     gap: 12px;
   }
 
-  /* Nombre de la app de unos 20px */
+  /* Nombre de la app de unos 24px */
   .brand-name {
-    font-size: 20px;
+    font-size: 24px;
   }
 
   /* Contenido más ancho, con más aire alrededor */
