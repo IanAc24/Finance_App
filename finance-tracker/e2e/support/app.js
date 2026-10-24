@@ -233,6 +233,10 @@ export async function addEntry(page, opts) {
   if (daysAgo) await pickDate(page, daysAgo)
   if (save) {
     await saveButton(page).click()
+    // the app leaves the Add screen only once the save resolved; waiting for
+    // that (not just for a toast, which may still be the previous one) keeps
+    // the next step from starting while a save is in flight (cloud mode)
+    await page.waitForURL((url) => !/^\/(add|edit)(\/|$)/.test(url.pathname), { timeout: 30_000 })
     await expect(page.locator('.toast-message')).toHaveText(
       type === 'income' ? /^(Income saved|Ingreso guardado)$/ : /^(Expense saved|Gasto guardado)$/,
     )

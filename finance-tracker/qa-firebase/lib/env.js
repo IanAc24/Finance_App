@@ -123,7 +123,7 @@ export function readQaConfig(env = process.env) {
     )
   }
 
-  const maxWrites = env.QA_MAX_WRITES?.trim() ? Number(env.QA_MAX_WRITES) : 400
+  const maxWrites = env.QA_MAX_WRITES?.trim() ? Number(env.QA_MAX_WRITES) : 1000
   if (!Number.isInteger(maxWrites) || maxWrites < 1) {
     throw new QaGuardError('QA_MAX_WRITES must be a positive whole number.')
   }

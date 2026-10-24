@@ -24,12 +24,17 @@ const ALLOWED_HOSTS = (host) =>
   host.endsWith('.googleapis.com') ||
   host.endsWith('.firebaseapp.com')
 
+// Firestore's connection check loads this 1x1 image from www.google.com when
+// the network comes back (seen in the offline test); only this exact URL
+const ALLOWED_URL = (url) =>
+  url.hostname === 'www.google.com' && url.pathname === '/images/cleardot.gif'
+
 // Only the local app, Google APIs (Auth, Firestore) and the project's
 // firebaseapp.com domain may be reached; anything else is blocked and recorded.
 export async function lockNetwork(context, escaped) {
   await context.route('**/*', (route) => {
     const url = new URL(route.request().url())
-    if (ALLOWED_HOSTS(url.hostname)) return route.continue()
+    if (ALLOWED_HOSTS(url.hostname) || ALLOWED_URL(url)) return route.continue()
     escaped.push(`${route.request().method()} ${url.origin}${url.pathname}`)
     return route.abort('blockedbyclient')
   })

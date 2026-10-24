@@ -90,7 +90,7 @@ npm run qa:firebase:cleanup   # si una corrida se cortó a medias
 - No corre si falta `.env.qa.local`, si `QA_FIREBASE_ALLOW_PROJECT` no es exactamente el `projectId`, si el proyecto empieza por `demo-` o si hay menos de 2 cuentas. Se detiene sin tocar la red.
 - Solo inicia sesión: nunca crea ni borra cuentas.
 - Escribe solo en `users/{su propio uid}/`, con la etiqueta `QA-<id de corrida>` e ids que empiezan por 9.
-- Tope de escrituras por corrida: `QA_MAX_WRITES` (400 por defecto). El plan gratuito da 20.000 al día para todo el proyecto.
+- Tope de escrituras por corrida: `QA_MAX_WRITES` (1000 por defecto; una corrida completa usa unas 800 con la limpieza). El plan gratuito da 20.000 al día para todo el proyecto.
 - Al final borra solo lo que creó esa corrida (registrado en `e2e/results/firebase-manifest.json`). Las cuentas quedan.
 - Nunca imprime contraseñas ni tokens; los correos salen enmascarados (`p***1@…`).
 - Lo único que no se etiqueta: la primera vez que una cuenta entra, la app guarda su consentimiento y su perfil (`meta/profile`). Por eso se usan cuentas dedicadas a pruebas.
@@ -110,6 +110,8 @@ En `finance-tracker/e2e/results/`:
 
 ## 5. Qué se encontró (24/10/2026)
 
+Corrida `20261024004258` en `iampoorfornow`: 32 pasaron, 7 fallaron (3 de reglas publicadas, 4 de las pruebas de navegador, ya corregidas), 5 huecos conocidos; 398 de 400 escrituras, limpieza completa (no quedaron documentos).
+
 ### 5.1 Lo que funciona bien (probado en el proyecto real)
 
 - **Aislamiento entre cuentas:** la cuenta 2 no pudo leer, listar, cambiar ni borrar nada de la cuenta 1, y los datos de la cuenta 1 quedaron iguales.
@@ -127,7 +129,7 @@ En `finance-tracker/e2e/results/`:
 | 3 | Media | Registro abierto sin verificación de correo ni App Check: cualquiera puede crear cuentas y gastar la cuota compartida. | Pendiente (configuración en la consola) |
 | 4 | Media | Cambiar de cuenta en otra pestaña: la pestaña abierta podría seguir mostrando la cuenta anterior (`TransactionsProvider` sin `key={user.uid}`). | Pendiente |
 | 5 | Media | El aviso "guardado" sale al segundo aunque Google no haya confirmado; un rechazo tardío después de cerrar sesión se pierde. | Pendiente |
-| 6 | Media | Navegador real: "guardar sin internet y volver a conectar" y "₡10.000 y $100 por separado" fallaron en la corrida del 24/10. | En análisis: capturas en `e2e/results/artifacts-firebase/` |
+| 6 | — | Navegador real: 4 fallos en la corrida del 24/10 ("sin internet", "₡10.000 y $100", "100 × $0,10" y "20 aleatorios"). **No eran errores de la app**: (a) la prueba pasaba al paso siguiente mientras el guardado en la nube seguía en curso, porque esperaba el aviso "Gasto guardado" y ese aviso todavía era el del guardado anterior; (b) Firestore comprueba la conexión cargando `www.google.com/images/cleardot.gif` y la prueba solo permitía `googleapis.com`. En modo local, guardar ₡10.000 y luego $100 muestra ambas filas bien. | **Corregido en las pruebas**: ahora esperan a que la app salga de Agregar; se permite solo esa imagen; el tope por corrida subió a 1000 escrituras. Repetir `npm run qa:firebase` para confirmar |
 | 7 | Baja | Un porcentaje exacto de .5 se redondeaba hacia abajo (14,5 % mostraba 14 %). | **Corregido** (commit `fdf99a0`) |
 | 8 | Baja | Un presupuesto de ₡1.000.000.000 al que le falta un céntimo mostraba 100 %. | **Corregido** (commit `fdf99a0`) |
 | 9 | Baja | En un aparato nuevo, abrir un enlace directo (por ejemplo /history) sin sesión y pasar la bienvenida lleva a Inicio en vez de al enlace. | Pendiente (marcado como fallo esperado en `e2e/auth.spec.js`) |
