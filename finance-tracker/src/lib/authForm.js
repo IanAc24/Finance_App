@@ -1,3 +1,5 @@
+import { RESET_SENT, resetResultKey } from './authErrors'
+
 // Checks for the sign-in, sign-up and password recovery forms, done before
 // anything is sent to Firebase. Each returns { field: translationKey } with
 // only the fields that are wrong.
@@ -86,7 +88,20 @@ export async function submitForm({ lock, values, validate, send, errorKey, onSta
   return result
 }
 
-export const AUTH_PATHS =['/login', '/registro', '/recuperar']
+// Asks for the reset link and always answers "if the email is registered,
+// we sent a link", so nobody can find out which emails have an account.
+// Problems that are not about the account (no connection, too many
+// attempts) are thrown so the form shows them.
+export async function requestReset(resetPassword, email) {
+  try {
+    await resetPassword(email)
+  } catch (error) {
+    if (resetResultKey(error) !== RESET_SENT) throw error
+  }
+  return RESET_SENT
+}
+
+export const AUTH_PATHS = ['/login', '/registro', '/recuperar']
 
 // Where to go after signing in: the page that sent the person to /login, if
 // it is a page of this app. Anything else (another site, an auth page) goes

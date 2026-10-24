@@ -18,6 +18,7 @@ import SavingsScreen from './features/settings/SavingsScreen'
 import OnboardingScreen from './features/onboarding/OnboardingScreen'
 import AuthGate, { PublicOnly } from './features/auth/AuthGate'
 import LoginScreen from './features/auth/LoginScreen'
+import ResetPasswordScreen from './features/auth/ResetPasswordScreen'
 
 // The first-use screen replaces the whole app (no menu, no other route)
 // until it is done or skipped; it is also what "Repeat initial setup" opens
@@ -73,6 +74,8 @@ export default function App() {
                   </PublicOnly>
                 }
               />
+              {/* open with or without a session */}
+              <Route path="/recuperar" element={<ResetPasswordScreen />} />
               <Route
                 path="*"
                 element={

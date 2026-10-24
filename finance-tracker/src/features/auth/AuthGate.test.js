@@ -18,6 +18,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 
 const { default: AuthGate, PublicOnly } = await import('./AuthGate')
 const { default: LoginScreen } = await import('./LoginScreen')
+const { default: ResetPasswordScreen } = await import('./ResetPasswordScreen')
 
 const settings = { lang: 'es', t: (key) => `[${key}]` }
 
@@ -122,5 +123,26 @@ describe('LoginScreen', () => {
     expect(html).toContain('aria-pressed="false"')
     expect(html).toContain('noValidate')
     expect(html).toContain('[authSignIn]')
+  })
+
+  it('links to password recovery', () => {
+    expect(html).toContain('href="/recuperar"')
+    expect(html).toContain('[authForgot]')
+  })
+})
+
+describe('ResetPasswordScreen', () => {
+  const html = render('unauthenticated', h(ResetPasswordScreen))
+
+  it('asks only for the email, with its label and autocomplete', () => {
+    expect(html).toContain('for="reset-email"')
+    expect(html).toContain('type="email"')
+    expect(html).toContain('autoComplete="email"')
+    expect(html).not.toContain('type="password"')
+    expect(html).toContain('[authResetSend]')
+  })
+
+  it('links back to sign in', () => {
+    expect(html).toContain('href="/login"')
   })
 })

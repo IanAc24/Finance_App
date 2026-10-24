@@ -4,6 +4,7 @@ import {
   firstErrorField,
   isValidEmail,
   runOnce,
+  requestReset,
   safeRedirect,
   submitForm,
   validateReset,
@@ -186,5 +187,32 @@ describe('submitForm', () => {
     expect(options.lock.current).toBe(false)
     const ok = await submitForm({ ...options, send: async () => 'authResetSent' })
     expect(ok).toEqual({ errors: {}, notice: 'authResetSent' })
+  })
+})
+
+describe('requestReset', () => {
+  const fail = (code) => () => Promise.reject(Object.assign(new Error('x'), { code }))
+
+  it('says "if the email is registered, we sent a link" when it was sent', async () => {
+    const calls = []
+    const send = async (email) => {
+      calls.push(email)
+    }
+    expect(await requestReset(send, 'ana@ejemplo.com')).toBe('authResetSent')
+    expect(calls).toEqual(['ana@ejemplo.com'])
+  })
+
+  it('says exactly the same when the email has no account', async () => {
+    expect(await requestReset(fail('auth/user-not-found'), 'nadie@ejemplo.com')).toBe('authResetSent')
+    expect(await requestReset(fail('auth/invalid-email'), 'x@y.z')).toBe('authResetSent')
+  })
+
+  it('lets the form show problems that are not about the account', async () => {
+    await expect(requestReset(fail('auth/network-request-failed'), 'a@b.co')).rejects.toMatchObject({
+      code: 'auth/network-request-failed',
+    })
+    await expect(requestReset(fail('auth/too-many-requests'), 'a@b.co')).rejects.toMatchObject({
+      code: 'auth/too-many-requests',
+    })
   })
 })

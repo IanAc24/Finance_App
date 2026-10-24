@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/useAuth'
 import { useSettings } from '../../context/useSettings'
 import { validateSignIn } from '../../lib/authForm'
@@ -43,6 +44,11 @@ export default function LoginScreen() {
           {form.busy ? t('authSigningIn') : t('authSignIn')}
         </button>
       </form>
+      <p className="auth-links">
+        <Link className="text-link" to="/recuperar">
+          {t('authForgot')}
+        </Link>
+      </p>
     </AuthLayout>
   )
 }
