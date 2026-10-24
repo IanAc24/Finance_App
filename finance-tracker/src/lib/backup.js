@@ -49,10 +49,11 @@ export function buildBackup(
 }
 
 // Limits that keep a damaged or hostile file from filling the device:
-// the file, each text, the ids (SQLite integers; above 2^31 - 1 the next ids
-// could repeat) and the number of records.
+// the file, each text, the ids and the number of records. Ids made in the
+// cloud are time based (lib/ids.js, about 1.8e15 today), so the cap is 8e15:
+// below Number.MAX_SAFE_INTEGER with room for the next SQLite ids.
 export const MAX_BACKUP_BYTES = 20 * 1024 * 1024
-export const MAX_ID = 2_147_483_647
+export const MAX_ID = 8_000_000_000_000_000
 export const MAX_RECORDS = 200_000
 
 // Ids are positive integers up to MAX_ID (0 is the "Uncategorized" stand-in)
