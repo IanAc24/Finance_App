@@ -201,6 +201,8 @@ export const translations = {
       'Escribe cuánto ganas por pago (paso de ingresos) para ver cuánto te queda libre.',
     obFreeNegative:
       'Tus gastos fijos pasan de lo que ganas por pago. Revisa los montos.',
+    obFreeNegativeGoal:
+      'Tu meta de ahorro y tus gastos fijos pasan de lo que ganas por pago. Baja la meta o revisa los montos.',
     obGoalTitle: 'Una meta de ahorro',
     obGoalHint:
       'Cuánto quieres apartar en cada quincena. Es opcional y la puedes cambiar cuando quieras.',
@@ -737,6 +739,8 @@ export const translations = {
       'Type how much you earn per pay (income step) to see how much is left free.',
     obFreeNegative:
       'Your fixed expenses are more than you earn per pay. Check the amounts.',
+    obFreeNegativeGoal:
+      'Your savings goal and fixed expenses are more than you earn per pay. Lower the goal or check the amounts.',
     obGoalTitle: 'A savings goal',
     obGoalHint:
       'How much you want to set aside each pay period. It is optional and you can change it any time.',

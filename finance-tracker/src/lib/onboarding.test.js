@@ -11,6 +11,7 @@ import {
   optionalAmount,
   quincenasPerMonth,
   scheduleForOnboarding,
+  overspendCause,
 } from './onboarding'
 import { DEFAULT_SCHEDULE } from './quincenaSchedule'
 
@@ -375,5 +376,28 @@ describe('scheduleForOnboarding with manual pay days', () => {
 
   it('counts two quincenas a month for manual pay days', () => {
     expect(quincenasPerMonth({ mode: 'manual', from: '2026-10-11' })).toBe(2)
+  })
+})
+
+describe('overspendCause', () => {
+  it('is null when something is left free', () => {
+    expect(overspendCause(freePerQuincena({ income: 350000, expenses: [], savingsGoal: 25000 }))).toBe(null)
+    expect(overspendCause(freePerQuincena({ income: 100, expenses: [{ amount: 100, schedule: 'every' }] }))).toBe(null)
+  })
+
+  it('blames the fixed expenses when they alone are more than the pay', () => {
+    const figures = freePerQuincena({ income: 100000, expenses: [{ amount: 150000, schedule: 'every' }] })
+    expect(overspendCause(figures)).toBe('fixed')
+  })
+
+  it('blames the savings goal when the fixed expenses fit but the goal tips it over', () => {
+    // seen on the live site: ₡350.000 pay, ₡150.000 monthly rent, ₡300.000 goal
+    const figures = freePerQuincena({
+      income: 350000,
+      expenses: [{ amount: 150000, schedule: 'first' }],
+      savingsGoal: 300000,
+    })
+    expect(figures.free).toBe(-25000)
+    expect(overspendCause(figures)).toBe('goal')
   })
 })

@@ -22,6 +22,7 @@ import {
   buildFixedExpense,
   cleanName,
   freePerQuincena,
+  overspendCause,
   optionalAmount,
   planIncome,
   quincenasPerMonth,
@@ -47,7 +48,11 @@ function FreeSummary({ figures, hasIncome, currency }) {
           <p className={negative ? 'summary-amount is-muted' : 'summary-amount'}>
             <Money text={formatMoney(figures.free, currency)} />
           </p>
-          {negative && <p className="sub warn">{t('obFreeNegative')}</p>}
+          {negative && (
+            <p className="sub warn">
+              {overspendCause(figures) === 'goal' ? t('obFreeNegativeGoal') : t('obFreeNegative')}
+            </p>
+          )}
           <p className="sub">{t('obFreeAverage')}</p>
         </>
       ) : (

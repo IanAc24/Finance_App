@@ -77,6 +77,14 @@ export function freePerQuincena({
   return { income, fixed, goal, free: sum([income, -fixed, -goal]) }
 }
 
+// Why the free money is negative: 'fixed' when the fixed expenses alone are
+// more than the pay, 'goal' when it is the savings goal that tips it over,
+// null when nothing is negative. The message names what to change.
+export function overspendCause({ income, fixed, free }) {
+  if (!(free < 0)) return null
+  return fixed > income ? 'fixed' : 'goal'
+}
+
 // The schedule to save after the pay days step. On a really new install
 // (nothing registered) the choice is in force from the start, because there
 // is no past to protect; with data it goes through changeSchedule, so the
