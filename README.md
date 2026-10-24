@@ -10,7 +10,6 @@
 | --- | --- |
 | [`finance-tracker/`](finance-tracker/) | The app (React + Vite). Its [README](finance-tracker/README.md) has the features, how to run it, the tech stack and the progress log |
 | [`docs/`](docs/) | Decisions, backlog, plans, audits and legal drafts (in Spanish) |
-| [`CLAUDE.md`](CLAUDE.md) | Working rules for Claude Code in this repo (in Spanish) |
 
 ## Run it
 
