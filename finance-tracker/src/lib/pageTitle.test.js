@@ -13,6 +13,7 @@ describe('pageTitleKey', () => {
     expect(pageTitleKey('/settings/budgets')).toBe('budgets')
     expect(pageTitleKey('/settings/recurring')).toBe('recurring')
     expect(pageTitleKey('/savings')).toBe('savings')
+    expect(pageTitleKey('/savings/recap/2026')).toBe('svRecapOpen')
     expect(pageTitleKey('/income')).toBe('income')
     expect(pageTitleKey('/report')).toBe('report')
   })

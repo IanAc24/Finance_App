@@ -97,7 +97,8 @@ export function useAccount(runId, n) {
   })
 }
 
-// Registers a document BEFORE it is written, so even a write that fails
+// Registers a document (any collection of the account: transactions, savings,
+// goals...) BEFORE it is written, so even a write that fails
 // halfway is cleaned up. `n` is the account that owns the path (and so the
 // one that signs in to delete it).
 export function track(runId, n, collection, id) {

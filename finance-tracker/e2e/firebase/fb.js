@@ -91,6 +91,14 @@ export const test = base.extend({
       async docs(n, label) {
         return taggedDocs(await this.client(n), 'transactions', `${qa().tag} ${label}`)
       },
+      // tagged savings moves (their note starts with "<tag> <label>")
+      async moves(n, label) {
+        return taggedDocs(await this.client(n), 'savings', `${qa().tag} ${label}`)
+      },
+      // tagged savings goals (their NAME starts with "<tag> <label>")
+      async goals(n, label) {
+        return taggedDocs(await this.client(n), 'goals', `${qa().tag} ${label}`, 'name')
+      },
     })
     for (const client of clients.values()) await client.close()
   },

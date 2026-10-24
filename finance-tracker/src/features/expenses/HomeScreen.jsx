@@ -32,6 +32,7 @@ import { useSettings } from '../../context/useSettings'
 import { useToast } from '../../context/useToast'
 import CategoryBars from '../../components/CategoryBars'
 import CategoryIcon, { Icon } from '../../components/CategoryIcon'
+import CountUpMoney from '../../components/CountUpMoney'
 import EmptyState from '../../components/EmptyState'
 import Money from '../../components/Money'
 import RecentRow from '../../components/RecentRow'
@@ -454,8 +455,7 @@ export default function HomeScreen() {
   const balances = currencies
     .map(({ code }) => ({ code, balance: savingsBalance(savings, code) }))
     .filter(({ balance }) => balance !== 0)
-    .map(({ code, balance }) => formatMoney(balance, code))
-  if (balances.length === 0) balances.push(formatMoney(0, 'CRC'))
+  if (balances.length === 0) balances.push({ code: 'CRC', balance: 0 })
 
   const totalDays = daysBetween(start, end) + 1
   // a late manual quincena has no known end: show it as its last day
@@ -712,10 +712,10 @@ export default function HomeScreen() {
                   <span className="tx-name">{t('savings')}</span>
                 </span>
                 <span className="link-card-balance">
-                  {balances.map((text, i) => (
-                    <span key={i}>
+                  {balances.map(({ code, balance }, i) => (
+                    <span key={code}>
                       {i > 0 && ' · '}
-                      <span className="nowrap">{text}</span>
+                      <CountUpMoney amount={balance} currency={code} className="link-card-figure" />
                     </span>
                   ))}
                 </span>

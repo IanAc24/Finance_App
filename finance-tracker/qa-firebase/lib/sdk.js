@@ -23,7 +23,7 @@ import * as tracker from './tracker.js'
 
 setLogLevel('silent')
 
-export const COLLECTIONS = ['transactions', 'categories', 'budgets', 'recurring', 'savings', 'meta']
+export const COLLECTIONS = ['transactions', 'categories', 'budgets', 'recurring', 'savings', 'goals', 'meta']
 
 let instance = 0
 
@@ -73,25 +73,31 @@ export function hasTag(data, tag) {
   return ['note', 'name', 'qaTag'].some((f) => typeof data?.[f] === 'string' && data[f].startsWith(tag))
 }
 
-// Documents of `name` whose note starts with `prefix` (server read, a single
-// field range, so no index has to be created)
-export async function taggedDocs(client, name, prefix) {
+// Documents of `name` whose `field` (the note; a goal has its name) starts with
+// `prefix` (server read, a single field range, so no index has to be created)
+export async function taggedDocs(client, name, prefix, field = 'note') {
   const q = query(
     collection(client.db, ...client.path(name)),
-    where('note', '>=', prefix),
-    where('note', '<', `${prefix}`),
+    where(field, '>=', prefix),
+    where(field, '<', `${prefix}`),
   )
   const snap = await getDocsFromServer(q)
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }))
 }
 
-const SWEEP = ['transactions', 'savings', 'recurring']
+// [collection, field that carries the tag]: goals are tagged in their name
+const SWEEP = [
+  ['transactions', 'note'],
+  ['savings', 'note'],
+  ['recurring', 'note'],
+  ['goals', 'name'],
+]
 
 // Removes what this run created, signing in as each account that took part:
 //   1. every document registered in the manifest, but only if it carries the
 //      run tag (anything else is left alone and reported);
 //   2. every transaction / saving / recurring item whose note starts with the
-//      tag (the ones the app itself created through the screens).
+//      tag, and every goal whose name starts with it (the ones the app itself created through the screens).
 // Idempotent: running it again finds nothing. Deletions are counted but never
 // blocked by the write cap.
 export async function teardown(cfg, log = console.log) {
@@ -140,9 +146,9 @@ export async function teardown(cfg, log = console.log) {
           failures.push(`#${n} ${d.collection}/${d.id}: ${error?.code ?? error?.message}`)
         }
       }
-      for (const name of SWEEP) {
+      for (const [name, field] of SWEEP) {
         try {
-          const found = await taggedDocs(client, name, tag)
+          const found = await taggedDocs(client, name, tag, field)
           for (let i = 0; i < found.length; i += 400) {
             const batch = writeBatch(client.db)
             const part = found.slice(i, i + 400)

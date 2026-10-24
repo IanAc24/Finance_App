@@ -9,8 +9,17 @@ import Money from './Money'
 // aria-hidden. The final amount also sets the width (an invisible copy), so the
 // figure never shifts the layout while it counts.
 //   income: shows a "+" in the income colour (a total of income)
-export default function CountUpMoney({ amount, currency, income = false, className = '' }) {
-  const shown = useCountUp(amount)
+//   from / delay: count up from that number (0) when it first appears, after
+//   `delay` ms (the yearly recap), instead of showing the amount at once
+export default function CountUpMoney({
+  amount,
+  currency,
+  income = false,
+  from,
+  delay,
+  className = '',
+}) {
+  const shown = useCountUp(amount, { initial: from, delay })
   // an income total reads "+₡1.000"; zero has no sign and is muted
   const sign = income && amount > 0 ? '+' : ''
   const finalText = sign + formatMoney(amount, currency)

@@ -14,6 +14,7 @@ export function pageTitleKey(pathname) {
   if (pathname === '/settings/budgets') return 'budgets'
   if (pathname === '/settings/recurring') return 'recurring'
   if (pathname === '/savings') return 'savings'
+  if (pathname.startsWith('/savings/recap/')) return 'svRecapOpen'
   if (pathname === '/income') return 'income'
   if (pathname === '/report') return 'report'
   if (pathname.startsWith('/legal/')) {

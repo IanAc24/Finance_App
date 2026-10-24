@@ -22,7 +22,8 @@ import CategoriesScreen from './features/settings/CategoriesScreen'
 import BudgetsScreen from './features/settings/BudgetsScreen'
 import RecurringScreen from './features/settings/RecurringScreen'
 import ReportScreen from './features/report/ReportScreen'
-import SavingsScreen from './features/settings/SavingsScreen'
+import SavingsScreen from './features/savings/SavingsScreen'
+import YearRecap from './features/savings/YearRecap'
 import IncomeSkeleton from './features/income/IncomeSkeleton'
 import OnboardingScreen from './features/onboarding/OnboardingScreen'
 import ConsentScreen from './features/legal/ConsentScreen'
@@ -91,6 +92,7 @@ function Shell() {
             }
           />
           <Route path="/savings" element={<SavingsScreen />} />
+          <Route path="/savings/recap/:year" element={<YearRecap />} />
           <Route path="/report" element={<ReportScreen />} />
           <Route path="/legal/:doc" element={<LegalScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />

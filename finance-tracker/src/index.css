@@ -5111,3 +5111,858 @@ a.chip {
     text-decoration: underline;
   }
 }
+
+/* ==========================================================================
+   Ahorros (ronda 2 de ingresos y ahorros): la alcancía, metas, informe del año
+   y resumen anual. Mismas reglas de movimiento: solo transform y opacity,
+   curva --ease-out, nada al abrir la página salvo la entrada de la alcancía
+   (350ms, una vez) y, con prefers-reduced-motion, sin movimiento: solo
+   fundidos cortos o el cambio inmediato.
+   ========================================================================== */
+
+.sv-screen,
+.rc-screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  min-width: 0;
+}
+
+.sv-cols,
+.sv-side,
+.sv-main {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .sv-screen,
+  .rc-screen {
+    gap: 20px;
+  }
+
+  /* Alcancía y metas a la izquierda; movimientos e informe a la derecha */
+  .sv-cols {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .sv-side,
+  .sv-main {
+    gap: 16px;
+  }
+}
+
+/* ---- La alcancía (PiggyBank) ------------------------------------------------ */
+
+/* 200px en celular y 260px en pantallas anchas; la caja reserva el espacio
+   (el dibujo es de 240x200, con 30 de aire arriba para la moneda) */
+.piggy {
+  position: relative;
+  flex: none;
+  width: min(200px, 100%);
+  aspect-ratio: 240 / 200;
+}
+
+@media (min-width: 900px) {
+  .piggy {
+    width: min(260px, 100%);
+  }
+}
+
+/* Entrada al abrir la pantalla: aparece, sube 8px y crece de 0.96 a 1 (una vez) */
+@media (prefers-reduced-motion: no-preference) {
+  .piggy {
+    animation: piggy-enter 350ms var(--ease-out) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piggy {
+    animation: fade-in var(--dur) var(--ease-out) both;
+  }
+}
+
+@keyframes piggy-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+/* El cuerpo es lo que se aplasta y salta; el apoyo está abajo */
+.piggy-body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 92%;
+}
+
+.piggy-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+/* Mismo trazo que las ilustraciones: 3px, redondeado, en --muted */
+.piggy-art .pig-line {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.piggy-art .pig-soft {
+  fill: var(--accent-soft);
+}
+
+.piggy-art .pig-shadow {
+  fill: var(--surface-2);
+}
+
+.piggy-art .pig-dot {
+  fill: var(--muted);
+}
+
+.piggy-art .pig-eye {
+  fill: var(--text);
+}
+
+/* La ranura de las monedas, en el lomo, con el contorno del acento */
+.piggy-art .pig-slot {
+  fill: var(--bg);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+/* El nivel de ahorro dentro de la panza: sube desde abajo con scaleY (600ms).
+   --fill (0 a 1) lo pone React */
+.piggy-level {
+  fill: var(--accent);
+  opacity: 0.38;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transform: scaleY(var(--fill, 0));
+  transition: transform 600ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piggy-level {
+    transition: none;
+  }
+}
+
+/* Alcancía vacía: una moneda fantasma punteada sobre la ranura */
+.pig-hint {
+  opacity: 0;
+  transition: opacity var(--dur) var(--ease-out);
+}
+
+.piggy[data-empty='true'] .pig-hint {
+  opacity: 0.9;
+}
+
+.pig-hint circle,
+.pig-hint path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 0.1 7;
+}
+
+/* La moneda que entra o sale: decorativa, nace en la ranura y WAAPI la mueve */
+.coin {
+  position: absolute;
+  left: calc(100% * 100 / 240);
+  top: calc(100% * 62 / 200);
+  z-index: 2;
+  width: 17%;
+  aspect-ratio: 1;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.coin svg {
+  display: block;
+}
+
+.coin-face {
+  fill: var(--accent);
+}
+
+.coin-rim {
+  fill: none;
+  stroke: var(--on-accent);
+  stroke-opacity: 0.45;
+  stroke-width: 2;
+}
+
+.coin-symbol {
+  fill: var(--on-accent);
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+/* La ráfaga de monedas y destellos al alcanzar una meta */
+.piggy-burst {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.burst-dot {
+  position: absolute;
+  left: 48%;
+  top: 60%;
+  width: 9%;
+  aspect-ratio: 1;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.burst-dot svg {
+  display: block;
+}
+
+.burst-dot.is-coin svg {
+  fill: var(--accent);
+}
+
+.burst-dot.is-spark svg {
+  fill: var(--warning);
+}
+
+/* ---- Tarjeta principal ----------------------------------------------------- */
+
+.sv-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+  overflow-x: clip; /* las monedas de la ráfaga nunca ensanchan la página */
+  text-align: center;
+}
+
+.sv-invite {
+  max-width: 30ch;
+  text-wrap: balance;
+}
+
+.sv-balance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.sv-toward {
+  max-width: 32ch;
+  text-wrap: pretty;
+}
+
+.sv-actions {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 360px;
+}
+
+.sv-actions .btn {
+  min-height: 48px;
+}
+
+/* El sobrante estimado va aparte y con su explicación: no es ahorro */
+.sv-surplus {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border);
+}
+
+.sv-surplus .sub {
+  max-width: 38ch;
+  text-wrap: pretty;
+}
+
+/* Cifras chicas con CountUpMoney (sobrante, resumen, tarjeta de Inicio) */
+.countup.sv-fig .money,
+.countup.sv-fig .money.is-long {
+  font-size: 22px;
+}
+
+.countup.link-card-figure .money,
+.countup.link-card-figure .money.is-long {
+  font-size: 16px;
+}
+
+.countup.link-card-figure .countup-stage {
+  justify-items: end;
+}
+
+/* ---- Hoja de guardar / sacar / meta ---------------------------------------- */
+
+.sv-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sv-form .field-note {
+  margin-top: -4px;
+}
+
+.sv-busy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* El anillo gira solo mientras se espera la respuesta; con menos movimiento
+   queda quieto y el texto dice "Guardando…" */
+.sv-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sv-spinner {
+    animation: sv-spin 700ms linear infinite;
+  }
+}
+
+@keyframes sv-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Esta hoja también se cierra con una animación de 200ms (solo opacidad y
+   transform); las demás hojas siguen cerrándose al instante */
+@media (prefers-reduced-motion: no-preference) {
+  dialog.sheet.sheet-soft {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity var(--dur) var(--ease-out),
+      transform var(--dur) var(--ease-out),
+      overlay var(--dur) allow-discrete,
+      display var(--dur) allow-discrete;
+  }
+
+  dialog.sheet.sheet-soft[open] {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @starting-style {
+    dialog.sheet.sheet-soft[open] {
+      opacity: 0;
+      transform: translateY(24px);
+    }
+  }
+
+  dialog.sheet.sheet-soft::backdrop {
+    opacity: 0;
+    transition:
+      opacity var(--dur) var(--ease-out),
+      overlay var(--dur) allow-discrete,
+      display var(--dur) allow-discrete;
+  }
+
+  dialog.sheet.sheet-soft[open]::backdrop {
+    opacity: 1;
+  }
+
+  @starting-style {
+    dialog.sheet.sheet-soft[open]::backdrop {
+      opacity: 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.sheet.sheet-soft {
+    opacity: 0;
+    transition:
+      opacity var(--dur-fast) var(--ease-out),
+      overlay var(--dur-fast) allow-discrete,
+      display var(--dur-fast) allow-discrete;
+  }
+
+  dialog.sheet.sheet-soft[open] {
+    opacity: 1;
+  }
+
+  @starting-style {
+    dialog.sheet.sheet-soft[open] {
+      opacity: 0;
+    }
+  }
+}
+
+/* ---- Metas ------------------------------------------------------------------- */
+
+.sv-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+.sv-card-head .section-title {
+  margin: 0;
+}
+
+.sv-goal-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sv-goal {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.sv-goal-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sv-goal-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.sv-goal-actions {
+  display: flex;
+  flex: none;
+  gap: 2px;
+  margin-block: -6px;
+}
+
+/* Botones de ícono de las filas: sin caja, miden 44px para tocarlos */
+.icon-btn.is-small {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+
+.sv-goal-meta {
+  font-size: 14px;
+}
+
+.sv-goal-track {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.sv-bar {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 10px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+
+/* El relleno mide siempre el 100% y se encoge con scaleX: crece sin mover
+   el diseño. --r (0 a 1) lo pone React */
+.sv-bar-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transform-origin: left center;
+  transform: scaleX(var(--r, 0));
+  transition: transform 600ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sv-bar-fill {
+    transition: none;
+  }
+}
+
+.sv-goal-pct {
+  flex: none;
+  min-width: 4ch;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.sv-goals-empty {
+  padding: var(--space-2) 0;
+}
+
+/* ---- Movimientos de ahorro ----------------------------------------------------- */
+
+.sv-moves-empty {
+  padding: var(--space-3) 0;
+}
+
+/* Guardar en --accent y sacar en el color del texto: no son ingreso ni gasto */
+.hist-row-amount.sv-in {
+  color: var(--accent);
+}
+
+.hist-row-amount.sv-out {
+  color: var(--text);
+}
+
+.sv-row .icon-btn {
+  margin-right: -8px;
+}
+
+/* ---- Informe del año ------------------------------------------------------------- */
+
+.sv-year {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sv-year .section-title {
+  margin: 0;
+}
+
+.sv-year-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.sv-year-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+
+.sv-year-row dt {
+  min-width: 0;
+  color: var(--muted);
+}
+
+.sv-year-row dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+}
+
+.sv-year-row.is-total {
+  border-bottom: 0;
+}
+
+.sv-year-row.is-total dt {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.sv-year-row.is-total dd {
+  font-weight: 600;
+}
+
+.sv-compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.sv-compare-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sv-compare-row {
+  display: grid;
+  grid-template-columns: 4ch minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: 8px 0;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.sv-compare-year {
+  font-weight: 600;
+}
+
+.sv-compare-moves {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-3);
+  color: var(--muted);
+}
+
+.sv-compare-close {
+  font-weight: 600;
+  text-align: right;
+}
+
+.sv-recap-link {
+  flex: none;
+  display: block;
+  padding-block: 12px;
+  min-height: 48px;
+}
+
+/* ---- Resumen anual ------------------------------------------------------------------ */
+
+.rc-cols {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  /* Las dos monedas lado a lado, nunca mezcladas */
+  .rc-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    align-items: start;
+  }
+}
+
+.rc-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.rc-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.rc-lines {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.rc-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.rc-line:last-child {
+  border-bottom: 0;
+}
+
+.rc-line dt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  color: var(--muted);
+}
+
+.rc-line-note {
+  font-size: 12px;
+  text-wrap: pretty;
+}
+
+.rc-line .countup.sv-fig .money,
+.rc-line .countup.sv-fig .money.is-long {
+  font-size: 19px;
+}
+
+.rc-line dd {
+  flex: none;
+  margin: 0;
+  text-align: right;
+}
+
+.rc-line.is-strong dt {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.rc-message.is-warning {
+  padding: var(--space-3);
+  border-radius: var(--radius-s);
+  background: var(--surface-2);
+  color: var(--warning);
+  font-size: 14px;
+  text-wrap: pretty;
+}
+
+.rc-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.rc-bar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.rc-bar-label {
+  flex: 0 0 34%;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.rc-bar-track {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 12px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--surface-2);
+}
+
+/* Las barras miden el 100% y se encogen con scaleX; al aparecer crecen desde 0 */
+.rc-bar-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  transform-origin: left center;
+  transform: scaleX(var(--r, 0));
+}
+
+.rc-bars.is-flow .rc-bar-fill.is-a {
+  background: var(--income);
+}
+
+.rc-bars.is-flow .rc-bar-fill.is-b {
+  background: var(--spending);
+}
+
+.rc-bars.is-saving .rc-bar-fill.is-a {
+  background: var(--accent);
+}
+
+.rc-bars.is-saving .rc-bar-fill.is-b {
+  background: var(--muted);
+}
+
+.rc-goal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rc-goal-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.rc-goal-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Cada bloque aparece en su turno (60ms entre uno y otro, 250ms cada uno);
+   --i lo pone React. Con menos movimiento: un fundido corto */
+@media (prefers-reduced-motion: no-preference) {
+  .rc-reveal {
+    animation: rc-in 250ms var(--ease-out) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+
+  .rc-bar-fill {
+    animation: rc-bar 400ms var(--ease-out) both;
+    animation-delay: var(--d, 0ms);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-reveal {
+    animation: fade-in var(--dur-fast) var(--ease-out) both;
+  }
+}
+
+@keyframes rc-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes rc-bar {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Aviso neutro (sacar de ahorros, guardado pendiente): sin el verde de éxito */
+.toast-icon.is-neutral {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+/* Interacción con el ratón: solo donde hay hover real */
+@media (hover: hover) and (pointer: fine) {
+  .icon-btn.is-small:hover:not(:disabled) {
+    color: var(--text);
+    border-color: var(--border);
+  }
+}

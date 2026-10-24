@@ -14,7 +14,7 @@ export default function TabBar() {
     ['/', 'house', t('home'), pathname === '/'],
     ['/history', 'history', t('history'), pathname === '/history'],
     ['/add?type=expense', 'plus', t('add'), pathname === '/add'],
-    ['/savings', 'piggyBank', t('savings'), pathname === '/savings'],
+    ['/savings', 'piggyBank', t('savings'), pathname.startsWith('/savings')],
     ['/stats', 'chart', t('statistics'), pathname === '/stats'],
   ]
 

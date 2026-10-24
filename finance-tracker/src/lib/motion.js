@@ -121,11 +121,13 @@ export function usePrefersReducedMotion() {
 // (requestAnimationFrame, ease-out, `duration` ms, last frame exact). With
 // reduced motion it is always `value`. Format the result on every frame with
 // the formatter of the currency (see CountUpMoney).
-export function useCountUp(value, { duration = 600 } = {}) {
+//   initial: the number the first mount starts from (a recap that counts up
+//            from 0 when it appears); delay: ms to wait before counting
+export function useCountUp(value, { duration = 600, initial = value, delay = 0 } = {}) {
   const reduced = usePrefersReducedMotion()
-  const [shown, setShown] = useState(value)
+  const [shown, setShown] = useState(initial ?? value)
   // the number on screen, readable by the effect without re-running it
-  const onScreen = useRef(value)
+  const onScreen = useRef(initial ?? value)
 
   useEffect(() => {
     if (!shouldCountUp(onScreen.current, value, reduced)) {
@@ -136,7 +138,8 @@ export function useCountUp(value, { duration = 600 } = {}) {
     let frame = 0
     let start = null
     const step = (now) => {
-      if (start === null) start = now
+      if (start === null) start = now + delay
+      // before the delay ends the elapsed time is negative: still `from`
       const next = countUpValue(from, value, now - start, duration)
       onScreen.current = next
       setShown(next)
@@ -144,7 +147,7 @@ export function useCountUp(value, { duration = 600 } = {}) {
     }
     frame = requestAnimationFrame(step)
     return () => cancelAnimationFrame(frame)
-  }, [value, duration, reduced])
+  }, [value, duration, delay, reduced])
 
   return reduced ? value : shown
 }

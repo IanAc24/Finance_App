@@ -17,7 +17,9 @@ const TOAST_MS = 4000
 //   const { show } = useToast()
 //   show({ message, action: { label, to: '/add?type=expense' } })
 // `kind: 'success'` adds the check that draws itself at the start; show it only
-// after the write was confirmed.
+// after the write was confirmed. `kind: 'info'` is neutral (a piggy bank, no
+// check): for things that happened but are no celebration, such as taking money
+// out of savings or a save that waits for the connection.
 export default function ToastProvider({ children }) {
   const { t } = useSettings()
   const [toast, setToast] = useState(null)
@@ -55,6 +57,10 @@ export default function ToastProvider({ children }) {
           >
             {toast.kind === 'success' ? (
               <SuccessCheck size={20} className="toast-art" />
+            ) : toast.kind === 'info' ? (
+              <span className="toast-icon is-neutral" aria-hidden="true">
+                <Icon name="piggyBank" size={18} />
+              </span>
             ) : (
               <span className="toast-icon" aria-hidden="true">
                 <Icon name="check" size={18} />
