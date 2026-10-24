@@ -10,7 +10,7 @@ Versión en español: cambia el idioma a Español en Ajustes (Settings).
 
 The app is offered by [NOMBRE DEL RESPONSABLE], ID number [CÉDULA], of Costa Rica ("we"). By using the app you accept these terms and the privacy policy. If you do not agree, do not use it.
 
-The app helps you track your income, expenses, savings, budgets and recurring bills by quincena (pay period), in colones and dollars.
+The app helps you track your income, expenses, savings, budgets and recurring bills by pay period, in colones and dollars.
 
 ## 2. Who may use it
 

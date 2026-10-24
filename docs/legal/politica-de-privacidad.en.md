@@ -29,8 +29,8 @@ There is one personal database: the one the app creates on your device with what
 |---|---|---|
 | Profile name (max. 30 characters) | To greet you on the Home screen | Optional |
 | Income per pay and main currency | To calculate "You can spend today" and the alerts | Optional |
-| Savings goal per quincena | To set it aside before calculating "You can spend today" | Optional |
-| Pay days and quincena schedule | To split your finances into periods | Optional (there is a default schedule: days 1 and 16) |
+| Savings goal per pay period | To set it aside before calculating "You can spend today" | Optional |
+| Pay days and pay period schedule | To split your finances into periods | Optional (there is a default schedule: days 1 and 16) |
 | Transactions: amount, currency, date, type (income or expense) | To keep your accounts, totals, history and statistics | Needed to save a transaction |
 | Transactions: category, free-text note (max. 60 characters) and payment method (cash, card or SINPE) | To sort and search your transactions | Optional |
 | Your own categories (max. 24 characters), budgets, recurring bills and savings moves | Budgets, reminders for recurring bills and savings balance | Optional |

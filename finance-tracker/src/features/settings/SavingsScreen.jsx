@@ -224,7 +224,7 @@ export default function SavingsScreen() {
         <section className="card">
           <h2 className="section-title">{t('movements')}</h2>
           {sorted.length === 0 ? (
-            <EmptyState actions={false} icon="piggyBank" text={t('noSavingsYet')} />
+            <EmptyState actions={false} illustration="piggy" text={t('noSavingsYet')} />
           ) : (
             <ul className="list">
               {sorted.map((item) => (

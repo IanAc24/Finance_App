@@ -14,6 +14,7 @@ export function pageTitleKey(pathname) {
   if (pathname === '/settings/budgets') return 'budgets'
   if (pathname === '/settings/recurring') return 'recurring'
   if (pathname === '/savings') return 'savings'
+  if (pathname === '/report') return 'report'
   if (pathname.startsWith('/legal/')) {
     const doc = LEGAL_DOCS.find((d) => `/legal/${d.id}` === pathname)
     return doc ? doc.titleKey : 'settings'

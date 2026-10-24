@@ -28,7 +28,7 @@ In the browser, the app stores the following. On Android it will store equivalen
 
 | What | Content | Why it is necessary |
 |---|---|---|
-| The app's database (IndexedDB, created by the jeep-sqlite library; it holds the SQLite database "quincena") | All your data: profile, transactions, categories, budgets, recurring bills, savings and quincena schedule | Without it the app cannot save anything you type |
+| The app's database (IndexedDB, created by the jeep-sqlite library; it holds the SQLite database "quincena") | All your data: profile, transactions, categories, budgets, recurring bills, savings and pay period schedule | Without it the app cannot save anything you type |
 
 ### Preferences (localStorage)
 
@@ -41,7 +41,7 @@ In the browser, the app stores the following. On Android it will store equivalen
 | `lastCategoryId` | Last expense category used | To suggest it when adding an expense |
 | `lastBackup` | Date of the last backup downloaded | To tell you when it is time for a backup |
 | `backupReminderSnoozedUntil` | Date until which you asked not to see the backup reminder ("Not now", 14 days) | Not to show you the reminder again before that date |
-| `rolloverSkipped.CRC` and `rolloverSkipped.USD` | The quincena in which you skipped the offer to move the leftover to savings | Not to offer it again in that quincena |
+| `rolloverSkipped.CRC` and `rolloverSkipped.USD` | The pay period in which you skipped the offer to move the leftover to savings | Not to offer it again in that pay period |
 | `finance-data` (old versions only) | Data from old versions of the app, already copied into the database | To bring your old data into the new version |
 | `finance-data-imported` | A mark saying that copy was already done | So it is not copied twice |
 

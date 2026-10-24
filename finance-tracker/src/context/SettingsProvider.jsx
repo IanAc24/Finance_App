@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { SettingsContext } from './SettingsContext'
+import { browserLanguages, initialLanguage } from '../lib/language'
 import { readPref, writePref } from '../lib/prefs'
 import { translations } from '../lib/translations'
 
 export default function SettingsProvider({ children }) {
-  // Spanish (Costa Rica) unless English was saved. Only a choice made in
-  // Settings is written, so a fresh install is never pinned to the default.
+  // A saved choice wins; on a first visit the browser language decides
+  // (English or Spanish, otherwise Spanish for Costa Rica). Only an explicit
+  // choice is written, so a fresh install is never pinned to the default.
   const [lang, setLangState] = useState(() =>
-    readPref('lang') === 'en' ? 'en' : 'es',
+    initialLanguage(readPref('lang'), browserLanguages()),
   )
   // dark unless light was saved
   const [theme, setTheme] = useState(() =>

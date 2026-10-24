@@ -115,6 +115,7 @@ Vite prints a local address in the terminal, usually `http://localhost:5173`.
 | Styling | Plain CSS in `src/index.css` | In use |
 | Font | Poppins, self-hosted with `@fontsource/poppins` | In use |
 | Icons | [Lucide](https://lucide.dev), ISC licence (some icons MIT, from Feather); only the SVG path data of the icons used is copied into `src/components/CategoryIcon.jsx` | In use |
+| Illustrations | Original, drawn for this project in the style of the logo (`src/components/Illustration.jsx`); no licence needed | In use |
 | Storage | SQLite via `@capacitor-community/sqlite` (`jeep-sqlite` with WebAssembly + IndexedDB in the browser) | In use |
 | Tests | Vitest, plus sql.js to run the real SQL of the database layer against an in-memory SQLite | In use |
 | Linting | ESLint | In use |

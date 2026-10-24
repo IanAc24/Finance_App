@@ -252,7 +252,7 @@ main {
 /* Barra superior, pegada arriba al hacer scroll. En celular solo lleva la marca
    (las pestañas y Ajustes están en la barra de abajo). Desde 900px: marca a la
    izquierda, pestañas con ícono y ajustes a la derecha, en dos filas, y desde
-   1100px en una sola */
+   1360px en una sola */
 .app-bar {
   position: sticky;
   top: 0;
@@ -286,7 +286,8 @@ main {
   grid-area: brand;
   justify-self: start;
   display: flex;
-  align-items: center;
+  /* el nombre se apoya abajo, sobre la misma línea que las barras del logo */
+  align-items: flex-end;
   gap: 10px;
   min-width: 0; /* deja que el nombre se encoja en vez de empujar el engranaje */
   min-height: 44px;
@@ -303,9 +304,15 @@ main {
   white-space: nowrap;
   font-family: 'Poppins', system-ui, sans-serif;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 19px;
   letter-spacing: 0.06em;
   color: var(--text);
+  /* Interlineado 1: la base de las letras queda a la altura del pie de las
+     barras del logo. El relleno de abajo deja ver la coma de "POBRE, POR
+     AHORA" y el margen negativo lo compensa para no mover esa base */
+  line-height: 1;
+  padding-bottom: 0.12em;
+  margin-bottom: -0.12em;
 }
 
 /* Tamaño del logo (no se encoge aunque falte espacio) */
@@ -361,6 +368,9 @@ main {
 @media (min-width: 900px) {
   .app-bar .icon-link {
     display: grid;
+    /* baja hasta la línea de las letras del nombre (que se apoya en el pie
+       de las barras del logo); no cambia el alto de la barra */
+    translate: 0 var(--gear-drop, 15px);
   }
 }
 
@@ -1208,9 +1218,9 @@ main > p.empty {
     gap: 12px;
   }
 
-  /* Nombre de la app de unos 20px */
+  /* Nombre de la app de unos 24px */
   .brand-name {
-    font-size: 20px;
+    font-size: 24px;
   }
 
   /* Contenido más ancho, con más aire alrededor */
@@ -1254,9 +1264,9 @@ main > p.empty {
   }
 }
 
-/* Barra en una sola fila: solo desde 1100px, donde la marca y las pestañas
-   centradas caben sin pisarse (entre 900px y 1100px la barra sigue en dos filas) */
-@media (min-width: 1100px) {
+/* Barra en una sola fila: solo desde 1360px, donde la marca y las pestañas
+   centradas caben sin pisarse (entre 900px y 1360px la barra sigue en dos filas) */
+@media (min-width: 1360px) {
   /* Marca a la izquierda, pestañas al centro de la ventana, ajustes a la derecha */
   .app-bar {
     top: 0; /* en pantallas anchas la barra es una sola fila y no hay nada que subir */
@@ -1268,6 +1278,35 @@ main > p.empty {
   /* Las pestañas quedan en el centro de la ventana */
   .top-nav {
     justify-self: center;
+  }
+
+  /* Barra de una fila: nombre y pestañas más grandes para que se lean de lejos */
+  .brand-name {
+    font-size: 28px;
+  }
+
+  .top-nav a {
+    font-size: 16px;
+    padding: 10px 20px;
+  }
+
+  .top-nav a svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .app-bar .icon-link svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Todo sobre una misma línea: las barras del logo están en la mitad de
+     abajo del logo, así que las pestañas y el engranaje bajan lo mismo para
+     quedar centrados con las barras y con el nombre (no cambia el alto de
+     la barra) */
+  .top-nav,
+  .app-bar .icon-link {
+    translate: 0 var(--brand-drop, 14px);
   }
 }
 
@@ -1469,6 +1508,19 @@ dialog.modal::backdrop {
   flex-direction: column;
   gap: 12px;
   padding-bottom: 24px;
+}
+
+/* Selector Español | English arriba de la pantalla de consentimiento y del
+   primer paso de la bienvenida: centrado, compacto, pills de 44px; cabe en 320px */
+.lang-switch {
+  display: flex;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.lang-switch .pill {
+  min-width: 44px;
+  padding: 10px 16px;
 }
 
 /* Logo centrado arriba de la barra */
@@ -2481,14 +2533,105 @@ a.tx-row:active {
   padding: var(--space-5) var(--space-4);
 }
 
-.welcome-icon {
-  display: grid;
-  place-items: center;
-  width: 72px;
-  height: 72px;
-  border-radius: var(--radius-pill);
-  background: var(--accent-soft);
-  color: var(--accent);
+/* Ilustraciones (src/components/Illustration.jsx): formas planas con el trazo
+   del logo. Solo usan tres colores: el acento, su fondo suave y --muted para
+   las líneas (en claro --muted ya es oscuro y contrasta contra el blanco). El
+   relleno sólido (il-solid) y el trazo del acento llevan --accent. */
+.illustration {
+  display: block;
+  flex: none;
+  max-width: 100%;
+  height: auto;
+}
+
+.illustration .il-line,
+.illustration .il-accent,
+.illustration .il-solid,
+.illustration .il-dot {
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.illustration .il-line {
+  fill: none;
+  stroke: var(--muted);
+}
+
+.illustration .il-accent {
+  fill: none;
+  stroke: var(--accent);
+}
+
+/* Relleno suave, con o sin contorno */
+.illustration .il-fill {
+  fill: var(--accent-soft);
+}
+
+.illustration .il-solid {
+  fill: var(--accent);
+  stroke: var(--accent);
+}
+
+.illustration .il-dot {
+  fill: var(--muted);
+  stroke: none;
+}
+
+.illustration .il-thick {
+  stroke-width: 5;
+}
+
+/* Línea punteada del gráfico: puntos redondos */
+.illustration .il-dotted {
+  stroke-width: 4;
+  stroke-dasharray: 0.1 9;
+}
+
+/* La palomita pequeña de los avisos: trazo más fino al ser de 20px */
+.illustration .il-check {
+  stroke-width: 2;
+}
+
+.welcome-art {
+  width: 112px;
+  height: 112px;
+}
+
+.toast-art {
+  flex: none;
+}
+
+/* En la bienvenida la ilustración va centrada arriba del título; en pantallas
+   bajas (celulares pequeños o horizontales) se achica para que los 5 pasos
+   quepan sin desplazarse de más */
+.ob-art {
+  align-self: center;
+  width: 88px;
+  height: 88px;
+}
+
+@media (max-height: 700px) {
+  .ob-art {
+    width: 72px;
+    height: 72px;
+  }
+}
+
+/* Entrada suave: aparece y sube 6px (solo si la persona no pidió menos
+   movimiento). Los avisos no la llevan: ya tienen su propia animación */
+@media (prefers-reduced-motion: no-preference) {
+  .welcome-art,
+  .ob-art {
+    animation: art-in 250ms var(--ease-out) both;
+  }
+}
+
+@keyframes art-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
 }
 
 .welcome-title {
@@ -3999,7 +4142,16 @@ main:has(> .add-screen) {
 /* "Exportar" al final de la lista */
 .hist-export {
   display: flex;
+  align-items: center;
+  gap: 10px;
   margin-top: var(--space-2);
+}
+
+/* "Exportar este mes:" y a su lado los botones CSV y PDF */
+.hist-export-label {
+  flex: none;
+  font-size: 15px;
+  color: var(--muted);
 }
 
 @media (min-width: 900px) {
@@ -4268,4 +4420,245 @@ main:has(> .add-screen) {
   flex: none;
   min-height: 48px;
   padding: 0 16px;
+}
+
+/* Reporte imprimible (/report) */
+
+/* Barra de la pantalla: volver a la izquierda, guardar como PDF a la derecha */
+.report-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* El enlace de volver es un botón: se le quita el aspecto de botón */
+.report-bar .back-link {
+  gap: 4px;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.report-bar .btn {
+  flex: none;
+}
+
+.report-head {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.report-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.report-period {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.report-generated {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.report-empty {
+  margin: 0;
+  color: var(--muted);
+}
+
+.report-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.report-month {
+  margin: 8px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.report-sub {
+  margin: 8px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.report-day-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Tablas del reporte: celdas con línea fina; los montos van a la derecha con
+   cifras de ancho fijo para que las columnas se alineen */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.report-table caption {
+  padding: 0 0 4px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.report-table th,
+.report-table td {
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 400;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+.report-table thead th,
+.report-table tbody th {
+  font-weight: 600;
+}
+
+.report-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Movimientos: cada día es su tabla, así que las columnas llevan ancho fijo
+   para que queden alineadas de un día al otro */
+.report-moves {
+  table-layout: fixed;
+}
+
+.report-moves td:nth-child(1) {
+  width: 34%;
+  overflow-wrap: anywhere;
+}
+
+.report-moves td:nth-child(2),
+.report-moves td:nth-child(3) {
+  width: 22%;
+  overflow-wrap: anywhere;
+}
+
+.report-moves td:nth-child(4) {
+  width: 22%;
+}
+
+/* En pantallas angostas las cinco columnas del resumen caben con letra y
+   relleno más chicos (al imprimir se usan los de abajo) */
+@media (max-width: 480px) {
+  .report-table {
+    font-size: 12px;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 6px 3px;
+  }
+}
+
+/* Al imprimir: solo el reporte, en blanco y negro, sin importar el tema */
+@page {
+  margin: 16mm;
+}
+
+@media print {
+  /* lo que no es del reporte */
+  .app-bar,
+  .tab-bar,
+  .toast-region,
+  .skip-link,
+  .report-bar {
+    display: none !important;
+  }
+
+  html,
+  body,
+  #root {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  .report,
+  .report * {
+    color: #000 !important;
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  .report {
+    max-width: none;
+    padding: 0;
+    gap: 12px;
+    font-size: 11pt;
+    line-height: 1.35;
+  }
+
+  .report-title {
+    font-size: 18pt;
+  }
+
+  .report-period {
+    font-size: 14pt;
+  }
+
+  .report-generated {
+    font-size: 10pt;
+  }
+
+  .report-month {
+    font-size: 15pt;
+  }
+
+  .report-sub {
+    font-size: 10pt;
+  }
+
+  .report-day-title {
+    font-size: 11pt;
+  }
+
+  .report-table {
+    font-size: 11pt;
+  }
+
+  .report-table th,
+  .report-table td {
+    border-bottom: 0.5pt solid #000;
+    padding: 3pt 4pt;
+  }
+
+  /* cada mes empieza en hoja nueva, menos el primero */
+  .report-section + .report-section {
+    break-before: page;
+  }
+
+  /* un día no se parte entre dos hojas si cabe */
+  .report-day,
+  .report-table tr {
+    break-inside: avoid;
+  }
+
+  .report-sub,
+  .report-month,
+  .report-day-title {
+    break-after: avoid;
+  }
+
+  /* los ingresos van en negro: el signo "+" ya los distingue */
+  .report .income {
+    color: #000 !important;
+  }
 }

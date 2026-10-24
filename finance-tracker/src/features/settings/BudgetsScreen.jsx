@@ -77,7 +77,7 @@ function BudgetForm({ currency }) {
         if (value !== current(c.id)) await setBudget(c.id, currency, value)
       }
       setSaving(false)
-      toast.show({ message: t('saved') })
+      toast.show({ message: t('saved'), kind: 'success' })
     } catch (error) {
       console.error(error)
       setSaving(false)

@@ -1,6 +1,6 @@
 # Registro de decisiones
 
-Última actualización: 20/10/2026. Una línea por decisión. Lo que está en **Abierto** no se construye hasta que una persona decida.
+Última actualización: 24/10/2026. Una línea por decisión. Lo que está en **Abierto** no se construye hasta que una persona decida.
 
 ## Vigentes
 | Fecha | Decisión | Quién |
@@ -19,6 +19,7 @@
 | 20/10 | Proyecto Firebase `iampoorfornow` creado: plan Spark; Authentication con Google habilitado; Firestore (default) en nam5, edición Standard, modo nativo, modo producción, con las reglas de la ficha 001 publicadas (por usuario, sobre `users/{uid}`); app web registrada. Configuración guardada fuera del repo. Sin probar aún con usuarios reales ni en dispositivo | Furyan |
 | 23/10 | Web: entrar con **correo y contraseña** (Firebase Authentication), ficha 005; reemplaza a "Google de un toque" (19/10). El **registro está abierto** para quien no tiene cuenta; `VITE_ALLOW_SIGNUP=0` lo apaga | Furyan |
 | 23/10 | **Los datos de cada cuenta van en Firestore** (`users/{uid}/…`): solo esa cuenta los ve, en cualquier navegador, y la app funciona sin internet (copia en el navegador). Los datos que ya había en un aparato se ofrecen a la primera cuenta sin datos, con confirmación. `VITE_DATA_BACKEND=local` vuelve a la base local. Ver `docs/datos-por-cuenta.md` | Furyan |
+| 24/10 | En inglés el periodo se llama "pay period"; en español sigue "quincena". Los nombres internos no cambian | Ian |
 
 ## En cambio
 | Fecha | Tema | Estado |
@@ -31,7 +32,6 @@
 - Ficha 001: confirmar que Ian y Furyan entran con su cuenta de Google.
 - Privacidad: Ley 8968 y PRODHAB antes de abrir la app a más personas.
 - ¿Quién usa iOS? Hoy solo hay `@capacitor/android`.
-- ¿"Quincena" se queda como nombre del periodo en la interfaz?
 - Nombre en Play Store.
 - ¿Se agrega un campo en Ajustes para cambiar la meta de ahorro? Hoy solo se cambia repitiendo la configuración inicial.
 - ¿Botón "Apartar ahora" que mueva el dinero a Ahorros? (propuesto, sin decidir)

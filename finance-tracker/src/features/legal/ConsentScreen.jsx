@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useConsent } from '../../context/useConsent'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
+import LanguageSwitch from '../../components/LanguageSwitch'
 import LegalText from '../../components/LegalText'
 import Logo from '../../components/Logo'
 import { LEGAL_DOCS } from '../../lib/legal'
@@ -71,6 +72,7 @@ export default function ConsentScreen() {
 
   return (
     <div className="onboarding consent">
+      <LanguageSwitch />
       <div className="ob-brand">
         <Logo className="ob-logo" />
       </div>

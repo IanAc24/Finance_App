@@ -13,6 +13,7 @@ describe('pageTitleKey', () => {
     expect(pageTitleKey('/settings/budgets')).toBe('budgets')
     expect(pageTitleKey('/settings/recurring')).toBe('recurring')
     expect(pageTitleKey('/savings')).toBe('savings')
+    expect(pageTitleKey('/report')).toBe('report')
   })
 
   it('names each legal document', () => {
