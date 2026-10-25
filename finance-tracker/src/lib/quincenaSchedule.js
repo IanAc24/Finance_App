@@ -18,9 +18,18 @@ export const DEFAULT_SCHEDULE = [
   { from: '2000-01-01', mode: 'fixed', day1: 1, day2: 16 },
 ]
 
+import { MAX_YEAR, MIN_YEAR } from './dates'
+
 // A manual quincena has no known end until the next payment is registered:
 // it is counted as this many days (and stays open if the payment is late)
 export const MANUAL_QUINCENA_DAYS = 15
+
+// The most entries a schedule keeps (the newest ones): a damaged file cannot
+// grow it without end. 200 is about eight years of a payment every two weeks.
+export const MAX_SCHEDULE_ENTRIES = 200
+
+// "I was paid" accepts a date up to this many days after today (the next payment)
+export const MAX_PAYDAY_AHEAD_DAYS = 45
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/
 
@@ -43,6 +52,9 @@ function cleanEntry(entry) {
   }
   // a date that does not exist (2026-02-31, 2026-13-45) would roll over
   if (ymd(fromText(entry.from)) !== entry.from) return null
+  // and a year that is surely a typo or a damaged file
+  const year = Number(entry.from.slice(0, 4))
+  if (year < MIN_YEAR || year > MAX_YEAR) return null
   if (entry.mode === 'fixed') {
     return { from: entry.from, mode: 'fixed', day1: 1, day2: 16 }
   }
@@ -63,7 +75,9 @@ export function normalizeSchedule(list) {
     const entry = cleanEntry(item)
     if (entry) byDate.set(entry.from, entry)
   }
-  const entries = [...byDate.values()].sort((a, b) => a.from.localeCompare(b.from))
+  const entries = [...byDate.values()]
+    .sort((a, b) => a.from.localeCompare(b.from))
+    .slice(-MAX_SCHEDULE_ENTRIES)
   if (entries.length === 0) return DEFAULT_SCHEDULE
   // a manual start needs the old way of cutting before it: without it the
   // days before that start would fall in a quincena that begins in the future
@@ -262,13 +276,22 @@ export function manualState(schedule, today = new Date()) {
   }
 }
 
+// The latest day "I was paid" accepts: today plus MAX_PAYDAY_AHEAD_DAYS, as text
+export function latestPayday(today = new Date()) {
+  const limit = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  limit.setDate(limit.getDate() + MAX_PAYDAY_AHEAD_DAYS)
+  return ymd(limit)
+}
+
 // "I was paid": a new quincena starts on `dateText` (YYYY-MM-DD). Returns
 //   { ok: true, schedule }  the new schedule (the same one if that date is
 //                           already the start of the manual quincena)
-//   { ok: false, reason }   'invalid' (not a date) or 'early' (before the
+//   { ok: false, reason }   'invalid' (not a date, a year outside MIN_YEAR to
+//                           MAX_YEAR, or more than MAX_PAYDAY_AHEAD_DAYS after
+//                           today) or 'early' (before the
 //                           quincena in progress began: that would move
 //                           quincenas already lived)
-// A date after today is allowed: it is the next payment, and the new quincena
+// A date after today is allowed up to then: it is the next payment, and the new quincena
 // starts that day (until then the one in progress goes on).
 // The quincena before ends the day before. A change that was waiting to take
 // effect is dropped. Works from any mode: the first time it switches to manual.
@@ -277,6 +300,10 @@ export function registerPayday(schedule, dateText, today = new Date()) {
     return { ok: false, reason: 'invalid' }
   }
   if (Number.isNaN(fromText(dateText).getTime()) || ymd(fromText(dateText)) !== dateText) {
+    return { ok: false, reason: 'invalid' }
+  }
+  const year = Number(dateText.slice(0, 4))
+  if (year < MIN_YEAR || year > MAX_YEAR || dateText > latestPayday(today)) {
     return { ok: false, reason: 'invalid' }
   }
   const todayText = ymd(today)

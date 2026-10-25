@@ -171,12 +171,19 @@ function cleanTransaction(tx, knownIds) {
   }
 }
 
+// A quincena name (see quincenaKey): 'YYYY-MM-1' or 'YYYY-MM-2' with a real
+// month, or the real date it started
+function isValidPeriod(value) {
+  if (typeof value !== 'string') return false
+  const half = /^(\d{4})-(\d{2})-([12])$/.exec(value)
+  if (half) return isValidDate(`${half[1]}-${half[2]}-01`)
+  return isValidDate(value)
+}
+
 function cleanRecurring(item, knownIds) {
   const entry = cleanEntry(item, knownIds)
   if (!entry || !schedules.includes(item.schedule)) return null
-  const validPeriod =
-    typeof item.lastPeriod === 'string' &&
-    /^\d{4}-\d{2}-([12]|\d{2})$/.test(item.lastPeriod)
+  const validPeriod = isValidPeriod(item.lastPeriod)
   return {
     ...entry,
     schedule: item.schedule,

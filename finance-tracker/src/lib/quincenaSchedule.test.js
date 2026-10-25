@@ -4,7 +4,9 @@ import {
   changeSchedule,
   describeSchedule,
   halfOf,
+  MAX_SCHEDULE_ENTRIES,
   isOpenManual,
+  latestPayday,
   keyFor,
   manualState,
   normalizeSchedule,
@@ -390,6 +392,48 @@ describe('manual pay days ("I was paid")', () => {
     expect(manualState(schedule, at(2026, 10, 26)).overdue).toBe(true)
     // a registered next payment closes it: not late
     expect(manualState(manual('2026-10-11', '2026-10-26'), at(2026, 10, 28)).overdue).toBe(false)
+  })
+})
+
+describe('registerPayday limits', () => {
+  const today = at(2026, 10, 13)
+
+  it('accepts a payment up to 45 days ahead and refuses one further away', () => {
+    expect(latestPayday(today)).toBe('2026-11-27')
+    expect(registerPayday(DEFAULT_SCHEDULE, '2026-11-27', today).ok).toBe(true)
+    expect(registerPayday(DEFAULT_SCHEDULE, '2026-11-28', today)).toEqual({
+      ok: false,
+      reason: 'invalid',
+    })
+  })
+
+  it('refuses years outside 2000 to 2100', () => {
+    expect(registerPayday(DEFAULT_SCHEDULE, '1999-12-31', today).reason).toBe('invalid')
+    expect(registerPayday(DEFAULT_SCHEDULE, '2101-01-01', today).reason).toBe('invalid')
+    expect(registerPayday(DEFAULT_SCHEDULE, '0001-01-01', today).reason).toBe('invalid')
+  })
+})
+
+describe('normalizeSchedule limits', () => {
+  it('drops entries with a year outside 2000 to 2100', () => {
+    const result = normalizeSchedule([
+      { from: '1999-05-01', mode: 'manual' },
+      { from: '2101-05-01', mode: 'manual' },
+      { from: '2026-10-11', mode: 'manual' },
+    ])
+    expect(result.map((entry) => entry.from)).toEqual(['2000-01-01', '2026-10-11'])
+  })
+
+  it('keeps the newest entries when there are too many', () => {
+    const many = Array.from({ length: MAX_SCHEDULE_ENTRIES + 50 }, (_, index) => {
+      const date = new Date(2000, 0, 1 + index * 3)
+      return { from: day(date), mode: 'manual' }
+    })
+    const result = normalizeSchedule(many)
+    // the old way of cutting is put back in front of a list that starts manual
+    expect(result).toHaveLength(MAX_SCHEDULE_ENTRIES + 1)
+    expect(result[result.length - 1].from).toBe(many[many.length - 1].from)
+    expect(result[1].from).toBe(many[50].from)
   })
 })
 

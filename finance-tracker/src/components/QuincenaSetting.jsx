@@ -6,6 +6,7 @@ import { parseDate, todayString } from '../lib/dates'
 import {
   changeSchedule,
   describeSchedule,
+  latestPayday,
   registerPayday,
 } from '../lib/quincenaSchedule'
 import { useToday } from '../lib/useToday'
@@ -216,6 +217,7 @@ export default function QuincenaSetting({ embedded = false, initial, onChange })
             <span className="label">{t('quincenaPaidOn')}</span>
             <input
               type="date"
+              max={latestPayday(today)}
               value={paidOn}
               aria-invalid={paidError !== null}
               aria-describedby={paidError ? 'quincena-paid-error' : undefined}

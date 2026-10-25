@@ -354,6 +354,39 @@ describe('inspectBackup data', () => {
     expect(Object.keys(result.recurring[0])).toHaveLength(8)
   })
 
+  it('keeps a real lastPeriod only: month 01-12 or a real date', () => {
+    const periods = ['2026-10-1', '2026-12-2', '2026-13-1', '2026-00-2', '2026-10-31', '2026-02-31', '2026-10-12', '2026-10-00', '1999-10-1']
+    const result = parse({
+      recurring: periods.map((lastPeriod, index) => ({ ...validRecurring, id: index + 1, lastPeriod })),
+    })
+    expect(result.recurring.map((item) => item.lastPeriod)).toEqual([
+      '2026-10-1',
+      '2026-12-2',
+      null,
+      null,
+      '2026-10-31',
+      null,
+      '2026-10-12',
+      null,
+      null,
+    ])
+  })
+
+  it('cleans a damaged schedule: years out of range and too many entries', () => {
+    const entries = Array.from({ length: 260 }, (_, index) => ({
+      from: new Date(Date.UTC(2010, 0, 1 + index * 2)).toISOString().slice(0, 10),
+      mode: 'manual',
+    }))
+    const result = parse({
+      quincenaSchedule: [{ from: '1850-01-01', mode: 'manual' }, ...entries],
+    })
+    expect(result.quincenaSchedule.length).toBeLessThanOrEqual(201)
+    expect(result.quincenaSchedule.some((entry) => entry.from < '2000')).toBe(false)
+    expect(result.quincenaSchedule[result.quincenaSchedule.length - 1].from).toBe(
+      entries[entries.length - 1].from,
+    )
+  })
+
   it('drops records whose id is not a positive safe integer', () => {
     const badIds = [0, -1, 2 ** 60, 1.5]
     const goodCategory = { id: 7, name: 'Mascotas', color: 'cyan' }
