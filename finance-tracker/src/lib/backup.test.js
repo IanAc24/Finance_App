@@ -3,6 +3,7 @@ import {
   MAX_BACKUP_BYTES,
   MAX_ID,
   MAX_RECORDS,
+  backupInput,
   buildBackup,
   inspectBackup,
   backupSnoozeUntil,
@@ -77,6 +78,17 @@ describe('buildBackup', () => {
   it('writes an empty savings list when the state has none', () => {
     const withoutSavings = { ...state, savings: undefined }
     expect(buildBackup(withoutSavings, now).savings).toEqual([])
+  })
+})
+
+describe('backupInput', () => {
+  it('keeps the savings goals, so a backup made from the screen data has them', () => {
+    const screenData = { ...state, quincenaSchedule: DEFAULT_SCHEDULE, extra: 'ignored' }
+    const picked = backupInput(screenData)
+    expect(picked).not.toHaveProperty('extra')
+    const backup = buildBackup(picked, now)
+    expect(backup.goals).toEqual(state.goals)
+    expect(parseBackup(JSON.stringify(backup), builtIn).goals).toHaveLength(2)
   })
 })
 

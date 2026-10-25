@@ -55,6 +55,32 @@ export function buildBackup(
   }
 }
 
+// The slice of the app's data that goes into a backup. One place picks the
+// lists, so a screen cannot forget one (the Settings screen once left out
+// the savings goals).
+export function backupInput(data) {
+  const {
+    transactions,
+    categories,
+    budgets,
+    recurring,
+    savings,
+    goals,
+    quincenaSchedule,
+    profile,
+  } = data
+  return {
+    transactions,
+    categories,
+    budgets,
+    recurring,
+    savings,
+    goals,
+    quincenaSchedule,
+    profile,
+  }
+}
+
 // Limits that keep a damaged or hostile file from filling the device:
 // the file, each text, the ids and the number of records. Ids made in the
 // cloud are time based (lib/ids.js, about 1.8e15 today), so the cap is 8e15:

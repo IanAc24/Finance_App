@@ -7,6 +7,7 @@ import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
 import {
   MAX_BACKUP_BYTES,
+  backupInput,
   buildBackup,
   inspectBackup,
   summarizeCounts,
@@ -46,6 +47,7 @@ export default function SettingsScreen() {
     budgets,
     recurring,
     savings,
+    goals,
     quincenaSchedule,
     profile,
     loadSampleData,
@@ -69,6 +71,7 @@ export default function SettingsScreen() {
     budgets: budgets.length,
     recurring: recurring.length,
     savings: savings.length,
+    goals: goals.length,
     categories: customCount,
   }
   const hasAnyData = Object.values(currentCounts).some((n) => n > 0)
@@ -112,15 +115,18 @@ export default function SettingsScreen() {
   }
 
   const saveBackupFile = (name) => {
-    const backup = buildBackup({
-      transactions,
-      categories,
-      budgets,
-      recurring,
-      savings,
-      quincenaSchedule,
-      profile,
-    })
+    const backup = buildBackup(
+      backupInput({
+        transactions,
+        categories,
+        budgets,
+        recurring,
+        savings,
+        goals,
+        quincenaSchedule,
+        profile,
+      }),
+    )
     downloadFile(name, JSON.stringify(backup, null, 2), 'application/json')
   }
 
