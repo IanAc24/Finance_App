@@ -33,6 +33,7 @@ Then open the address Vite prints, usually http://localhost:5173. Sign-in needs 
 - [Data and dark patterns audit](docs/auditoria-datos-y-patrones.md)
 - [Encryption research](docs/investigacion-cifrado.md)
 - [QA guide](docs/qa/guia-qa.md): how to run every test suite (including against the real Firebase), what was found, and how to reuse it in another project; plus the [income and savings QA](docs/qa/qa-ingresos-ahorros.md) and the [Firebase security review](docs/qa/revision-seguridad-firebase.md)
+- [Security policy](SECURITY.md) and [threat model](docs/seguridad/modelo-de-amenazas.md) (in Spanish)
 - [Legal drafts](docs/legal/): privacy policy, terms and conditions, refund policy and cookie policy. Drafts only, pending review by a Costa Rican lawyer
 
 ## Team
