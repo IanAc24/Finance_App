@@ -370,6 +370,19 @@ describe('budgets', () => {
     ])
   })
 
+  it('refuses a negative or non-finite amount and writes nothing', async () => {
+    await storage.setBudget(1, 'CRC', 50000)
+    for (const bad of [-5, NaN, Infinity]) {
+      await expect(storage.setBudget(1, 'CRC', bad)).rejects.toMatchObject({ code: 'invalidInput' })
+    }
+    expect(await rows('SELECT * FROM budgets')).toEqual([
+      { category_id: 1, currency: 'CRC', amount_cents: 5000000 },
+    ])
+    // 0, none and null still remove the budget
+    expect(await storage.setBudget(1, 'CRC', undefined)).toBeNull()
+    expect(await rows('SELECT * FROM budgets')).toEqual([])
+  })
+
   it('keeps one budget per currency', async () => {
     await storage.setBudget(1, 'CRC', 50000)
     await storage.setBudget(1, 'USD', 100)

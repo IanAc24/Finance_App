@@ -5,10 +5,20 @@ import {
   categoryColors,
   categoryFill,
   categoryLabel,
+  cleanCategoryName,
   customColorAt,
   findCategoryByName,
   normalize,
 } from './categories'
+
+describe('cleanCategoryName', () => {
+  it('trims and collapses inner spaces, so "Food  x" equals "Food x"', () => {
+    expect(cleanCategoryName('  Food \t  x ')).toBe('Food x')
+    expect(cleanCategoryName('Food  x')).toBe(cleanCategoryName('Food x'))
+    expect(cleanCategoryName('   ')).toBe('')
+    expect(cleanCategoryName(undefined)).toBe('')
+  })
+})
 
 describe('categoryLabel', () => {
   it('returns the name of a custom category', () => {

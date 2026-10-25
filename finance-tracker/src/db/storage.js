@@ -6,6 +6,7 @@ import {
   findCategoryByName,
 } from '../lib/categories'
 import { isValidDate, todayString } from '../lib/dates'
+import { assertBudgetAmount } from '../lib/validate'
 import { EMPTY_PROFILE, cleanCurrency, cleanName } from '../lib/onboarding'
 import { normalizeGoal } from '../lib/goals'
 import { sourceFor } from '../lib/income'
@@ -684,6 +685,7 @@ export function clearAll() {
 // An amount of 0 (or none) removes the budget; returns the saved budget or null
 export function setBudget(categoryId, currency, amount) {
   return enqueue(async () => {
+    assertBudgetAmount(amount)
     const db = await getDb()
     if (amount > 0) {
       await db.run(

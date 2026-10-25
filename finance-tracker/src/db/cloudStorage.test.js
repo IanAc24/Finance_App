@@ -231,6 +231,16 @@ describe('categories, budgets and recurring', () => {
     expect((await cloud.loadAll()).budgets).toEqual([])
   })
 
+  it('refuses a negative or non-finite budget and keeps the saved one', async () => {
+    await cloud.setBudget(1, 'CRC', 50000)
+    for (const bad of [-5, NaN, Infinity]) {
+      await expect(cloud.setBudget(1, 'CRC', bad)).rejects.toMatchObject({ code: 'invalidInput' })
+    }
+    expect((await cloud.loadAll()).budgets).toEqual([{ categoryId: 1, currency: 'CRC', amount: 50000 }])
+    expect(await cloud.setBudget(1, 'CRC', null)).toBe(null)
+    expect((await cloud.loadAll()).budgets).toEqual([])
+  })
+
   it('confirms a recurring item: adds the transaction and marks the period', async () => {
     const item = await cloud.insertRecurring({ ...expense, schedule: 'monthly' })
     const tx = await cloud.confirmRecurring(item.id, '2026-10', expense)

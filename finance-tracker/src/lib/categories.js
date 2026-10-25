@@ -37,6 +37,11 @@ export function categoryLabel(category, t) {
   return category.name ?? t(`category.${category.key}`)
 }
 
+// Outer spaces cut and inner runs of spaces made one: ' Food   x ' -> 'Food x'
+export function cleanCategoryName(text) {
+  return typeof text === 'string' ? text.replace(/\s+/g, ' ').trim() : ''
+}
+
 // 'Comída ' -> 'comida': ignores case, accents and outer spaces
 export function normalize(text) {
   return text

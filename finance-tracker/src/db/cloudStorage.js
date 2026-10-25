@@ -16,6 +16,7 @@ import { isValidDate, todayString } from '../lib/dates'
 import { normalizeGoal } from '../lib/goals'
 import { sourceFor } from '../lib/income'
 import { newId } from '../lib/ids'
+import { assertBudgetAmount } from '../lib/validate'
 import { MAX_GOAL_NAME_LENGTH } from '../lib/limits'
 import { MAX_CENTS, currencies } from '../lib/money'
 import { EMPTY_PROFILE, cleanCurrency, cleanName } from '../lib/onboarding'
@@ -574,6 +575,7 @@ export async function clearAll() {
 
 // An amount of 0 (or none) removes the budget; returns the saved budget or null
 export async function setBudget(categoryId, currency, amount) {
+  assertBudgetAmount(amount)
   const writer = newWriter()
   const target = itemOf('budgets', budgetId(categoryId, currency))
   if (amount > 0) {

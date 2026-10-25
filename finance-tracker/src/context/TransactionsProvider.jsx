@@ -50,6 +50,12 @@ import { EMPTY_PROFILE, isOnboarded } from '../lib/onboarding'
 import { ERASED_PREFS, removePref } from '../lib/prefs'
 import { DEFAULT_SCHEDULE } from '../lib/quincenaSchedule'
 import { planSavingsMove } from '../lib/goals'
+import {
+  assertCategoryName,
+  assertRecurring,
+  assertSavingsMove,
+  assertTransaction,
+} from '../lib/validate'
 import { rolloverSkipKey } from '../lib/savings'
 import { sampleTransactions } from '../lib/sample'
 import StatusScreen from '../components/StatusScreen'
@@ -192,12 +198,14 @@ export default function TransactionsProvider({ children }) {
   )
 
   const addTransaction = async (tx) => {
+    assertTransaction(tx)
     const saved = await insertTransaction(tx)
     setTransactions((current) => [...current, saved])
     return saved
   }
 
   const updateTransaction = async (id, tx) => {
+    assertTransaction(tx)
     const saved = await replaceTransaction(id, tx)
     setTransactions((current) =>
       current.map((item) => (item.id === id ? saved : item)),
@@ -209,8 +217,11 @@ export default function TransactionsProvider({ children }) {
     setTransactions((current) => current.filter((item) => item.id !== id))
   }
 
-  // Returns the id of the new category, or of an existing one with that name
-  const addCategory = async (name) => {
+  // Returns the id of the new category, or of an existing one with that name.
+  // The name is saved trimmed and with its spaces collapsed; an empty or too
+  // long one throws an 'invalidInput' error.
+  const addCategory = async (rawName) => {
+    const name = assertCategoryName(rawName)
     const existing = findCategoryByName(categories, name)
     if (existing) return existing.id
 
@@ -221,7 +232,20 @@ export default function TransactionsProvider({ children }) {
     return saved.id
   }
 
-  const updateCategory = async (id, changes) => {
+  // A new name is cleaned like in addCategory and must not belong to another
+  // category (a 'duplicateName' error, also an 'invalidInput' one)
+  const updateCategory = async (id, rawChanges) => {
+    const changes = { ...rawChanges }
+    if (changes.name !== undefined) {
+      changes.name = assertCategoryName(changes.name)
+      const others = categories.filter((item) => item.id !== id)
+      if (findCategoryByName(others, changes.name)) {
+        throw Object.assign(new Error('Category name already used'), {
+          code: 'invalidInput',
+          field: 'duplicateName',
+        })
+      }
+    }
     const saved = await replaceCategory(id, changes)
     setCategories((current) =>
       current.map((item) => (item.id === id ? saved : item)),
@@ -258,11 +282,13 @@ export default function TransactionsProvider({ children }) {
   }
 
   const addRecurring = async (item) => {
+    assertRecurring(item)
     const saved = await insertRecurring(item)
     setRecurring((current) => [...current, saved])
   }
 
   const updateRecurring = async (id, item) => {
+    assertRecurring(item)
     const saved = await replaceRecurring(id, item)
     setRecurring((current) =>
       current.map((existing) => (existing.id === id ? saved : existing)),
@@ -298,6 +324,7 @@ export default function TransactionsProvider({ children }) {
       note: item.note,
       date: todayString(),
     }
+    assertTransaction(toSave)
     const saved = await saveConfirmedRecurring(item.id, period, toSave)
     setTransactions((current) => [...current, saved])
     setRecurring((current) =>
@@ -323,6 +350,7 @@ export default function TransactionsProvider({ children }) {
   // animation only on 'confirmed'. achievedGoalIds are the goals newly
   // reached, to celebrate. Rejects when the save fails.
   const saveSavingsMove = async (move, options = {}) => {
+    assertSavingsMove(move)
     const plan = planSavingsMove(move, savings, goals)
     if (!plan.ok) {
       throw Object.assign(new Error('Not enough in savings'), { code: plan.code })
@@ -388,6 +416,8 @@ export default function TransactionsProvider({ children }) {
   // goals that deposit reaches are marked in the same write). Returns the
   // saved income; a goal newly reached shows as achievedAt set in `goals`.
   const addIncomeWithSavings = async (tx, move, options = {}) => {
+    assertTransaction(tx)
+    assertSavingsMove(move)
     const plan = planSavingsMove(move, savings, goals)
     const achievedAt = todayString()
     const saved = await insertIncomeWithSavings(tx, move, {
