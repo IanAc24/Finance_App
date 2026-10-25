@@ -2,6 +2,8 @@
 
 Fecha: 24/10/2026 · Redactada por la sesión de Claude de Ian · Aprobada por: Ian (24/10/2026) · Rama sugerida: ninguna para publicar; los cambios de archivos van en `fix/publicar-reglas` (desde `PAT`)
 
+> **25/10/2026:** esta ficha quedó superada en parte por la **007**. El archivo `finance-tracker/firestore.rules` ahora trae las reglas endurecidas (Ian las aprobó el 25/10), así que publicar "las del repo" es publicar las de la 007, con sus pasos y su prueba. Ya no existen los 5 `KNOWN GAP`: en la corrida "después" se espera 0 fallos y `knownGaps` vacío. Lo demás de esta ficha (evidencia del 24/10, requisitos, forma A y B de publicar) sigue valiendo.
+
 ## Objetivo
 Las reglas publicadas en el proyecto `iampoorfornow` son las del 20/10 (ficha 001), más abiertas que `finance-tracker/firestore.rules`. Hay que publicar las del repo y confirmar con la suite de QA contra el Firebase real que quedan cerradas, sin romper la app.
 

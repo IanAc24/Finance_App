@@ -2,6 +2,8 @@
 
 Revisión de solo lectura. No se ejecutó nada contra Firebase. Rutas relativas a `finance-tracker/` salvo que se indique. Todo lo marcado "sin confirmar" necesita el emulador o una prueba manual.
 
+> **Estado al 25/10/2026:** las reglas endurecidas ya están en `finance-tracker/firestore.rules` (reescritas a partir del código, no copiadas del borrador de abajo), con pruebas sin red (`src/db/firestoreRules.test.js`) y contra el Firebase real (`qa-firebase/rules.firebase.test.js`). **Pendiente de publicar** en `iampoorfornow`: ficha 007. El borrador de abajo se conserva como historia; la sección "Diferencias entre el borrador y el código" dice qué cambió.
+
 ## Resumen
 
 - **Aislamiento entre cuentas (pregunta 1): correcto.** Ninguna ruta permite que A lea o escriba `users/B`. No hay hallazgos críticos.
@@ -36,7 +38,8 @@ Ninguno confirmado.
   1. **Costo / DoS de cuota compartida (el más grave):** la nota de `docs/datos-por-cuenta.md` dice que el plan Spark da 20.000 escrituras y 50.000 lecturas diarias para TODO el proyecto. Un script con una cuenta (o varias, el registro es abierto, ver A3) agota esas escrituras en minutos y nadie más puede guardar hasta el día siguiente. Las reglas no pueden limitar el número de documentos, solo su forma; el freno real es App Check, restringir la clave de API y alertas de presupuesto (ver "Mitigaciones fuera de las reglas").
   2. **Dejar su propia cuenta inutilizable al cargar:** `loadAll()` lee todo y convierte sin validar. Por ejemplo, un presupuesto sin `currency` hace que `src/db/cloudStorage.js:329` (`a.currency.localeCompare(b.currency)`) lance `TypeError`, `loadAll` falla y `TransactionsProvider.jsx:156-161` muestra la pantalla de error con "Reintentar" que nunca se arregla. Una fecha o moneda ajena en una transacción pasa tal cual (`toTransaction`, `cloudStorage.js:248-262`; solo se valida `amountCents`). Es autodaño (solo esa cuenta), pero también puede ocurrir por un bug del propio cliente: sin reglas no hay red de seguridad.
   3. Solo autodaño en lo demás: texto, números raros, etc., no cruzan a otras cuentas.
-- Arreglo: reglas endurecidas completas más abajo (sección "firestore.rules propuesto"), más lectura defensiva:
+- Estado: **reglas endurecidas en `firestore.rules`, pendiente de publicar (ficha 007)**; la lectura defensiva sigue pendiente.
+- Arreglo: reglas endurecidas completas más abajo (sección "firestore.rules propuesto", ahora en el archivo), más lectura defensiva:
   ```js
   // cloudStorage.js: en toTransaction / toSavingsMove / toRecurring / toBudget
   const CURRENCIES = ['CRC', 'USD']
@@ -183,6 +186,19 @@ Ver lista abajo. El repo no tiene `firebase.json` ni `.firebaserc` (se comprobó
 ---
 
 ## firestore.rules propuesto
+
+> **Borrador. La versión vigente es `finance-tracker/firestore.rules` (25/10/2026, pendiente de publicar, ficha 007).**
+
+### Diferencias entre el borrador y el código (encontradas al escribir las reglas)
+- Faltaba la colección `goals` (metas de ahorro: `name`, `targetCents`, `currency`, `createdAt`, `achievedAt`); el borrador la rechazaba.
+- `transactions` puede llevar `source` (solo ingresos: `salary`, `freelance`, `gift`, `other`); el borrador lo habría rechazado como campo extra.
+- `categoryId` de movimientos y gastos fijos: la app guarda `null` o un entero positivo (los respaldos ponen `null` a lo desconocido; `0` nunca se guarda). El borrador aceptaba también `0`.
+- Presupuestos: `categoryId` positivo (el borrador aceptaba 0); y la condición `id == string(categoryId) + '_' + currency` se cambió por "el nombre termina en la moneda del documento" porque `string()` no se pudo probar sin emulador.
+- `note` y nombre de categoría: el borrador usaba 60 y 24 con `size()`; la app cuenta caracteres y `size()` puede contar unidades UTF-16, así que las reglas aceptan el doble (120 y 48). Meta de ahorro (40) y nombre de perfil (30) son exactos porque la app los corta en unidades UTF-16.
+- Fechas: el borrador solo revisaba la forma `^[0-9]{4}-…`; ahora mes 01-12, día 01-31 y año 2000-2100 (como `isValidDate`). `lastPeriod` igual, con `YYYY-MM-1`/`YYYY-MM-2` o la fecha de inicio.
+- `meta/schedule`: el borrador solo contaba entradas; ahora revisa la primera y la última (`from`, `mode`, `day1`, `day2`).
+- Montos: `validCents` pide entero de 1 a 100.000.000.000; los perfiles aceptan `null` en ingreso y meta de ahorro.
+- Las pruebas reales usaban `qaTag` en presupuestos y `meta/qa-<id>`: ya no caben en las reglas; ahora usan el prefijo del id y `meta/profile`/`meta/schedule` con restauración.
 
 Pensado para coincidir con lo que escribe `cloudStorage.js` hoy. `MAX_CENTS = 100000000000` (1e9 × 100). Validan el documento resultante (sirve para `set` y para `update` parcial). `categoryId` puede ser 0 (marcador de "sin categoría") o un entero positivo, o null.
 

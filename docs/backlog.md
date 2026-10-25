@@ -16,7 +16,8 @@
 | Ficha | Tarea | Falta |
 |---|---|---|
 | 001 | Firebase: prueba de humo en un Android real | Proyecto Firebase listo (20/10). Falta: registrar la app Android `cr.iampoorfornow` con su SHA-1 de depuración, descargar `google-services.json` (fuera del repo), confirmar las cuentas de Google de Ian y Furyan, y tener Android Studio y un celular con depuración USB |
-| 006 | Publicar las reglas de Firestore del repo en `iampoorfornow` y comprobarlas con `npm run qa:firebase` (antes: 36 pasan, 3 fallan; después: todas) | Lo hace Furyan: publicar (consola o `firebase-tools` con su login) y correr la suite antes y después |
+| 006 | Publicar las reglas de Firestore del repo en `iampoorfornow` y comprobarlas con `npm run qa:firebase` (antes: 36 pasan, 3 fallan; después: todas) | Lo hace Furyan: publicar (consola o `firebase-tools` con su login) y correr la suite antes y después. Superada en parte por la 007 (el archivo ya trae las reglas endurecidas): se publican juntas |
+| 007 | Publicar las reglas **endurecidas** (validan campos, tipos, montos, fechas y largos) y comprobarlas con `npm run qa:firebase` (después: 0 fallos, 0 `KNOWN GAP`) | Lo hace Furyan: correr la suite antes, publicar desde la consola, correr después, probar el uso diario en la app. Reglas y pruebas listas en `ZOH` (25/10); no se pudieron ejecutar ahí (sin emulador) |
 
 ## Necesitan investigación o decisión antes de construir
 | # | Tema | Qué falta |
