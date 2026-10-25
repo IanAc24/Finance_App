@@ -1,0 +1,19 @@
+# Encabezados de seguridad para Netlify (se copia a dist/ al compilar).
+# Ver docs/despliegue-netlify.md para revisarlos despues de subir.
+#
+# CSP, de que depende cada parte:
+#  - script-src 'self' 'wasm-unsafe-eval': el codigo propio y WebAssembly (SQLite local, sql-wasm.wasm). Nunca 'unsafe-eval'.
+#  - style-src 'self' 'unsafe-inline': React usa style={} y jeep-sqlite inyecta estilos.
+#  - connect-src https://*.googleapis.com: Firebase Authentication (identitytoolkit, securetoken) y Firestore.
+#  - img-src https://www.google.com: Firestore pide www.google.com/images/cleardot.gif al detectar la conexion.
+#  - font-src 'self': Poppins va dentro de la app.
+# Si aparece una violacion en la consola, agrega solo el host que falta.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://www.google.com; font-src 'self'; connect-src 'self' https://*.googleapis.com; worker-src 'self' blob:; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=()
+  Cross-Origin-Opener-Policy: same-origin

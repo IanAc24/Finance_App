@@ -35,3 +35,23 @@ Sale la carpeta `finance-tracker/dist/`. Incluye `_redirects` (copiado de `publi
 ## Riesgos conocidos
 - Entrar **no aísla los datos**: dos cuentas en el mismo navegador ven los mismos datos locales.
 - El correo de recuperación sale en el idioma por defecto de Firebase (se puede cambiar en la consola: Authentication → Plantillas).
+
+
+## Encabezados de seguridad (`_headers`)
+`finance-tracker/public/_headers` se copia a `dist/` al compilar y Netlify lo aplica a todas las rutas (`/*`). Pone: `Content-Security-Policy` (CSP), `Strict-Transport-Security`, `X-Content-Type-Options`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy` y `Cross-Origin-Opener-Policy`. Los motivos de cada parte de la CSP están en los comentarios del archivo.
+
+Hosts permitidos en la CSP: `https://*.googleapis.com` (Firebase Authentication y Firestore, en `connect-src`) y `https://www.google.com` (Firestore pide `images/cleardot.gif`, en `img-src`). Todo lo demás es `'self'`.
+
+No se pone caché larga (`immutable`) a `/assets/*` a propósito: esa carpeta mezcla archivos con hash y `sql-wasm.wasm`, que no lo tiene y podría quedar viejo.
+
+### Revisarlos después de subir
+```
+curl -I https://TU-SITIO.netlify.app/
+```
+Deben salir todos los encabezados de arriba. También sirve https://securityheaders.com (pega la URL del sitio). Después abre la app, entra y mira la consola del navegador (F12).
+
+### Si la consola muestra una violación de CSP
+El mensaje dice qué directiva y qué host bloqueó (por ejemplo `connect-src` y `https://algo.com`).
+1. Confirma que ese host lo necesita la app de verdad (una función nueva o un cambio de Firebase).
+2. Agrega solo ese host a la directiva que corresponde en `public/_headers`, vuelve a compilar y a subir.
+3. **Nunca** agregues `'unsafe-eval'`, ni `*`, ni `http:` para que deje de quejarse. Si algo parece pedirlo, avisa a Ian o a Furyan.
