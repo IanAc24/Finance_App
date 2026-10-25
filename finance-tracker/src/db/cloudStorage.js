@@ -17,7 +17,7 @@ import { normalizeGoal } from '../lib/goals'
 import { sourceFor } from '../lib/income'
 import { newId } from '../lib/ids'
 import { MAX_GOAL_NAME_LENGTH } from '../lib/limits'
-import { MAX_CENTS } from '../lib/money'
+import { MAX_CENTS, currencies } from '../lib/money'
 import { EMPTY_PROFILE, cleanCurrency, cleanName } from '../lib/onboarding'
 import { normalizePaymentMethod } from '../lib/payment'
 import { DEFAULT_SCHEDULE, normalizeSchedule } from '../lib/quincenaSchedule'
@@ -553,6 +553,10 @@ export async function deleteCategory(id, moveToId) {
   }
   for (const snapshot of recurring.docs) {
     writer.update(snapshot.ref, { categoryId: moveToId })
+  }
+  // its budgets go with it (SQLite does this with a cascade)
+  for (const { code } of currencies) {
+    writer.delete(itemOf('budgets', budgetId(id, code)))
   }
   writer.delete(itemOf('categories', id))
   await writer.commit()

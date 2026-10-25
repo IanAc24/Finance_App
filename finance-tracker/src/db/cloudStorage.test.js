@@ -209,6 +209,15 @@ describe('categories, budgets and recurring', () => {
     expect(state.recurring.find((r) => r.id === item.id).categoryId).toBe(2)
   })
 
+  it('deletes the budgets of a deleted category', async () => {
+    const category = await cloud.insertCategory({ name: 'Mascota', color: 'cyan' })
+    await cloud.setBudget(category.id, 'CRC', 50000)
+    await cloud.setBudget(category.id, 'USD', 80)
+    await cloud.setBudget(2, 'CRC', 10000)
+    await cloud.deleteCategory(category.id, 2)
+    expect((await cloud.loadAll()).budgets).toEqual([{ categoryId: 2, currency: 'CRC', amount: 10000 }])
+  })
+
   it('never changes or deletes a built-in category', async () => {
     await cloud.updateCategory(1, { name: 'X', color: 'cyan' })
     await cloud.deleteCategory(1, 2)

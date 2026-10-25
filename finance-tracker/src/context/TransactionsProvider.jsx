@@ -242,7 +242,7 @@ export default function TransactionsProvider({ children }) {
         item.categoryId === id ? { ...item, categoryId: moveToId } : item,
       ),
     )
-    // the database already removed them
+    // both stores already removed its budgets
     setBudgets((current) => current.filter((item) => item.categoryId !== id))
   }
 
