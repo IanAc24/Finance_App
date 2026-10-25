@@ -42,9 +42,10 @@ export function cleanCategoryName(text) {
   return typeof text === 'string' ? text.replace(/\s+/g, ' ').trim() : ''
 }
 
-// 'Comída ' -> 'comida': ignores case, accents and outer spaces
+// 'Comída  x ' -> 'comida x': ignores case, accents and extra spaces
 export function normalize(text) {
   return text
+    .replace(/\s+/g, ' ')
     .trim()
     .toLowerCase()
     .normalize('NFD')

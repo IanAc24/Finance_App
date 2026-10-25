@@ -2,6 +2,7 @@ import { useState } from 'react'
 import {
   categoryColors,
   categoryLabel,
+  cleanCategoryName,
   findCategoryByName,
 } from '../../lib/categories'
 import { MAX_CATEGORY_NAME_LENGTH } from '../../lib/limits'
@@ -26,7 +27,7 @@ function CategoryEditor({ category, onDone }) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
-  const trimmedName = name.trim()
+  const trimmedName = cleanCategoryName(name)
   const clash = findCategoryByName(others, name)
   const canSave = trimmedName !== '' && !clash && !saving
 
@@ -142,7 +143,7 @@ function NewCategory({ onDone }) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
-  const trimmedName = name.trim()
+  const trimmedName = cleanCategoryName(name)
   const clash = findCategoryByName(categories, name)
   const canSave = trimmedName !== '' && !clash && !saving
 

@@ -86,6 +86,14 @@ describe('categoryColors', () => {
   })
 })
 
+describe('normalize spaces', () => {
+  it('treats "Food  x" and "Food x" as the same name', () => {
+    expect(normalize('Food  x')).toBe(normalize('Food x'))
+    const categories = [{ id: 5, name: 'Food x', color: 'cyan' }]
+    expect(findCategoryByName(categories, '  food 	 x ')).toBe(categories[0])
+  })
+})
+
 describe('findCategoryByName', () => {
   const food = { id: 1, key: 'food', color: 'orange' }
   const fun = { id: 4, key: 'fun', color: 'lime' }

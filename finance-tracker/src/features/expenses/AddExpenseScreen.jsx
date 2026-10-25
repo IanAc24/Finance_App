@@ -7,7 +7,7 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom'
-import { categoryLabel } from '../../lib/categories'
+import { categoryLabel, cleanCategoryName } from '../../lib/categories'
 import { dateWithYear, deleteMessage, itemName, signedAmount } from '../../lib/describe'
 import { daysBetween, isValidDate, parseDate, todayString } from '../../lib/dates'
 import { lastDays, pillDate } from '../../lib/days'
@@ -218,7 +218,7 @@ export default function AddExpenseScreen() {
     amount > 0 &&
     !amountTooBig &&
     dateValid &&
-    (!isCustom || customName.trim() !== '') &&
+    (!isCustom || cleanCategoryName(customName) !== '') &&
     (!showToSavings || toSavingsValid)
   // the date pill warns with a different icon when the date needs a look
   const dateWarning = !dateValid || isFarFuture || closingDayIncome
@@ -240,7 +240,7 @@ export default function AddExpenseScreen() {
     setSaveError(false)
     try {
       const savedCategoryId = isCustom
-        ? await addCategory(customName.trim())
+        ? await addCategory(cleanCategoryName(customName))
         : categoryId
       const tx = {
         amount,
