@@ -1,4 +1,4 @@
-import { categoryColors, findCategoryByName } from './categories'
+import { categoryColors, cleanCategoryName, findCategoryByName } from './categories'
 import { daysBetween, isValidDate, parseDate, todayString } from './dates'
 import { sourceFor } from './income'
 import { currencies, isValidAmount } from './money'
@@ -94,9 +94,19 @@ function isValidId(value) {
   return Number.isSafeInteger(value) && value > 0 && value <= MAX_ID
 }
 
+// Texts are cut by characters, not UTF-16 units, so an emoji at the limit is
+// kept whole or dropped whole and never left as half a character
+function cutChars(text, max) {
+  return Array.from(text).slice(0, max).join('')
+}
+
+function charCount(text) {
+  return Array.from(text).length
+}
+
 // Notes are cut to what the form allows
 function cleanNote(value) {
-  return typeof value === 'string' ? value.slice(0, MAX_NOTE_LENGTH) : ''
+  return typeof value === 'string' ? cutChars(value, MAX_NOTE_LENGTH).trim() : ''
 }
 
 function isObject(value) {
@@ -122,7 +132,7 @@ function cleanCategory(c, builtInIds) {
   if (!isObject(c)) return null
   if (!isValidId(c.id) || builtInIds.has(c.id)) return null
   if (typeof c.name !== 'string') return null
-  const name = c.name.trim().slice(0, MAX_CATEGORY_NAME_LENGTH).trim()
+  const name = cutChars(cleanCategoryName(c.name), MAX_CATEGORY_NAME_LENGTH).trim()
   if (name === '') return null
   if (!categoryColors.includes(c.color)) return null
   return { id: c.id, name, color: c.color }
@@ -210,7 +220,7 @@ function cleanGoal(goal) {
   if (!isObject(goal)) return null
   if (!isValidId(goal.id)) return null
   if (typeof goal.name !== 'string') return null
-  const name = goal.name.trim().slice(0, MAX_GOAL_NAME_LENGTH).trim()
+  const name = cutChars(goal.name.trim(), MAX_GOAL_NAME_LENGTH).trim()
   if (name === '') return null
   if (!isValidAmount(goal.target)) return null
   if (!currencyCodes.includes(goal.currency)) return null
@@ -260,7 +270,7 @@ function countTrimmed(source, result) {
         isObject(raw) &&
         kept.delete(raw.id) &&
         typeof raw.note === 'string' &&
-        raw.note.length > MAX_NOTE_LENGTH
+        charCount(raw.note) > MAX_NOTE_LENGTH
       ) {
         total++
       }
@@ -272,7 +282,7 @@ function countTrimmed(source, result) {
       isObject(raw) &&
       keptCategories.delete(raw.id) &&
       typeof raw.name === 'string' &&
-      raw.name.trim().length > MAX_CATEGORY_NAME_LENGTH
+      charCount(cleanCategoryName(raw.name)) > MAX_CATEGORY_NAME_LENGTH
     ) {
       total++
     }

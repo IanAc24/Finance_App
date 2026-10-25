@@ -479,6 +479,32 @@ describe('limits of a restored backup', () => {
     expect(result.data.transactions[0].note).toHaveLength(60)
   })
 
+  it('cuts by characters, never leaving half an emoji at the boundary', () => {
+    const result = inspect({
+      transactions: [
+        { ...validTx, note: `${'a'.repeat(59)}😀😀` },
+        { ...validTx, id: 9, note: '😀'.repeat(60) },
+      ],
+      categories: [{ id: 50, name: `${'N'.repeat(23)}😀😀`, color: 'violet' }],
+      goals: [{ ...state.goals[0], name: `${'G'.repeat(39)}😀😀` }],
+    })
+    const [cut, whole] = result.data.transactions
+    expect(cut.note).toBe(`${'a'.repeat(59)}😀`)
+    expect(whole.note).toBe('😀'.repeat(60))
+    expect(result.data.categories[0].name).toBe(`${'N'.repeat(23)}😀`)
+    expect(result.data.goals[0].name).toBe(`${'G'.repeat(39)}😀`)
+    expect(result.trimmed).toBe(2)
+  })
+
+  it('trims what is left after a cut and collapses spaces in category names', () => {
+    const result = inspect({
+      transactions: [{ ...validTx, note: `${'a'.repeat(59)}  tail` }],
+      categories: [{ id: 50, name: ' Food   x ', color: 'violet' }],
+    })
+    expect(result.data.transactions[0].note).toBe('a'.repeat(59))
+    expect(result.data.categories[0].name).toBe('Food x')
+  })
+
   it('does not count a cut text of a record that was dropped', () => {
     const result = inspect({
       transactions: [{ ...validTx, amount: -5, note: 'x'.repeat(61) }],
