@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { getTotals } from './money'
 import { savingsBalance } from './savings'
-import { availableYears, periodSurplus, savingsYear, yearRecap } from './savingsReport'
+import {
+  availableYears,
+  periodSurplus,
+  savingsYear,
+  yearFromParam,
+  yearRecap,
+} from './savingsReport'
 
 const move = (date, amount, direction = 'in', currency = 'CRC', id = 1) => ({
   id,
@@ -90,6 +96,20 @@ describe('savingsYear', () => {
   it('agrees with the plain balance at the end of the last year', () => {
     const savings = [move('2025-01-01', 90.1), move('2026-06-01', 10.2, 'out')]
     expect(savingsYear(savings, 2026, 'CRC').closing).toBe(savingsBalance(savings, 'CRC'))
+  })
+})
+
+describe('yearFromParam', () => {
+  it('reads a four digit year between 2000 and 2100', () => {
+    expect(yearFromParam('2026')).toBe(2026)
+    expect(yearFromParam('2000')).toBe(2000)
+    expect(yearFromParam('2100')).toBe(2100)
+  })
+
+  it('answers null for anything else, so the screen goes back', () => {
+    for (const bad of ['1999', '2101', '0001', '9999', '26', 'abcd', '2026.5', '', undefined]) {
+      expect(yearFromParam(bad)).toBeNull()
+    }
   })
 })
 

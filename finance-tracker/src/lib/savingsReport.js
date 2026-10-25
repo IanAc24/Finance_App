@@ -1,9 +1,17 @@
-import { isValidDate } from './dates'
+import { MAX_YEAR, MIN_YEAR, isValidDate } from './dates'
 import { currencies } from './money'
 
 // Yearly numbers for savings and income. Everything is added in whole cents
 // and shown as decimals; currencies are never mixed. Dates are YYYY-MM-DD
 // strings, which compare correctly as text.
+
+// The year of a /savings/recap/:year address, or null when it is not four
+// digits or falls outside MIN_YEAR to MAX_YEAR (the screen then goes back)
+export function yearFromParam(text) {
+  if (!/^\d{4}$/.test(text ?? '')) return null
+  const year = Number(text)
+  return year >= MIN_YEAR && year <= MAX_YEAR ? year : null
+}
 
 const toCents = (amount) => Math.round(amount * 100)
 const yearOf = (date) => Number(String(date).slice(0, 4))

@@ -3,7 +3,7 @@ import { Link, Navigate, useParams } from 'react-router-dom'
 import { useSettings } from '../../context/useSettings'
 import { useTransactions } from '../../context/useTransactions'
 import { currencies, formatMoney } from '../../lib/money'
-import { availableYears, yearRecap } from '../../lib/savingsReport'
+import { availableYears, yearFromParam, yearRecap } from '../../lib/savingsReport'
 import { barRatios, fillTemplate } from '../../lib/savingsUi'
 import { useToday } from '../../lib/useToday'
 import CountUpMoney from '../../components/CountUpMoney'
@@ -149,7 +149,7 @@ export default function YearRecap() {
   const { transactions, savings, goals } = useTransactions()
   const today = useToday()
   const { year: yearParam } = useParams()
-  const year = /^\d{4}$/.test(yearParam ?? '') ? Number(yearParam) : null
+  const year = yearFromParam(yearParam)
 
   const recap = useMemo(
     () => (year === null ? null : yearRecap(transactions, savings, goals, year)),

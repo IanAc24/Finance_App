@@ -36,6 +36,7 @@ export function EmailField({ id, value, onChange, error, inputRef }) {
         id={id}
         ref={inputRef}
         type="email"
+        maxLength={254}
         inputMode="email"
         autoComplete="email"
         autoCapitalize="none"
@@ -64,6 +65,7 @@ export function PasswordField({ id, label, value, onChange, autoComplete, error,
           id={id}
           ref={inputRef}
           type={visible ? 'text' : 'password'}
+          maxLength={128}
           autoComplete={autoComplete}
           autoCapitalize="none"
           spellCheck={false}
