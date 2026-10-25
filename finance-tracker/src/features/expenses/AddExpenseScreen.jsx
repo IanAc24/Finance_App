@@ -15,7 +15,13 @@ import { formatDate } from '../../lib/format'
 import { applyKey, formatTyping } from '../../lib/keypad'
 import { MAX_CATEGORY_NAME_LENGTH, MAX_NOTE_LENGTH } from '../../lib/limits'
 import { INCOME_SOURCES, normalizeSource, sourceLabelKey } from '../../lib/income'
-import { MAX_AMOUNT, currencies, parseAmount } from '../../lib/money'
+import {
+  MAX_AMOUNT,
+  amountErrorKey,
+  currencies,
+  isWholeForCurrency,
+  parseAmount,
+} from '../../lib/money'
 import { onceAtATime } from '../../lib/onceAtATime'
 import { isClosingDay, nextQuincenaStart } from '../../lib/quincena'
 import { normalizePaymentMethod } from '../../lib/payment'
@@ -200,7 +206,9 @@ export default function AddExpenseScreen() {
   const showToSavings = !editing && type === 'income'
   const toSavingsParsed = parseAmount(toSavingsText)
   const toSavingsValid =
-    toSavingsParsed !== null && toSavingsParsed <= amount
+    toSavingsParsed !== null &&
+    toSavingsParsed <= amount &&
+    isWholeForCurrency(toSavingsParsed, currency)
   const toSavings = showToSavings && toSavingsValid ? toSavingsParsed : 0
   const amountTooBig = amount > MAX_AMOUNT
   // case L1: pay dated on the 15th / the last day of the month
@@ -624,7 +632,11 @@ export default function AddExpenseScreen() {
           <p className="sub">{t('optionsOnlyIncome')}</p>
         )}
         {showToSavings && !toSavingsValid && (
-          <p className="field-note error" role="alert">{t('toSavingsInvalid')}</p>
+          <p className="field-note error" role="alert">
+            {toSavingsParsed !== null && !isWholeForCurrency(toSavingsParsed, currency)
+              ? t(amountErrorKey(toSavingsText, currency))
+              : t('toSavingsInvalid')}
+          </p>
         )}
         <p className="sub">{t('noteHint')}</p>
         <button type="button" className="btn" onClick={() => setSheet(null)}>

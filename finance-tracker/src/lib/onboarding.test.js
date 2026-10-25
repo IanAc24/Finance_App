@@ -54,6 +54,15 @@ describe('optionalAmount', () => {
   })
 })
 
+describe('optionalAmount with a currency', () => {
+  it('refuses cents in colones but not in dollars', () => {
+    expect(optionalAmount('100,50', 'CRC')).toBeUndefined()
+    expect(optionalAmount('100.000', 'CRC')).toBe(100000)
+    expect(optionalAmount('', 'CRC')).toBeNull()
+    expect(optionalAmount('100,50', 'USD')).toBe(100.5)
+  })
+})
+
 describe('quincenasPerMonth', () => {
   it('is 2 for 15/30 and two pay days, 1 for a single pay day', () => {
     expect(quincenasPerMonth({ mode: 'fixed' })).toBe(2)
@@ -147,6 +156,18 @@ describe('scheduleForOnboarding', () => {
     expect(result).toHaveLength(2)
     expect(result[0]).toEqual(DEFAULT_SCHEDULE[0])
     expect(result[1].from > '2026-10-13').toBe(true)
+  })
+})
+
+describe('buildFixedExpense cents', () => {
+  it('refuses cents in colones with its own reason, accepts them in dollars', () => {
+    expect(buildFixedExpense({ name: 'Luz', amountText: '100,50', currency: 'CRC' })).toEqual({
+      ok: false,
+      reason: 'wholeColones',
+    })
+    expect(
+      buildFixedExpense({ name: 'Luz', amountText: '100,50', currency: 'USD' }).ok,
+    ).toBe(true)
   })
 })
 

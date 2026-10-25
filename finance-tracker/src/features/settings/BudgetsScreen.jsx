@@ -1,7 +1,14 @@
 import { useState } from 'react'
 import { categoryColor, categoryLabel } from '../../lib/categories'
 import { getQuincenaRange, parseDate } from '../../lib/dates'
-import { currencies, formatMoney, parseAmount, sum } from '../../lib/money'
+import {
+  amountErrorKey,
+  currencies,
+  formatMoney,
+  isWholeForCurrency,
+  parseAmount,
+  sum,
+} from '../../lib/money'
 import { budgetPercent, splitMoney } from '../../lib/moneyDisplay'
 import { getCategoryTotals } from '../../lib/stats'
 import { useToday } from '../../lib/useToday'
@@ -51,7 +58,14 @@ function BudgetForm({ currency }) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(false)
 
-  const invalid = categories.some((c) => parseAmount(texts[c.id] ?? '') === null)
+  // the first typed amount that cannot be saved (not an amount, or cents in colones)
+  const badText = categories
+    .map((c) => texts[c.id] ?? '')
+    .find((text) => {
+      const value = parseAmount(text)
+      return value === null || !isWholeForCurrency(value, currency)
+    })
+  const invalid = badText !== undefined
 
   // '20000' reads as '20.000' once the field is left; text that is not a valid
   // amount stays as typed so the mistake can be seen
@@ -174,7 +188,9 @@ function BudgetForm({ currency }) {
         </ul>
       </section>
 
-      {invalid && <p className="field-note error" role="alert">{t('invalidAmount')}</p>}
+      {invalid && (
+        <p className="field-note error" role="alert">{t(amountErrorKey(badText, currency))}</p>
+      )}
       {saveError && <p className="field-note error" role="alert">{t('saveError')}</p>}
 
       <button

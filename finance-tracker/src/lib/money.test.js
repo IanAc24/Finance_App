@@ -4,6 +4,8 @@ import {
   formatMoney,
   getTotals,
   laterTotal,
+  amountErrorKey,
+  isWholeForCurrency,
   parseAmount,
   MAX_AMOUNT,
   isValidAmount,
@@ -211,6 +213,25 @@ describe('parseAmount', () => {
     expect(parseAmount(null)).toBeNull()
     expect(parseAmount(undefined)).toBeNull()
     expect(parseAmount(5)).toBeNull()
+  })
+})
+
+describe('isWholeForCurrency', () => {
+  it('refuses cents in colones only', () => {
+    expect(isWholeForCurrency(1500, 'CRC')).toBe(true)
+    expect(isWholeForCurrency(0, 'CRC')).toBe(true)
+    expect(isWholeForCurrency(100.5, 'CRC')).toBe(false)
+    expect(isWholeForCurrency(0.01, 'CRC')).toBe(false)
+    expect(isWholeForCurrency(100.5, 'USD')).toBe(true)
+  })
+})
+
+describe('amountErrorKey', () => {
+  it('names the whole-colones message for cents in colones, else the generic one', () => {
+    expect(amountErrorKey('100,50', 'CRC')).toBe('svAmountWholeColones')
+    expect(amountErrorKey('1.500,50', 'CRC')).toBe('svAmountWholeColones')
+    expect(amountErrorKey('abc', 'CRC')).toBe('invalidAmount')
+    expect(amountErrorKey('100,50', 'USD')).toBe('invalidAmount')
   })
 })
 

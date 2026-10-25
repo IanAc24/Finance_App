@@ -9,7 +9,7 @@ import Illustration from '../../components/Illustration'
 import Logo from '../../components/Logo'
 import Money from '../../components/Money'
 import QuincenaSetting from '../../components/QuincenaSetting'
-import { formatMoney, currencies } from '../../lib/money'
+import { amountErrorKey, formatMoney, currencies } from '../../lib/money'
 import { categoryLabel } from '../../lib/categories'
 import {
   MAX_CATEGORY_NAME_LENGTH,
@@ -132,8 +132,8 @@ export default function OnboardingScreen() {
     ? normalizeSchedule([{ ...choice, from: '2000-01-01' }])
     : quincenaSchedule
 
-  const income = optionalAmount(incomeText)
-  const goal = optionalAmount(goalText)
+  const income = optionalAmount(incomeText, currency)
+  const goal = optionalAmount(goalText, currency)
   const symbol = currencies.find((c) => c.code === currency)?.symbol
 
   // expenses that already existed (a repeat) count too
@@ -172,6 +172,7 @@ export default function OnboardingScreen() {
       const field = {
         name: draftNameInput,
         amount: draftAmountInput,
+        wholeColones: draftAmountInput,
         category: draftCategoryInput,
       }[built.reason]
       field.current?.focus()
@@ -410,7 +411,7 @@ export default function OnboardingScreen() {
             </label>
             {income === undefined && (
               <p className="field-note error" role="alert" id="ob-income-error">
-                {t('invalidAmount')}
+                {t(amountErrorKey(incomeText, currency))}
               </p>
             )}
           </>
@@ -495,8 +496,12 @@ export default function OnboardingScreen() {
                   ref={draftAmountInput}
                   type="text"
                   inputMode="decimal"
-                  aria-invalid={draftError === 'amount'}
-                  aria-describedby={draftError === 'amount' ? 'ob-draft-error' : undefined}
+                  aria-invalid={draftError === 'amount' || draftError === 'wholeColones'}
+                  aria-describedby={
+                    draftError === 'amount' || draftError === 'wholeColones'
+                      ? 'ob-draft-error'
+                      : undefined
+                  }
                   value={draftAmount}
                   onChange={(e) => setDraftAmount(e.target.value)}
                   onKeyDown={onDraftKey}
@@ -568,6 +573,11 @@ export default function OnboardingScreen() {
                   {t('invalidAmount')}
                 </p>
               )}
+              {draftError === 'wholeColones' && (
+                <p className="field-note error" role="alert" id="ob-draft-error">
+                  {t('svAmountWholeColones')}
+                </p>
+              )}
               <button
                 type="button"
                 className="btn secondary"
@@ -607,7 +617,7 @@ export default function OnboardingScreen() {
             </label>
             {goal === undefined && (
               <p className="field-note error" role="alert" id="ob-goal-error">
-                {t('invalidAmount')}
+                {t(amountErrorKey(goalText, currency))}
               </p>
             )}
             <FreeSummary

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { categoryLabel } from '../../lib/categories'
 import { deleteMessage, itemName, signedAmount } from '../../lib/describe'
 import { MAX_NOTE_LENGTH } from '../../lib/limits'
-import { parseAmount } from '../../lib/money'
+import { amountErrorKey, isWholeForCurrency, parseAmount } from '../../lib/money'
 import { scheduleKey, schedules } from '../../lib/recurring'
 import { useDialog } from '../../context/useDialog'
 import { useSettings } from '../../context/useSettings'
@@ -37,7 +37,8 @@ function RecurringEditor({ item, onDone }) {
   const [saveError, setSaveError] = useState(false)
 
   const amount = parseAmount(amountText)
-  const amountValid = amount !== null && amount > 0
+  const amountValid =
+    amount !== null && amount > 0 && isWholeForCurrency(amount, currency)
   const canSave = amountValid && !saving
 
   const handleSave = async () => {
@@ -121,7 +122,7 @@ function RecurringEditor({ item, onDone }) {
         />
       </label>
       {amountText.trim() !== '' && !amountValid && (
-        <p className="field-note error" role="alert">{t('invalidAmount')}</p>
+        <p className="field-note error" role="alert">{t(amountErrorKey(amountText, currency))}</p>
       )}
 
       {type === 'expense' && (

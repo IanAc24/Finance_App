@@ -3,7 +3,7 @@ import {
   MAX_NOTE_LENGTH,
   MAX_PROFILE_NAME_LENGTH,
 } from './limits'
-import { currencies, parseAmount, sum } from './money'
+import { currencies, isWholeForCurrency, parseAmount, sum } from './money'
 import {
   DEFAULT_SCHEDULE,
   changeSchedule,
@@ -37,10 +37,11 @@ export function isOnboarded(profile) {
 
 // An optional amount typed in a step: '' (or 0) is "nothing" (null), a valid
 // amount is a number, anything else is invalid (undefined) so the step can
-// warn about it
-export function optionalAmount(text) {
+// warn about it. With a currency, cents in colones are invalid too.
+export function optionalAmount(text, currency) {
   const amount = parseAmount(text)
   if (amount === null) return undefined
+  if (currency && !isWholeForCurrency(amount, currency)) return undefined
   return amount > 0 ? amount : null
 }
 
@@ -99,7 +100,8 @@ export function scheduleForOnboarding(current, choice, today, hasData) {
 
 // A fixed expense typed in the list. Returns { ok: true, item } with the
 // recurring item ready to save, or { ok: false, reason } where reason is
-// 'name' (empty), 'amount' (missing or invalid) or 'category' (a new
+// 'name' (empty), 'amount' (missing or invalid), 'wholeColones' (cents in
+// colones) or 'category' (a new
 // category was chosen without a name).
 // categoryId is an existing category id, or NEW_CATEGORY with the name in
 // newCategoryName: the item then carries `newCategory` (the name) instead of
@@ -117,9 +119,13 @@ export function buildFixedExpense({
   if (note === '') return { ok: false, reason: 'name' }
   const amount = parseAmount(amountText)
   if (amount === null || amount <= 0) return { ok: false, reason: 'amount' }
+  const cleanCode = cleanCurrency(currency)
+  if (!isWholeForCurrency(amount, cleanCode)) {
+    return { ok: false, reason: 'wholeColones' }
+  }
   const base = {
     amount,
-    currency: cleanCurrency(currency),
+    currency: cleanCode,
     type: 'expense',
     note,
     schedule,

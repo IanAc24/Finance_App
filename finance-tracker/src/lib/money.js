@@ -35,6 +35,24 @@ export function safePerDay(net, days, code) {
 export const MAX_AMOUNT = 1_000_000_000
 export const MAX_CENTS = MAX_AMOUNT * 100
 
+// Colones are whole units in the app: true unless the currency is CRC and the
+// amount has cents. Only for what is typed now; stored data is never judged
+// by this (old data may have cents).
+export function isWholeForCurrency(amount, currency) {
+  return currency !== 'CRC' || Math.round(amount * 100) % 100 === 0
+}
+
+// The translation key of the message for a typed amount that cannot be used
+// in this currency: cents in colones get their own message, anything else
+// is just not an amount.
+export function amountErrorKey(text, currency) {
+  const amount = parseAmount(text)
+  if (amount !== null && !isWholeForCurrency(amount, currency)) {
+    return 'svAmountWholeColones'
+  }
+  return 'invalidAmount'
+}
+
 // True for a finite amount of at least one cent and at most MAX_AMOUNT
 export function isValidAmount(value) {
   return (
