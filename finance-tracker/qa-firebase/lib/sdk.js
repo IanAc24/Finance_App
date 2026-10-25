@@ -133,7 +133,8 @@ export async function teardown(cfg, log = console.log) {
             tracker.untrack(cfg.runId, n, d.collection, d.id)
             continue
           }
-          if (!hasTag(snap.data(), tag)) {
+          // the tag, or an id made by this run (a budget has no text field)
+          if (!hasTag(snap.data(), tag) && !d.id.startsWith(tracker.idPrefix(cfg.runId))) {
             skipped += 1
             log(`  left alone (no run tag): #${n} ${d.collection}/${d.id}`)
             continue

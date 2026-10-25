@@ -127,10 +127,16 @@ export function recordGap(runId, name, outcome) {
 // clock times 1000, about 1.7e15): 9 + six digits of the run + a counter.
 // Numeric on purpose, so the app can read them if one is ever left behind.
 export function newDocId(runId) {
+  return change(runId, (s) => `${idPrefix(runId)}${String(s.nextSeq++).padStart(8, '0')}`)
+}
+
+// The start of every id of this run ('9' + six digits of the run id). A document
+// without a tag field (a budget has none) is recognised as the run's by it.
+export function idPrefix(runId) {
   const digits = String(
     parseInt(createHash('sha1').update(runId).digest('hex').slice(0, 8), 16) % 1_000_000,
   ).padStart(6, '0')
-  return change(runId, (s) => `9${digits}${String(s.nextSeq++).padStart(8, '0')}`)
+  return `9${digits}`
 }
 
 export function hasManifest() {
