@@ -1,20 +1,233 @@
 rules_version = '2';
 
-// Each account reads and writes only its own data, under users/{uid}/, and
-// only in the collections the app uses (see src/db/cloudStorage.js).
-// Publish in the Firebase console: Firestore Database > Rules.
+// Each account reads and writes only its own data, under users/{uid}/, only in
+// the collections the app uses, and every write must have the exact shape the
+// app writes (see src/db/cloudData.js, which builds the documents, and
+// src/db/cloudStorage.js, which sends them): the keys, their types, the
+// currencies, dates, enums and lengths. A document that does not fit is refused.
+// Publish in the Firebase console: Firestore Database > Rules (ficha 007).
+//
+// How the checks work:
+// - create and update validate the document that RESULTS from the write
+//   (request.resource.data), so a partial update (only lastPeriod, only
+//   categoryId, only achievedAt) is accepted when the whole document is valid.
+// - read and delete only ask for the owner. Deleting never needs a valid shape.
+// - Text sizes: size() may count UTF-16 units or characters, so the limits that
+//   the app counts in characters (notes 60, category names 24) are doubled to
+//   never refuse an emoji the app accepts. The goal name (40) and the profile
+//   name (30) are cut by the app in UTF-16 units, so they are exact.
+// - Limits that the rules cannot express: how many documents there are, and
+//   dates like 2026-02-31 (only the format and the year 2000-2100 are checked).
 service cloud.firestore {
   match /databases/{database}/documents {
     function isOwner(uid) {
       return request.auth != null && request.auth.uid == uid;
     }
 
-    match /users/{uid}/{list}/{item} {
-      allow read, write: if isOwner(uid)
-        && list in ['transactions', 'categories', 'budgets', 'recurring', 'savings', 'goals', 'meta'];
+    // --- Small checks (limits from src/lib/limits.js, money.js, dates.js) ---
+
+    // whole cents, 1 to MAX_CENTS (1,000,000,000 * 100)
+    function validCents(v) {
+      return v is int && v > 0 && v <= 100000000000;
     }
 
-    // anything else, for anyone: no
+    function validCentsOrNull(v) {
+      return v == null || validCents(v);
+    }
+
+    function validCurrency(v) {
+      return v in ['CRC', 'USD'];
+    }
+
+    // YYYY-MM-DD with a month 01-12, a day 01-31 and a year 2000-2100
+    function validDate(v) {
+      return v is string
+        && v.matches('^(20[0-9]{2}|2100)-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$');
+    }
+
+    function validDateOrNull(v) {
+      return v == null || validDate(v);
+    }
+
+    // a quincena name: 'YYYY-MM-1' / 'YYYY-MM-2' (15/30) or the day it started
+    function validPeriod(v) {
+      return v == null
+        || (v is string
+          && v.matches('^(20[0-9]{2}|2100)-(0[1-9]|1[0-2])-([12]|0[1-9]|[12][0-9]|3[01])$'));
+    }
+
+    // MAX_NOTE_LENGTH is 60 (doubled, see above)
+    function validNote(v) {
+      return v is string && v.size() <= 120;
+    }
+
+    // the id of a category: made on the device, positive, up to MAX_ID (8e15)
+    function validCategoryRef(v) {
+      return v == null || (v is int && v > 0 && v <= 8000000000000000);
+    }
+
+    function validDay(v) {
+      return v is int && v >= 1 && v <= 31;
+    }
+
+    // a document name made of a device id (lib/ids.js) or an old SQLite id
+    function validId(id) {
+      return id.matches('^[1-9][0-9]{0,15}$');
+    }
+
+    // --- The documents ---
+
+    // source: only on an income, and optional (an expense has none)
+    function validTransaction(d) {
+      return d.keys().hasOnly(['amountCents', 'currency', 'type', 'categoryId', 'note', 'date', 'paymentMethod', 'source'])
+        && d.keys().hasAll(['amountCents', 'currency', 'type', 'categoryId', 'note', 'date', 'paymentMethod'])
+        && validCents(d.amountCents)
+        && validCurrency(d.currency)
+        && d.type in ['expense', 'income']
+        && validCategoryRef(d.categoryId)
+        && validNote(d.note)
+        && validDate(d.date)
+        && d.paymentMethod in ['cash', 'card', 'sinpe']
+        && (!d.keys().hasAny(['source'])
+          || (d.type == 'income' && d.source in ['salary', 'freelance', 'gift', 'other']));
+    }
+
+    // MAX_CATEGORY_NAME_LENGTH is 24 (doubled); colors: categories.js
+    function validCategory(d) {
+      return d.keys().hasOnly(['name', 'color'])
+        && d.keys().hasAll(['name', 'color'])
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 48
+        && d.color in ['orange', 'blue', 'violet', 'lime', 'fuchsia', 'slate', 'sand', 'cyan'];
+    }
+
+    function validBudget(d) {
+      return d.keys().hasOnly(['categoryId', 'currency', 'amountCents'])
+        && d.keys().hasAll(['categoryId', 'currency', 'amountCents'])
+        && d.categoryId is int && d.categoryId > 0 && d.categoryId <= 8000000000000000
+        && validCurrency(d.currency)
+        && validCents(d.amountCents);
+    }
+
+    function validRecurring(d) {
+      return d.keys().hasOnly(['amountCents', 'currency', 'type', 'categoryId', 'note', 'schedule', 'lastPeriod'])
+        && d.keys().hasAll(['amountCents', 'currency', 'type', 'categoryId', 'note', 'schedule', 'lastPeriod'])
+        && validCents(d.amountCents)
+        && validCurrency(d.currency)
+        && d.type in ['expense', 'income']
+        && validCategoryRef(d.categoryId)
+        && validNote(d.note)
+        && d.schedule in ['every', 'first', 'second']
+        && validPeriod(d.lastPeriod);
+    }
+
+    function validSavings(d) {
+      return d.keys().hasOnly(['amountCents', 'currency', 'direction', 'note', 'date'])
+        && d.keys().hasAll(['amountCents', 'currency', 'direction', 'note', 'date'])
+        && validCents(d.amountCents)
+        && validCurrency(d.currency)
+        && d.direction in ['in', 'out']
+        && validNote(d.note)
+        && validDate(d.date);
+    }
+
+    // MAX_GOAL_NAME_LENGTH is 40; the name is never empty; achievedAt is null
+    // until the goal is reached
+    function validGoal(d) {
+      return d.keys().hasOnly(['name', 'targetCents', 'currency', 'createdAt', 'achievedAt'])
+        && d.keys().hasAll(['name', 'targetCents', 'currency', 'createdAt', 'achievedAt'])
+        && d.name is string && d.name.size() >= 1 && d.name.size() <= 40
+        && validCents(d.targetCents)
+        && validCurrency(d.currency)
+        && validDate(d.createdAt)
+        && validDateOrNull(d.achievedAt);
+    }
+
+    // MAX_PROFILE_NAME_LENGTH is 30; the name may be empty; an amount the person
+    // did not give is null
+    function validProfile(d) {
+      return d.keys().hasOnly(['name', 'incomeCents', 'currency', 'savingsGoalCents', 'onboardedAt'])
+        && d.keys().hasAll(['name', 'incomeCents', 'currency', 'savingsGoalCents', 'onboardedAt'])
+        && d.name is string && d.name.size() <= 30
+        && validCentsOrNull(d.incomeCents)
+        && validCurrency(d.currency)
+        && validCentsOrNull(d.savingsGoalCents)
+        && validDateOrNull(d.onboardedAt);
+    }
+
+    // one entry of the quincena schedule (lib/quincenaSchedule.js)
+    function validScheduleEntry(e) {
+      return e is map
+        && e.keys().hasOnly(['from', 'mode', 'day1', 'day2'])
+        && e.keys().hasAll(['from', 'mode', 'day1', 'day2'])
+        && validDate(e.from)
+        && e.mode in ['fixed', 'paydays', 'manual']
+        && validDay(e.day1)
+        && (e.day2 == null || validDay(e.day2));
+    }
+
+    // 1 to MAX_SCHEDULE_ENTRIES (200) entries. Rules cannot loop over a list,
+    // so the first and the last entry are checked; the 1 MiB limit of a
+    // document bounds the rest.
+    function validSchedule(d) {
+      return d.keys().hasOnly(['entries'])
+        && d.keys().hasAll(['entries'])
+        && d.entries is list
+        && d.entries.size() >= 1
+        && d.entries.size() <= 200
+        && validScheduleEntry(d.entries[0])
+        && validScheduleEntry(d.entries[d.entries.size() - 1]);
+    }
+
+    // --- The paths: users/{uid}/<collection>/{id} ---
+
+    match /users/{uid}/transactions/{id} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validId(id) && validTransaction(request.resource.data);
+    }
+
+    match /users/{uid}/categories/{id} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validId(id) && validCategory(request.resource.data);
+    }
+
+    // the name is <categoryId>_<currency>, for example 7_CRC; the suffix must
+    // be the currency of the document
+    match /users/{uid}/budgets/{id} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && id.matches('^[1-9][0-9]{0,15}_(CRC|USD)$')
+        && validBudget(request.resource.data)
+        && id.matches('.*_' + request.resource.data.currency);
+    }
+
+    match /users/{uid}/recurring/{id} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validId(id) && validRecurring(request.resource.data);
+    }
+
+    match /users/{uid}/savings/{id} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validId(id) && validSavings(request.resource.data);
+    }
+
+    match /users/{uid}/goals/{id} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validId(id) && validGoal(request.resource.data);
+    }
+
+    // meta has two documents only, with a name each
+    match /users/{uid}/meta/profile {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validProfile(request.resource.data);
+    }
+
+    match /users/{uid}/meta/schedule {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid) && validSchedule(request.resource.data);
+    }
+
+    // anything else, for anyone: no (users/{uid} itself, other collections,
+    // deeper paths, other meta documents)
     match /{document=**} {
       allow read, write: if false;
     }

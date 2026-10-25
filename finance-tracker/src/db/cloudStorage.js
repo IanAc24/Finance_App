@@ -18,10 +18,23 @@ import { sourceFor } from '../lib/income'
 import { newId } from '../lib/ids'
 import { assertBudgetAmount } from '../lib/validate'
 import { MAX_GOAL_NAME_LENGTH } from '../lib/limits'
-import { MAX_CENTS, currencies } from '../lib/money'
+import { currencies } from '../lib/money'
 import { EMPTY_PROFILE, cleanCurrency, cleanName } from '../lib/onboarding'
 import { normalizePaymentMethod } from '../lib/payment'
 import { DEFAULT_SCHEDULE, normalizeSchedule } from '../lib/quincenaSchedule'
+import {
+  budgetData,
+  budgetId,
+  categoryData,
+  goalData,
+  isCents,
+  newRecurringData,
+  profileData,
+  recurringData,
+  savingsData,
+  scheduleData,
+  transactionData,
+} from './cloudData'
 
 // The same operations as storage.js, but each account's data is saved in
 // Firestore under users/{uid}/ and only that account can read it (see
@@ -61,7 +74,6 @@ function userPath() {
 const listOf = (name) => collection(getCloudDb(), ...userPath(), name)
 const itemOf = (name, id) => doc(getCloudDb(), ...userPath(), name, String(id))
 const metaOf = (name) => doc(getCloudDb(), ...userPath(), 'meta', name)
-const budgetId = (categoryId, currency) => `${categoryId}_${currency}`
 
 // --- Writing ---------------------------------------------------------------
 
@@ -184,33 +196,7 @@ async function readItem(target, fresh) {
 
 // --- Conversions -----------------------------------------------------------
 
-// Whole cents, or an error: nothing that is not a positive amount within the
-// app's cap ever reaches Firestore
-function toCents(amount) {
-  const cents = Math.round(amount * 100)
-  if (!Number.isSafeInteger(cents) || cents <= 0 || cents > MAX_CENTS) {
-    throw new Error(`Invalid amount: ${amount}`)
-  }
-  return cents
-}
-
-const centsOrNull = (amount) => (amount > 0 ? toCents(amount) : null)
-const isCents = (value) => Number.isSafeInteger(value) && value > 0 && value <= MAX_CENTS
 const byId = (a, b) => a.id - b.id
-
-function transactionData(tx) {
-  return {
-    amountCents: toCents(tx.amount),
-    currency: tx.currency,
-    type: tx.type,
-    categoryId: tx.categoryId ?? null,
-    note: tx.note ?? '',
-    date: tx.date,
-    paymentMethod: normalizePaymentMethod(tx.paymentMethod),
-    // only an income has a source; without one the field is left out
-    ...(sourceFor(tx) && { source: sourceFor(tx) }),
-  }
-}
 
 function savedTransaction(tx, id) {
   return {
@@ -219,48 +205,6 @@ function savedTransaction(tx, id) {
     paymentMethod: normalizePaymentMethod(tx.paymentMethod),
     source: sourceFor(tx),
     id,
-  }
-}
-
-function recurringData(item) {
-  return {
-    amountCents: toCents(item.amount),
-    currency: item.currency,
-    type: item.type,
-    categoryId: item.categoryId ?? null,
-    note: item.note ?? '',
-    schedule: item.schedule,
-  }
-}
-
-function savingsData(move) {
-  return {
-    amountCents: toCents(move.amount),
-    currency: move.currency,
-    direction: move.direction,
-    note: move.note ?? '',
-    date: move.date,
-  }
-}
-
-function goalData(goal) {
-  const clean = normalizeGoal(goal)
-  return {
-    name: clean.name,
-    targetCents: toCents(clean.target),
-    currency: clean.currency,
-    createdAt: clean.createdAt,
-    achievedAt: clean.achievedAt,
-  }
-}
-
-function profileData(profile) {
-  return {
-    name: cleanName(profile.name),
-    incomeCents: centsOrNull(profile.income),
-    currency: cleanCurrency(profile.currency),
-    savingsGoalCents: centsOrNull(profile.savingsGoal),
-    onboardedAt: profile.onboardedAt ?? null,
   }
 }
 
@@ -409,23 +353,19 @@ async function readProfile() {
 // ids. The caller removes what was there first when it has to.
 function writeState(writer, state, profile) {
   for (const { id, name, color } of state.categories.filter((c) => c.name)) {
-    writer.set(itemOf('categories', id), { name, color })
+    writer.set(itemOf('categories', id), categoryData({ name, color }))
   }
   for (const tx of state.transactions) {
     writer.set(itemOf('transactions', tx.id), transactionData(tx))
   }
   for (const b of state.budgets) {
-    writer.set(itemOf('budgets', budgetId(b.categoryId, b.currency)), {
-      categoryId: b.categoryId,
-      currency: b.currency,
-      amountCents: toCents(b.amount),
-    })
+    writer.set(
+      itemOf('budgets', budgetId(b.categoryId, b.currency)),
+      budgetData(b.categoryId, b.currency, b.amount),
+    )
   }
   for (const item of state.recurring) {
-    writer.set(itemOf('recurring', item.id), {
-      ...recurringData(item),
-      lastPeriod: item.lastPeriod ?? null,
-    })
+    writer.set(itemOf('recurring', item.id), newRecurringData(item, item.lastPeriod ?? null))
   }
   for (const move of state.savings ?? []) {
     writer.set(itemOf('savings', move.id), savingsData(move))
@@ -433,9 +373,7 @@ function writeState(writer, state, profile) {
   for (const goal of state.goals ?? []) {
     writer.set(itemOf('goals', goal.id), goalData(goal))
   }
-  writer.set(metaOf('schedule'), {
-    entries: normalizeSchedule(state.quincenaSchedule ?? DEFAULT_SCHEDULE),
-  })
+  writer.set(metaOf('schedule'), scheduleData(state.quincenaSchedule ?? DEFAULT_SCHEDULE))
   writer.set(metaOf('profile'), profileData(profile))
 }
 
@@ -526,7 +464,7 @@ export async function deleteTransaction(id) {
 export async function insertCategory({ name, color }) {
   const id = newId()
   const writer = newWriter()
-  writer.set(itemOf('categories', id), { name, color })
+  writer.set(itemOf('categories', id), categoryData({ name, color }))
   await writer.commit()
   return { id, name, color }
 }
@@ -535,7 +473,7 @@ export async function insertCategory({ name, color }) {
 export async function updateCategory(id, { name, color }) {
   if (!isBuiltIn(id)) {
     const writer = newWriter()
-    writer.set(itemOf('categories', id), { name, color })
+    writer.set(itemOf('categories', id), categoryData({ name, color }))
     await writer.commit()
   }
   return { id, name, color }
@@ -579,7 +517,7 @@ export async function setBudget(categoryId, currency, amount) {
   const writer = newWriter()
   const target = itemOf('budgets', budgetId(categoryId, currency))
   if (amount > 0) {
-    writer.set(target, { categoryId, currency, amountCents: toCents(amount) })
+    writer.set(target, budgetData(categoryId, currency, amount))
     await writer.commit()
     return { categoryId, currency, amount }
   }
@@ -591,7 +529,7 @@ export async function setBudget(categoryId, currency, amount) {
 export async function insertRecurring(item) {
   const id = newId()
   const writer = newWriter()
-  writer.set(itemOf('recurring', id), { ...recurringData(item), lastPeriod: null })
+  writer.set(itemOf('recurring', id), newRecurringData(item))
   await writer.commit()
   return { ...item, note: item.note ?? '', id, lastPeriod: null }
 }
@@ -743,7 +681,7 @@ export async function completeOnboarding({
   }
   const writer = newWriter()
   if (schedule) {
-    writer.set(metaOf('schedule'), { entries: normalizeSchedule(schedule) })
+    writer.set(metaOf('schedule'), scheduleData(schedule))
   }
   // an expense with a `newCategory` name creates it (or finds the one that
   // already has that name)
@@ -755,15 +693,12 @@ export async function completeOnboarding({
       if (!category) {
         const color = customColorAt(known.filter((c) => c.name).length)
         category = { id: newId(), name: original.newCategory, color }
-        writer.set(itemOf('categories', category.id), {
-          name: category.name,
-          color,
-        })
+        writer.set(itemOf('categories', category.id), categoryData({ name: category.name, color }))
         known.push(category)
       }
       item = { ...original, categoryId: category.id }
     }
-    writer.set(itemOf('recurring', newId()), { ...recurringData(item), lastPeriod: null })
+    writer.set(itemOf('recurring', newId()), newRecurringData(item))
   }
   if (update) {
     writer.update(itemOf('recurring', update.id), recurringData(update.item))
